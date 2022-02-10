@@ -1,5 +1,5 @@
 import express from 'express'
-import { google } from 'googleapis'
+import oAuth2Client from '../utils/authorization'
 
 const router = express.Router()
 
@@ -9,26 +9,12 @@ interface CustomRequest extends express.Request{
   }
 }
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
-
-const oauth2Client = new google.auth.OAuth2(
-  GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET,
-  'http://localhost:3000'
-)
-
-// async deleted
-/* router.get('/', (_req, res, next) => {
-  res.send({ message: 'Ok api is working 🚀' })
-}) */
-
 // async deleted
 router.post('/', (req: CustomRequest, res, next) => {
   try {
     void (async () => {
       const { code } = req.body
-      const response = await oauth2Client.getToken(code) // may need to use 
+      const response = await oAuth2Client.getToken(code) // may need to use 
       // destructruing here like vid to get the refresh token
       res.send(response)
 

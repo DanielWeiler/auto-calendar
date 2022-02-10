@@ -6,6 +6,7 @@ import {
   GoogleLoginResponseOffline,
 } from 'react-google-login'
 import axios from 'axios'
+import ReminderForm from './components/ReminderForm'
 
 function App() {
   const responseGoogle = (
@@ -31,7 +32,6 @@ function App() {
       <div className='App'>
         <h1>Google</h1>
       </div>
-      <div>
         <GoogleLogin
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}
@@ -43,7 +43,7 @@ function App() {
           accessType='offline'
           scope='openid email profile https://www.googleapis.com/auth/calendar'
         />
-      </div>
+        <ReminderForm/>
     </div>
   )
 }

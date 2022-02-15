@@ -15,7 +15,6 @@
   "devDependencies": {
     "@types/express": "^4.17.13",
     "@types/gapi": "^0.0.41",
-    "@types/http-errors": "^1.8.2",
     "@typescript-eslint/eslint-plugin": "^5.7.0",
     "@typescript-eslint/parser": "^5.7.0",
     "eslint": "^8.5.0",
@@ -25,7 +24,7 @@
   "dependencies": {
     "dotenv": "^14.2.0",
     "express": "^4.17.2",
-    "googleapis": "^92.0.0",
-    "http-errors": "^2.0.0"
+    "express-async-errors": "^3.1.1",
+    "googleapis": "^92.0.0"
   }
 }

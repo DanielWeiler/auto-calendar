@@ -12,8 +12,6 @@ function App() {
   const responseGoogle = (
     response: GoogleLoginResponse | GoogleLoginResponseOffline
   ) => {
-    console.log(response)
-
     const { code } = response
     axios
       .post('/api/signin', { code })
@@ -21,6 +19,8 @@ function App() {
         console.log(response.data)
       })
       .catch((error) => console.log(error.message))
+
+      console.log('signed in')
   }
 
   const responseError = (error: object) => {
@@ -29,21 +29,20 @@ function App() {
 
   return (
     <div>
-      <div className='App'>
+      <div className="App">
         <h1>Google</h1>
       </div>
-        <GoogleLogin
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}
-          buttonText='Sign in with Google'
-          onSuccess={responseGoogle}
-          onFailure={responseError}
-          cookiePolicy={'single_host_origin'}
-          responseType='code'
-          accessType='offline'
-          scope='openid email profile https://www.googleapis.com/auth/calendar'
-        />
-        <ReminderForm/>
+      <GoogleLogin
+        clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}
+        buttonText="Sign in with Google"
+        onSuccess={responseGoogle}
+        onFailure={responseError}
+        cookiePolicy={'single_host_origin'}
+        responseType="code"
+        accessType="offline"
+        scope="openid email profile https://www.googleapis.com/auth/calendar"
+      />
+      <ReminderForm />
     </div>
   )
 }

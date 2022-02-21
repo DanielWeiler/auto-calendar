@@ -1,5 +1,7 @@
 import express from 'express'
 require('express-async-errors')
+import RefreshTokenModel from '../models/refresh_token'
+import { signedInUser } from './signin'
 import oAuth2Client from '../utils/authorization'
 import { google } from 'googleapis'
 const router = express.Router()
@@ -19,14 +21,15 @@ router.post('/create-event', (req: CustomRequest, res) => {
     const { data } = req.body
     const { summary, startDateTime, endDateTime } = data
 
+    const query = await RefreshTokenModel.find({ user: signedInUser })
+    const refreshToken = query[0].refreshToken
     oAuth2Client.setCredentials({
-      // Will eventually make database to store and retrieve user refresh tokens
-      refresh_token: process.env.USER_REFRESH_TOKEN,
+      refresh_token: refreshToken,
     })
 
     const calendar = google.calendar('v3')
     const response = await calendar.events.insert({
-      // see substack and youtube posts
+      // see stack overflow and youtube posts
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       auth: oAuth2Client,

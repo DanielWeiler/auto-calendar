@@ -1,9 +1,5 @@
 import mongoose from 'mongoose'
-
-interface RefreshToken {
-  refreshToken: string
-  user: string
-}
+import { RefreshToken } from '../types'
 
 const refreshTokenSchema = new mongoose.Schema<RefreshToken>({
   refreshToken: String,

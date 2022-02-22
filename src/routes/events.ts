@@ -1,22 +1,13 @@
 import express from 'express'
 require('express-async-errors')
+import { CreateEventRequest } from '../types'
 import RefreshTokenModel from '../models/refresh_token'
 import { signedInUser } from './signin'
 import oAuth2Client from '../utils/authorization'
 import { google } from 'googleapis'
 const router = express.Router()
 
-interface CustomRequest extends express.Request {
-  body: {
-    data: {
-      summary: string
-      startDateTime: Date
-      endDateTime: Date
-    }
-  }
-}
-
-router.post('/create-event', (req: CustomRequest, res) => {
+router.post('/create-event', (req: CreateEventRequest, res) => {
   void (async () => {
     const { data } = req.body
     const { summary, startDateTime, endDateTime } = data

@@ -33,6 +33,7 @@ function App() {
         <h1>Google</h1>
       </div>
       <GoogleLogin
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}
         buttonText="Sign in with Google"
         onSuccess={responseGoogle}

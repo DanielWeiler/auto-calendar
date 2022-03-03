@@ -11,7 +11,7 @@ import './App.css'
 import Menu from './components/Menu'
 import ReminderForm from './components/ReminderForm'
 import WorkingHoursForm from './components/WorkWeekForm'
-import { assertDefined, getUserCurrentDateTime } from './helpers'
+import { assertDefined } from './helpers'
 
 function App() {
   const [user, setUser] = useState('')
@@ -21,17 +21,16 @@ function App() {
   ) => {
     const { code } = response
     code ? setUser(code) : null
+    const userCurrentDateTime = new Date()
 
     axios
-      .post('/api/signin', { code })
+      .post('/api/signin', { code, userCurrentDateTime })
       .then((response) => {
         console.log(response.data)
       })
       .catch((error) => console.log(error.message))
 
     console.log('signed in')
-
-    getUserCurrentDateTime()
   }
 
   const handleLoginFailure = (error: object) => {

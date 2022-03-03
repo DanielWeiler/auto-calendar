@@ -1,14 +1,16 @@
 import express from 'express'
-require('express-async-errors')
+import jwtDecode, { JwtPayload } from 'jwt-decode'
+import RefreshTokenModel from '../models/refresh_token'
 import { SignInRequest } from '../types'
 import oAuth2Client from '../utils/authorization'
 import { assertDefined } from '../utils/helpers'
-import jwtDecode, { JwtPayload } from 'jwt-decode'
-import RefreshTokenModel from '../models/refresh_token'
+require('express-async-errors')
 
 export const router = express.Router()
 
-export let signedInUser: string | undefined = ''
+let signedInUser: string | undefined = ''
+
+export let userCurrentDateTime: string
 
 router.post('/', (req: SignInRequest, _res) => {
   void (async () => {
@@ -23,7 +25,7 @@ router.post('/', (req: SignInRequest, _res) => {
 
     // The refresh token of a user needs to be saved for authorization of
     // actions of a user. It is only given when a new one is needed.
-    console.log('refresh token:')
+    console.log('Signed in! Refresh token:')
     tokens.refresh_token
       ? console.log('--> GIVEN')
       : console.log('--> NOT GIVEN')
@@ -38,5 +40,13 @@ router.post('/', (req: SignInRequest, _res) => {
       }).save()
       console.log('new refresh token saved')
     }
+
+    ({userCurrentDateTime} = req.body)
+
+    const query = await RefreshTokenModel.find({ user: signedInUser })
+    const refreshToken = query[0].refreshToken
+    oAuth2Client.setCredentials({
+      refresh_token: refreshToken,
+    })
   })()
 })

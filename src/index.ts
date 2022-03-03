@@ -1,15 +1,16 @@
-import express, { NextFunction, Request, Response } from 'express'
 import 'dotenv/config'
+import express, { NextFunction, Request, Response } from 'express'
 import mongoose from 'mongoose'
-import { router as signinRouter } from './routes/signin'
 import eventsRouter from './routes/events'
+import { router as signinRouter } from './routes/signin'
 import { HttpException } from './types'
+import { assertDefined } from './utils/helpers'
 const app = express()
 
+assertDefined(process.env.MONGODB_URI)
 console.log('connecting to MongoDB')
 mongoose
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  .connect(process.env.MONGODB_URI!)
+  .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('connected to MongoDB')
   })

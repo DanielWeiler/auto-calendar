@@ -8,31 +8,31 @@ import WorkDayForm from './WorkDayForm'
 const WorkingHoursForm = () => {
   const { register, handleSubmit } = useForm<WorkingHoursFormValues>({
     defaultValues: {
-      Monday: {
+      Mo: {
         startTime: '08:00:00',
         endTime: '17:00:00',
       },
-      Tuesday: {
+      Tu: {
         startTime: '08:00:00',
         endTime: '17:00:00',
       },
-      Wednesday: {
+      We: {
         startTime: '08:00:00',
         endTime: '17:00:00',
       },
-      Thursday: {
+      Th: {
         startTime: '08:00:00',
         endTime: '17:00:00',
       },
-      Friday: {
+      Fr: {
         startTime: '08:00:00',
         endTime: '17:00:00',
       },
-      Saturday: {
+      Sa: {
         startTime: '',
         endTime: '',
       },
-      Sunday: {
+      Su: {
         startTime: '',
         endTime: '',
       },
@@ -54,13 +54,13 @@ const WorkingHoursForm = () => {
   return (
     <div>
       <Form onSubmit={handleSubmit(onSubmit)}>
-        <WorkDayForm day="Monday" register={register} />
-        <WorkDayForm day="Tuesday" register={register} />
-        <WorkDayForm day="Wednesday" register={register} />
-        <WorkDayForm day="Thursday" register={register} />
-        <WorkDayForm day="Friday" register={register} />
-        <WorkDayForm day="Saturday" register={register} />
-        <WorkDayForm day="Sunday" register={register} />
+        <WorkDayForm day="Mo" register={register} />
+        <WorkDayForm day="Tu" register={register} />
+        <WorkDayForm day="We" register={register} />
+        <WorkDayForm day="Th" register={register} />
+        <WorkDayForm day="Fr" register={register} />
+        <WorkDayForm day="Sa" register={register} />
+        <WorkDayForm day="Su" register={register} />
         <Button
           id="create"
           type="submit"

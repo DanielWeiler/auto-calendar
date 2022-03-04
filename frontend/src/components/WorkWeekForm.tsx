@@ -1,7 +1,7 @@
-import axios from 'axios'
 import React from 'react'
 import { Button, Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
+import eventService from '../services/events'
 import { WorkingHoursFormValues } from '../types'
 import WorkDayForm from './WorkDayForm'
 
@@ -40,15 +40,8 @@ const WorkingHoursForm = () => {
   })
 
   const onSubmit = (data: WorkingHoursFormValues) => {
-    console.log(data)
-
-    axios
-      .post('/api/events/set-working-hours', { data })
-      .then((response) => {
-        console.log(response.data)
-        console.log('SUCCESS')
-      })
-      .catch((error) => console.log('ERROR:', error.message))
+    eventService.setWorkingHours('/set-working-hours', { data })
+    console.log('Working hours set successfully')
   }
 
   return (

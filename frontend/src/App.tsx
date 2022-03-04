@@ -1,10 +1,9 @@
-import axios from 'axios'
 import React, { useState } from 'react'
 import {
   GoogleLogin,
   GoogleLoginResponse,
   GoogleLoginResponseOffline,
-  GoogleLogout,
+  GoogleLogout
 } from 'react-google-login'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import './App.css'
@@ -12,6 +11,7 @@ import Menu from './components/Menu'
 import ReminderForm from './components/ReminderForm'
 import WorkingHoursForm from './components/WorkWeekForm'
 import { assertDefined } from './helpers'
+import signInService from './services/signin'
 
 function App() {
   const [user, setUser] = useState('')
@@ -23,13 +23,7 @@ function App() {
     code ? setUser(code) : null
     const userCurrentDateTime = new Date()
 
-    axios
-      .post('/api/signin', { code, userCurrentDateTime })
-      .then((response) => {
-        console.log(response.data)
-      })
-      .catch((error) => console.log(error.message))
-
+    signInService.signIn({ code, userCurrentDateTime })
     console.log('signed in')
   }
 

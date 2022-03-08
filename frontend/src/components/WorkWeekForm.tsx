@@ -8,31 +8,31 @@ import WorkDayForm from './WorkDayForm'
 const WorkingHoursForm = () => {
   const { register, handleSubmit } = useForm<WorkingHoursFormValues>({
     defaultValues: {
-      Mo: {
+      Monday: {
         startTime: '08:00:00',
         endTime: '17:00:00',
       },
-      Tu: {
+      Tuesday: {
         startTime: '08:00:00',
         endTime: '17:00:00',
       },
-      We: {
+      Wednesday: {
         startTime: '08:00:00',
         endTime: '17:00:00',
       },
-      Th: {
+      Thursday: {
         startTime: '08:00:00',
         endTime: '17:00:00',
       },
-      Fr: {
+      Friday: {
         startTime: '08:00:00',
         endTime: '17:00:00',
       },
-      Sa: {
+      Saturday: {
         startTime: '',
         endTime: '',
       },
-      Su: {
+      Sunday: {
         startTime: '',
         endTime: '',
       },
@@ -41,21 +41,20 @@ const WorkingHoursForm = () => {
 
   const onSubmit = (data: WorkingHoursFormValues) => {
     eventService.setWorkingHours('/set-working-hours', { data })
-    console.log('Working hours set successfully')
   }
 
   return (
     <div>
       <Form onSubmit={handleSubmit(onSubmit)}>
-        <WorkDayForm day="Mo" register={register} />
-        <WorkDayForm day="Tu" register={register} />
-        <WorkDayForm day="We" register={register} />
-        <WorkDayForm day="Th" register={register} />
-        <WorkDayForm day="Fr" register={register} />
-        <WorkDayForm day="Sa" register={register} />
-        <WorkDayForm day="Su" register={register} />
+        <WorkDayForm day="Monday" register={register} />
+        <WorkDayForm day="Tuesday" register={register} />
+        <WorkDayForm day="Wednesday" register={register} />
+        <WorkDayForm day="Thursday" register={register} />
+        <WorkDayForm day="Friday" register={register} />
+        <WorkDayForm day="Saturday" register={register} />
+        <WorkDayForm day="Sunday" register={register} />
         <Button
-          id="create"
+          id="save"
           type="submit"
           /* disabled={submitDisabled} */
           /* style={margin} */

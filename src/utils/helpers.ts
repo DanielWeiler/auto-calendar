@@ -13,7 +13,7 @@ export function getNextDayOfTheWeek(
   excludeToday = false,
   refDate = new Date(userCurrentDateTime)
 ) {
-  const dayOfWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].indexOf(dayName)
+  const dayOfWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].indexOf(dayName.slice(0,2))
   if (dayOfWeek < 0) return
   refDate.setHours(0, 0, 0, 0)
   refDate.setDate(

@@ -42,12 +42,12 @@ router.post('/set-working-hours', (req: SetWorkingHoursRequest, _res) => {
               dateTime: new Date(item[1].endTime),
               timeZone: 'Etc/UTC',
             },
-            recurrence: [`RRULE:FREQ=WEEKLY;BYDAY=${item[0]}`],
+            recurrence: [`RRULE:FREQ=WEEKLY;BYDAY=${item[0].slice(0,2)}`],
           },
         })
       }
     })
-    console.log('Working hours', req.body.data)
+    console.log('Working hours:', req.body.data)
   })()
 })
 
@@ -74,9 +74,7 @@ router.post('/create-event', (req: CreateEventRequest, _res) => {
         // see req.body available properties that could help with timeagent
       },
     })
-
     console.log(reminder)
-    console.log('Reminder successfully created')
   })()
 })
 

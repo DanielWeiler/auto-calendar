@@ -1,29 +1,29 @@
 export interface WorkingHoursFormValues {
-  Mo: {
+  Monday: {
     startTime: string
     endTime: string
   }
-  Tu: {
+  Tuesday: {
     startTime: string
     endTime: string
   }
-  We: {
+  Wednesday: {
     startTime: string
     endTime: string
   }
-  Th: {
+  Thursday: {
     startTime: string
     endTime: string
   }
-  Fr: {
+  Friday: {
     startTime: string
     endTime: string
   }
-  Sa: {
+  Saturday: {
     startTime: string
     endTime: string
   }
-  Su: {
+  Sunday: {
     startTime: string
     endTime: string
   }

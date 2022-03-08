@@ -13,7 +13,6 @@ const ReminderForm = () => {
 
   const onSubmit = (data: ReminderFormValues) => {
     eventService.createReminder('/create-event', { data })
-    console.log('Reminder created successfully')
   }
 
   return (

@@ -10,9 +10,9 @@ const WorkDayForm = (props: {
 
   return (
     <div>
-      <Form.Label>{day}</Form.Label>
-      <Form.Control type="time" {...register(`${day}.startTime`)} />
-      <Form.Control type="time" {...register(`${day}.endTime`)} />
+      <Form.Label id="dayName">{day}</Form.Label>
+      <Form.Control id="startTime" type="time" {...register(`${day}.startTime`)} />
+      <Form.Control id="endTime" type="time" {...register(`${day}.endTime`)} />
     </div>
   )
 }

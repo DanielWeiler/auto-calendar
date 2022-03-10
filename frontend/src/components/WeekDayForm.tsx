@@ -1,7 +1,7 @@
 import React from 'react'
 import { Form } from 'react-bootstrap'
 
-const WorkDayForm = (props: {
+const WeekDayForm = (props: {
   day: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   register: any
@@ -16,4 +16,4 @@ const WorkDayForm = (props: {
     </div>
   )
 }
-export default WorkDayForm
+export default WeekDayForm

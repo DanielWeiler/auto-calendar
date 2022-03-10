@@ -3,7 +3,7 @@ import { Button, Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import eventService from '../services/events'
 import { WorkingHoursFormValues } from '../types'
-import WorkDayForm from './WorkDayForm'
+import WorkDayForm from './WeekDayForm'
 
 const WorkingHoursForm = () => {
   const { register, handleSubmit } = useForm<WorkingHoursFormValues>({

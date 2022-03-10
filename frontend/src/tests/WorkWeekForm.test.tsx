@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom'
 import { render, RenderResult } from '@testing-library/react'
 import React from 'react'
-import WorkDayForm from '../components/WorkDayForm'
+import WorkDayForm from '../components/WeekDayForm'
 import WorkingHoursForm from '../components/WorkWeekForm'
 import { assertDefined } from '../helpers'
 

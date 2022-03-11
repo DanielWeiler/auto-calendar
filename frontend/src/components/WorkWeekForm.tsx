@@ -2,11 +2,11 @@ import React from 'react'
 import { Button, Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import eventService from '../services/events'
-import { WorkingHoursFormValues } from '../types'
+import { WeeklyHoursFormValues } from '../types'
 import WorkDayForm from './WeekDayForm'
 
 const WorkingHoursForm = () => {
-  const { register, handleSubmit } = useForm<WorkingHoursFormValues>({
+  const { register, handleSubmit } = useForm<WeeklyHoursFormValues>({
     defaultValues: {
       Monday: {
         startTime: '08:00:00',
@@ -39,7 +39,7 @@ const WorkingHoursForm = () => {
     },
   })
 
-  const onSubmit = (data: WorkingHoursFormValues) => {
+  const onSubmit = (data: WeeklyHoursFormValues) => {
     eventService.setWorkingHours('/set-working-hours', { data })
   }
 

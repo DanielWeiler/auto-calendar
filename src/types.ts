@@ -26,7 +26,7 @@ export interface CreateEventRequest extends express.Request {
   }
 }
 
-export interface SetWorkingHoursRequest extends express.Request {
+export interface SetWeeklyHoursRequest extends express.Request {
   body: {
     data: {
       Monday: {

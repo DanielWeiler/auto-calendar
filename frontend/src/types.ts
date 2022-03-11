@@ -1,4 +1,4 @@
-export interface WorkingHoursFormValues {
+export interface WeeklyHoursFormValues {
   Monday: {
     startTime: string
     endTime: string

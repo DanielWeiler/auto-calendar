@@ -25,20 +25,16 @@ router.post('/', (req: SignInRequest, _res) => {
 
     // The refresh token of a user needs to be saved for authorization of
     // actions of a user. It is only given when a new one is needed.
-    console.log('Signed in! Refresh token:')
-    tokens.refresh_token
-      ? console.log('--> GIVEN')
-      : console.log('--> NOT GIVEN')
-
+    console.log('Signed in!')
     if (tokens.refresh_token !== undefined) {
       await RefreshTokenModel.find({ user: signedInUser }).deleteOne()
-      console.log('any old refresh token deleted')
+      console.log('Any old refresh token deleted')
 
       await new RefreshTokenModel({
         refreshToken: tokens.refresh_token,
         user: signedInUser,
       }).save()
-      console.log('new refresh token saved')
+      console.log('New refresh token saved')
     }
 
     ({userCurrentDateTime} = req.body)

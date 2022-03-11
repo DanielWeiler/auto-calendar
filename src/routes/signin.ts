@@ -10,7 +10,7 @@ export const router = express.Router()
 
 let signedInUser: string | undefined = ''
 
-export let userCurrentDateTime: string
+export let userCurrentDateTime: Date
 
 router.post('/', (req: SignInRequest, _res) => {
   void (async () => {

@@ -1,4 +1,6 @@
+import { google } from 'googleapis'
 import { userCurrentDateTime } from '../routes/signin'
+import oAuth2Client from './authorization'
 
 export function assertDefined<T>(
   value: T | null | undefined
@@ -33,4 +35,15 @@ export function parseTime(time: string) {
   const t = { hours, minutes }
 
   return t
+}
+
+export async function getUserTimeZone() {
+  const calendar = google.calendar('v3')
+
+  const cal = await calendar.calendars.get({
+    auth: oAuth2Client,
+    calendarId: 'primary',
+  })
+  
+  return cal.data.timeZone
 }

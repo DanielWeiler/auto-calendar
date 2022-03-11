@@ -23,6 +23,11 @@ const Menu = (/* { user } */) => {
               Set Working Hours
             </Link>
           </Nav.Link>
+          <Nav.Link href="#" as="span">
+            <Link style={padding} to="/set-unavailable-hours">
+              Set Available Hours
+            </Link>
+          </Nav.Link>
 {/*           <Nav.Link href="#" as="span">
             {user ? (
               <div>

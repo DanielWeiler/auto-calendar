@@ -9,6 +9,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import './App.css'
 import Menu from './components/Menu'
 import ReminderForm from './components/ReminderForm'
+import WeekAvailabilityForm from './components/WeekAvailabilityForm'
 import WorkingHoursForm from './components/WorkWeekForm'
 import { assertDefined } from './helpers'
 import signInService from './services/signin'
@@ -69,6 +70,7 @@ function App() {
             <Routes>
               <Route path="/" element={<ReminderForm />} />
               <Route path="/set-working-hours" element={<WorkingHoursForm />} />
+              <Route path="/set-unavailable-hours" element={<WeekAvailabilityForm />} />
             </Routes>
           </div>
         )}

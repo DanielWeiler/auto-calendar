@@ -5,13 +5,57 @@ import eventService from '../services/events'
 import { ReminderFormValues } from '../types'
 
 const ReminderForm = () => {
-  const { register, handleSubmit } = useForm<ReminderFormValues>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<ReminderFormValues>({
     defaultValues: {
       duration: '30',
     },
   })
 
   const onSubmit = (data: ReminderFormValues) => {
+    const { manualDate, manualTime, deadlineDate, deadlineTime } = data
+    if (manualDate) {
+      if (!manualTime) {
+        setError('manualTime', {
+          type: 'required',
+          message: 'A time is needed for the given date',
+        })
+        return
+      }
+    }
+    if (manualTime) {
+      if (!data.manualDate) {
+        setError('manualDate', {
+          type: 'required',
+          message: 'A date is needed for the given time',
+        })
+        return
+      }
+    }
+
+    if (deadlineDate) {
+      if (!deadlineTime) {
+        setError('deadlineTime', {
+          type: 'required',
+          message: 'A time is needed for the given date',
+        })
+        return
+      }
+    }
+    if (deadlineTime) {
+      if (!deadlineDate) {
+        setError('deadlineDate', {
+          type: 'required',
+          message: 'A date is needed for the given time',
+        })
+        return
+      }
+    }
+
     eventService.createReminder('/create-event', { data })
   }
 
@@ -20,9 +64,10 @@ const ReminderForm = () => {
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Form.Control
           id="summary"
-          {...register('summary', { required: true })}
-          placeholder="summary"
+          {...register('summary', { required: 'Please enter a summary' })}
+          placeholder="Make time in my calendar for..."
         />
+        <p style={{ color: 'red' }}>{errors.summary?.message}</p>
 
         <Form.Label>Duration:</Form.Label>
         <Form.Select
@@ -87,11 +132,13 @@ const ReminderForm = () => {
           type="date"
           {...register('manualDate')}
         />
+        <p style={{ color: 'red' }}>{errors.manualDate?.message}</p>
         <Form.Control
           id="manualStartTime"
           type="time"
           {...register('manualTime')}
         />
+        <p style={{ color: 'red' }}>{errors.manualTime?.message}</p>
 
         <Form.Label>Deadline:</Form.Label>
         <Form.Control
@@ -99,18 +146,15 @@ const ReminderForm = () => {
           type="date"
           {...register('deadlineDate')}
         />
+        <p style={{ color: 'red' }}>{errors.deadlineDate?.message}</p>
         <Form.Control
           id="deadlineTime"
           type="time"
           {...register('deadlineTime')}
         />
+        <p style={{ color: 'red' }}>{errors.deadlineTime?.message}</p>
 
-        <Button
-          id="submit"
-          type="submit"
-          /* disabled={submitDisabled} */
-          /* style={margin} */
-        >
+        <Button id="submit" type="submit">
           Submit
         </Button>
       </Form>

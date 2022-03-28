@@ -28,3 +28,12 @@ export interface WeeklyHoursFormValues {
     endTime: string
   }
 }
+
+export interface ReminderFormValues {
+  summary: string
+  duration: string
+  manualDate: string
+  manualTime: string
+  deadlineDate: string
+  deadlineTime: string
+}

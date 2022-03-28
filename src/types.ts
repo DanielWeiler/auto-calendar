@@ -16,16 +16,6 @@ export interface SignInRequest extends express.Request {
   }
 }
 
-export interface CreateEventRequest extends express.Request {
-  body: {
-    data: {
-      summary: string
-      startDateTime: Date
-      endDateTime: Date
-    }
-  }
-}
-
 export interface SetWeeklyHoursRequest extends express.Request {
   body: {
     data: {
@@ -57,6 +47,19 @@ export interface SetWeeklyHoursRequest extends express.Request {
         startTime: string
         endTime: string
       }
+    }
+  }
+}
+
+export interface CreateEventRequest extends express.Request {
+  body: {
+    data: {
+      summary: string
+      duration: string
+      manualDate: string
+      manualTime: string
+      deadlineDate: string
+      deadlineTime: string
     }
   }
 }

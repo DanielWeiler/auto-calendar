@@ -50,6 +50,13 @@ export async function getUserTimeZone() {
   return cal.data.timeZone
 }
 
+export function addTimeToDate(time: string, date: Date | string) {
+  const dateTime = new Date(date)
+  const t = parseTime(time)
+  dateTime.setHours(t.hours, t.minutes)
+  return dateTime
+}
+
 export async function freeBusy(queryStartTime: string, queryEndTime: string) {
   const availabilityQuery = await calendar.freebusy.query({
     auth: oAuth2Client,

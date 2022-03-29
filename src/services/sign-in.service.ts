@@ -1,7 +1,7 @@
 import jwtDecode, { JwtPayload } from 'jwt-decode'
 import RefreshTokenModel from '../models/refresh_token'
 import { SignInData } from '../types'
-import oAuth2Client from '../utils/authorization'
+import oAuth2Client from '../configs/google-client.config'
 import { assertDefined } from '../utils/helpers'
 require('express-async-errors')
 

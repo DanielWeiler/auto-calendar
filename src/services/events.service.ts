@@ -1,7 +1,7 @@
 import { google } from 'googleapis'
 import { userCurrentDateTime } from '../services/sign-in.service'
 import { EventData, WeeklyHoursData } from '../types'
-import oAuth2Client from '../utils/authorization'
+import oAuth2Client from '../configs/google-client.config'
 import {
   addTimeToDate,
   assertDefined,

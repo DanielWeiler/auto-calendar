@@ -1,8 +1,8 @@
 import 'dotenv/config'
 import express, { NextFunction, Request, Response } from 'express'
 import mongoose from 'mongoose'
-import eventsRouter from './routes/events'
-import { router as signinRouter } from './routes/signin'
+import eventsRouter from './routes/events.route'
+import signinRouter from './routes/sign-in.route'
 import { HttpException } from './types'
 import { assertDefined } from './utils/helpers'
 const app = express()

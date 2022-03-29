@@ -1,5 +1,5 @@
 import { google } from 'googleapis'
-import { userCurrentDateTime } from '../routes/signin'
+import { userCurrentDateTime } from '../controllers/sign-in.controller'
 import oAuth2Client from './authorization'
 
 const calendar = google.calendar('v3')

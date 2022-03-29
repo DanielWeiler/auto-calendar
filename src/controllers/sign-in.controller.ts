@@ -1,4 +1,4 @@
-import express from 'express'
+import { Response } from 'express'
 import jwtDecode, { JwtPayload } from 'jwt-decode'
 import RefreshTokenModel from '../models/refresh_token'
 import { SignInRequest } from '../types'
@@ -6,13 +6,10 @@ import oAuth2Client from '../utils/authorization'
 import { assertDefined } from '../utils/helpers'
 require('express-async-errors')
 
-export const router = express.Router()
-
 let signedInUser: string | undefined = ''
-
 export let userCurrentDateTime: Date
 
-router.post('/', (req: SignInRequest, _res) => {
+function signIn(req: SignInRequest, _res: Response) {
   void (async () => {
     const { code } = req.body
     const { tokens } = await oAuth2Client.getToken(code)
@@ -37,7 +34,7 @@ router.post('/', (req: SignInRequest, _res) => {
       console.log('New refresh token saved')
     }
 
-    ({userCurrentDateTime} = req.body)
+    ({ userCurrentDateTime } = req.body)
 
     const query = await RefreshTokenModel.find({ user: signedInUser })
     const refreshToken = query[0].refreshToken
@@ -45,4 +42,6 @@ router.post('/', (req: SignInRequest, _res) => {
       refresh_token: refreshToken,
     })
   })()
-})
+}
+
+export default { signIn }

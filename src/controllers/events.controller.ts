@@ -1,4 +1,4 @@
-import express from 'express'
+import { Response } from 'express'
 import { google } from 'googleapis'
 import { CreateEventRequest, SetWeeklyHoursRequest } from '../types'
 import oAuth2Client from '../utils/authorization'
@@ -6,15 +6,12 @@ import {
   addTimeToDate,
   assertDefined,
   getNextDayOfTheWeek,
-  getUserTimeZone
+  getUserTimeZone,
 } from '../utils/helpers'
 require('express-async-errors')
-
-const router = express.Router()
-
 const calendar = google.calendar('v3')
 
-router.post('/set-working-hours', (req: SetWeeklyHoursRequest, _res) => {
+function setWorkingHours(req: SetWeeklyHoursRequest, _res: Response) {
   Object.entries(req.body.data).map(async (item) => {
     const date = getNextDayOfTheWeek(item[0])
     assertDefined(date)
@@ -46,9 +43,9 @@ router.post('/set-working-hours', (req: SetWeeklyHoursRequest, _res) => {
       })
     }
   })
-})
+}
 
-router.post('/set-unavailable-hours', (req: SetWeeklyHoursRequest, _res) => {
+function setUnavailableHours(req: SetWeeklyHoursRequest, _res: Response) {
   Object.entries(req.body.data).map(async (item) => {
     const date = getNextDayOfTheWeek(item[0])
     assertDefined(date)
@@ -104,9 +101,9 @@ router.post('/set-unavailable-hours', (req: SetWeeklyHoursRequest, _res) => {
       })
     }
   })
-})
+}
 
-router.post('/create-event', (req: CreateEventRequest, _res) => {
+function createEvent(req: CreateEventRequest, _res: Response) {
   const { data } = req.body
   const {
     /*summary,  duration, */ manualDate,
@@ -115,19 +112,17 @@ router.post('/create-event', (req: CreateEventRequest, _res) => {
 
   if (manualDate && manualTime) {
     // Schedule event at the given time
-
+    //
     // const startTime = addTimeToDate(manualTime, manualDate)
     // schedule event
   }
   /* } else {
           // Schedule event automatically
-
+          //
           // get user current time 
           // const startTime = findAvailability(userCurrentDateTime, duration)
           // schedule event
     } */
+}
 
-
-})
-
-export default router
+export default { setWorkingHours, setUnavailableHours, createEvent }

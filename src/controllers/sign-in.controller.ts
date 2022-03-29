@@ -1,9 +1,16 @@
-import { Response } from 'express'
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { NextFunction, Response } from 'express'
 import signInService from '../services/sign-in.service'
 import { SignInRequest } from '../types'
 
-function signIn(req: SignInRequest, _res: Response) {
-  signInService.signIn(req.body)
+function signIn(req: SignInRequest, res: Response, next: NextFunction) {
+  try {
+    res.json(signInService.signIn(req.body))
+  } catch (error: any) {
+    console.error(`Error while signing in`, error.message)
+    next(error)
+  }
 }
 
 export default { signIn }

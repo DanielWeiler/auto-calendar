@@ -40,14 +40,11 @@ async function freeBusy(queryStartTime: string, queryEndTime: string) {
   return unavailableTimes
 }
 
-function checkTimeDuration(
-  timeSlotStart: string | null | undefined,
-  timeSlotEnd: string | null | undefined
-) {
+function checkTimeDuration(timeSlotStart: Date, timeSlotEnd: Date) {
   assertDefined(timeSlotStart)
   assertDefined(timeSlotEnd)
   const availableTime =
-    (new Date(timeSlotEnd).getTime() - new Date(timeSlotStart).getTime()) /
+    (timeSlotEnd.getTime() - timeSlotStart.getTime()) /
     60000
   return availableTime
 }
@@ -55,7 +52,7 @@ function checkTimeDuration(
 // This function finds the next available time slot on the user's calendar for
 // an event to be scheduled.
 async function findAvailability(
-  givenQueryStartTime: string | Date,
+  givenQueryStartTime: Date,
   eventDuration: number
 ) {
   // Begin loop to iterate over the days from the given start time
@@ -76,27 +73,35 @@ async function findAvailability(
     const queryEndTimeDate = new Date(queryStartTimeDate)
     queryEndTimeDate.setHours(24, 0, 0, 0)
 
-    const queryStartTime = queryStartTimeDate.toISOString()
-    const queryEndTime = queryEndTimeDate.toISOString()
-    const unavailableTimes = await freeBusy(queryStartTime, queryEndTime)
+    const unavailableTimes = await freeBusy(
+      queryStartTimeDate.toISOString(),
+      queryEndTimeDate.toISOString()
+    )
 
     // Check if there are any busy times within the queried time slot
     if (unavailableTimes.length === 0) {
       findingAvailability = false
-      return queryStartTime
+      return queryStartTimeDate
     } else {
       // Begin loop to iterate over the busy times in the <unavailableTimes>
       // array to continue to check for available time within the queried time
       for (let i = 0; i < unavailableTimes.length; i++) {
         const event = unavailableTimes[i]
+        assertDefined(event.start)
+        assertDefined(event.end)
+        const eventStart = new Date(event.start)
+        const eventEnd = new Date(event.end)
 
         // Check if there is enough time for the event from the start of the
         // queried time slot to the start of the first busy time
         if (i === 0) {
-          const availableTime = checkTimeDuration(queryStartTime, event.start)
+          const availableTime = checkTimeDuration(
+            queryStartTimeDate,
+            eventStart
+          )
           if (availableTime >= eventDuration) {
             findingAvailability = false
-            return queryStartTime
+            return queryStartTimeDate
           }
         }
 
@@ -105,20 +110,23 @@ async function findAvailability(
           // If so, check if there is enough time for the event in between
           // these two busy times
           const nextEvent = unavailableTimes[i + 1]
-          const availableTime = checkTimeDuration(event.end, nextEvent.start)
+          assertDefined(nextEvent.start)
+          const nextEventStart = new Date(nextEvent.start)
+
+          const availableTime = checkTimeDuration(eventEnd, nextEventStart)
           if (availableTime >= eventDuration) {
             findingAvailability = false
-            return event.end
+            return eventEnd
           } else {
             continue
           }
         } else {
           // If not, check if there is enough time for the event from the end
           // of the last busy time to the end of the queried time slot
-          const availableTime = checkTimeDuration(event.end, queryEndTime)
+          const availableTime = checkTimeDuration(eventEnd, queryEndTimeDate)
           if (availableTime >= eventDuration) {
             findingAvailability = false
-            return event.end
+            return eventEnd
           }
         }
       }
@@ -134,6 +142,37 @@ async function findAvailability(
     queryDayCount += 1
   }
   return
+}
+
+function getEndTime(date: Date, minutes: number) {
+  return new Date(date.getTime() + minutes * 60000)
+}
+
+async function scheduleEvent(
+  summary: string,
+  startDateTime: Date,
+  endDateTime: Date
+) {
+  await calendar.events.insert({
+    // Formatted in the same way as Google's example for this method.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    auth: oAuth2Client,
+    calendarId: 'primary',
+    requestBody: {
+      summary: summary,
+      colorId: '7',
+      start: {
+        dateTime: startDateTime,
+        timeZone: await getUserTimeZone(),
+      },
+      end: {
+        dateTime: endDateTime,
+        timeZone: await getUserTimeZone(),
+      },
+      // see req.body available properties that could help with timeagent
+    },
+  })
 }
 
 function setWorkingHours(weeklyHours: WeeklyHoursData) {
@@ -228,23 +267,33 @@ function setUnavailableHours(weeklyHours: WeeklyHoursData) {
   })
 }
 
-function createEvent(data: EventData) {
+async function createEvent(data: EventData) {
   const {
-    /*summary, duration,*/ manualDate,
-    manualTime /*deadlineDate, deadlineTime */,
+    summary,
+    duration,
+    manualDate,
+    manualTime,
+    // deadlineDate,
+    // deadlineTime
   } = data
+  const durationNumber = parseInt(duration)
 
   if (manualDate && manualTime) {
     // Schedule event at the given time
 
-    // const startTime = addTimeToDate(manualTime, manualDate)
-    // schedule event
+    const startDateTime = addTimeToDate(manualTime, manualDate)
+    const endDateTime = getEndTime(startDateTime, durationNumber)
+    await scheduleEvent(summary, startDateTime, endDateTime)
   } else {
     // Schedule event automatically
 
-    const startTime = findAvailability(userCurrentDateTime, 30)
-    console.log(startTime)
-    // schedule event
+    const startDateTime = await findAvailability(
+      userCurrentDateTime,
+      durationNumber
+    )
+    assertDefined(startDateTime)
+    const endDateTime = getEndTime(startDateTime, durationNumber)
+    await scheduleEvent(summary, startDateTime, endDateTime)
   }
 }
 

@@ -7,7 +7,7 @@ import express, {
 } from 'express'
 import mongoose from 'mongoose'
 import eventsRouter from './routes/events.route'
-import signinRouter from './routes/sign-in.route'
+import signInRouter from './routes/sign-in.route'
 import { HttpException } from './types'
 import { assertDefined } from './utils/helpers'
 
@@ -39,7 +39,7 @@ mongoose
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
-app.use('/api/signin', signinRouter)
+app.use('/api/sign-in', signInRouter)
 app.use('/api/events', eventsRouter)
 app.use(errorHandler)
 

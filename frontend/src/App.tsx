@@ -12,7 +12,7 @@ import ReminderForm from './components/ReminderForm'
 import WeekAvailabilityForm from './components/WeekAvailabilityForm'
 import WorkingHoursForm from './components/WorkWeekForm'
 import { assertDefined } from './utils/helpers'
-import signInService from './services/signin'
+import signInService from './services/sign-in'
 
 function App() {
   const [user, setUser] = useState('')

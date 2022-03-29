@@ -11,7 +11,7 @@ import Menu from './components/Menu'
 import ReminderForm from './components/ReminderForm'
 import WeekAvailabilityForm from './components/WeekAvailabilityForm'
 import WorkingHoursForm from './components/WorkWeekForm'
-import { assertDefined } from './helpers'
+import { assertDefined } from './utils/helpers'
 import signInService from './services/signin'
 
 function App() {

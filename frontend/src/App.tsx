@@ -22,9 +22,9 @@ function App() {
   ) => {
     const { code } = response
     code ? setUser(code) : null
-    const userCurrentDateTime = new Date()
+    const clientCurrentDateTime = new Date()
 
-    signInService.signIn({ code, userCurrentDateTime })
+    signInService.signIn({ code, clientCurrentDateTime })
     console.log('signed in')
   }
 

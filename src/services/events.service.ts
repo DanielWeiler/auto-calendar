@@ -151,7 +151,8 @@ function getEndTime(date: Date, minutes: number) {
 async function scheduleEvent(
   summary: string,
   startDateTime: Date,
-  endDateTime: Date
+  endDateTime: Date,
+  deadline = ''
 ) {
   await calendar.events.insert({
     // Formatted in the same way as Google's example for this method.
@@ -170,6 +171,7 @@ async function scheduleEvent(
         dateTime: endDateTime,
         timeZone: await getUserTimeZone(),
       },
+      description: deadline
       // see req.body available properties that could help with timeagent
     },
   })
@@ -273,17 +275,23 @@ async function createEvent(data: EventData) {
     duration,
     manualDate,
     manualTime,
-    // deadlineDate,
-    // deadlineTime
+    deadlineDate,
+    deadlineTime
   } = data
   const durationNumber = parseInt(duration)
+
+  let deadline = ''
+  if (deadlineDate && deadlineTime) {
+    const deadlineDateTime = addTimeToDate(deadlineTime, deadlineDate)
+    deadline = `Deadline: ${deadlineDateTime}`
+  }
 
   if (manualDate && manualTime) {
     // Schedule event at the given time
 
     const startDateTime = addTimeToDate(manualTime, manualDate)
     const endDateTime = getEndTime(startDateTime, durationNumber)
-    await scheduleEvent(summary, startDateTime, endDateTime)
+    await scheduleEvent(summary, startDateTime, endDateTime, deadline)
   } else {
     // Schedule event automatically
 
@@ -293,7 +301,7 @@ async function createEvent(data: EventData) {
     )
     assertDefined(startDateTime)
     const endDateTime = getEndTime(startDateTime, durationNumber)
-    await scheduleEvent(summary, startDateTime, endDateTime)
+    await scheduleEvent(summary, startDateTime, endDateTime, deadline)
   }
 }
 

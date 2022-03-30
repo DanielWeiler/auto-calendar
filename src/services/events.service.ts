@@ -44,8 +44,7 @@ function checkTimeDuration(timeSlotStart: Date, timeSlotEnd: Date) {
   assertDefined(timeSlotStart)
   assertDefined(timeSlotEnd)
   const availableTime =
-    (timeSlotEnd.getTime() - timeSlotStart.getTime()) /
-    60000
+    (timeSlotEnd.getTime() - timeSlotStart.getTime()) / 60000
   return availableTime
 }
 
@@ -53,7 +52,8 @@ function checkTimeDuration(timeSlotStart: Date, timeSlotEnd: Date) {
 // an event to be scheduled.
 async function findAvailability(
   givenQueryStartTime: Date,
-  eventDuration: number
+  eventDuration: number,
+  deadline: Date | null = null
 ) {
   // Begin loop to iterate over the days from the given start time
   let findingAvailability = true
@@ -68,6 +68,11 @@ async function findAvailability(
     // beginning of the day on following days
     if (queryDayCount > 0) {
       queryStartTimeDate.setHours(0, 0, 0, 0)
+      if (deadline) {
+        if (queryStartTimeDate > deadline) {
+          break
+        }
+      }
     }
 
     const queryEndTimeDate = new Date(queryStartTimeDate)
@@ -144,6 +149,10 @@ async function findAvailability(
   return
 }
 
+/* function findHighPriorityAvailability() {
+  
+} */
+
 function getEndTime(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60000)
 }
@@ -152,7 +161,7 @@ async function scheduleEvent(
   summary: string,
   startDateTime: Date,
   endDateTime: Date,
-  deadline = ''
+  deadlineMessage = ''
 ) {
   await calendar.events.insert({
     // Formatted in the same way as Google's example for this method.
@@ -171,7 +180,7 @@ async function scheduleEvent(
         dateTime: endDateTime,
         timeZone: await getUserTimeZone(),
       },
-      description: deadline
+      description: deadlineMessage,
       // see req.body available properties that could help with timeagent
     },
   })
@@ -276,14 +285,15 @@ async function createEvent(data: EventData) {
     manualDate,
     manualTime,
     deadlineDate,
-    deadlineTime
+    deadlineTime,
   } = data
   const durationNumber = parseInt(duration)
 
-  let deadline = ''
+  let deadline = null
+  let deadlineMessage = ''
   if (deadlineDate && deadlineTime) {
-    const deadlineDateTime = addTimeToDate(deadlineTime, deadlineDate)
-    deadline = `Deadline: ${deadlineDateTime}`
+    deadline = addTimeToDate(deadlineTime, deadlineDate)
+    deadlineMessage = `Deadline: ${deadline}`
   }
 
   if (manualDate && manualTime) {
@@ -291,17 +301,47 @@ async function createEvent(data: EventData) {
 
     const startDateTime = addTimeToDate(manualTime, manualDate)
     const endDateTime = getEndTime(startDateTime, durationNumber)
-    await scheduleEvent(summary, startDateTime, endDateTime, deadline)
+    await scheduleEvent(summary, startDateTime, endDateTime, deadlineMessage)
   } else {
     // Schedule event automatically
 
     const startDateTime = await findAvailability(
       userCurrentDateTime,
-      durationNumber
+      durationNumber,
+      deadline
     )
-    assertDefined(startDateTime)
-    const endDateTime = getEndTime(startDateTime, durationNumber)
-    await scheduleEvent(summary, startDateTime, endDateTime, deadline)
+
+    // If an available time could be found before the event deadline, the
+    // event is scheduled. If not, a high priority time is queried for the
+    // event before it's deadline.
+    if (startDateTime) {
+      const endDateTime = getEndTime(startDateTime, durationNumber)
+      if (deadline) {
+        // If a day had available time, but the time was past the event
+        // deadline, a high priority time is queried for the event before it's
+        // deadline. Otherwise, the event is scheduled.
+        if (endDateTime > deadline) {
+          // findHighPriorityAvailability()
+          console.log('A high priority time needs to be queried')
+        } else {
+          await scheduleEvent(
+            summary,
+            startDateTime,
+            endDateTime,
+            deadlineMessage
+          )
+        }
+      } else {
+        await scheduleEvent(
+          summary,
+          startDateTime,
+          endDateTime
+        )
+      }
+    } else {
+      // findHighPriorityAvailability()
+      console.log('A high priority time needs to be queried')
+    }
   }
 }
 

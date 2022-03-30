@@ -149,7 +149,40 @@ async function findAvailability(
   return
 }
 
-/* function findHighPriorityAvailability() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function getHighPriorityEventsList(queryStartTime: string, queryEndTime: string) {
+  const eventsList = await calendar.events.list({
+    // Formatted in the same way as Google's example for this method.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    auth: oAuth2Client,
+    calendarId: 'primary',
+    orderBy: 'startTime',
+    singleEvents: true,
+    timeMin: queryStartTime,
+    timeMax: queryEndTime
+  })
+  assertDefined(eventsList.data.items)
+  console.log(eventsList.data.items)
+
+  const unavailableTimes = []
+  for (let i = 0; i < eventsList.data.items.length; i++) {
+    const event = eventsList.data.items[i]
+
+    // If an event has a description, it is an indicator that it is a high priority event.
+    if (event.description) {
+      unavailableTimes.push(event)
+    }
+  }
+  
+  return unavailableTimes
+}
+
+/* async function findHighPriorityAvailability(
+  givenQueryStartTime: Date,
+  //eventDuration: number,
+  deadline: Date
+) {
   
 } */
 
@@ -213,6 +246,7 @@ function setWorkingHours(weeklyHours: WeeklyHoursData) {
             dateTime: endWorkingHours,
             timeZone: await getUserTimeZone(),
           },
+          description: 'Working hours',
           recurrence: [`RRULE:FREQ=WEEKLY;BYDAY=${item[0].slice(0, 2)}`],
         },
       })
@@ -250,6 +284,7 @@ function setUnavailableHours(weeklyHours: WeeklyHoursData) {
             dateTime: startAvailableHours,
             timeZone: await getUserTimeZone(),
           },
+          description: 'Unavailable hours',
           recurrence: [`RRULE:FREQ=WEEKLY;BYDAY=${item[0].slice(0, 2)}`],
         },
       })
@@ -271,6 +306,7 @@ function setUnavailableHours(weeklyHours: WeeklyHoursData) {
             dateTime: new Date(endUnavailableHours),
             timeZone: await getUserTimeZone(),
           },
+          description: 'Unavailable hours',
           recurrence: [`RRULE:FREQ=WEEKLY;BYDAY=${item[0].slice(0, 2)}`],
         },
       })
@@ -301,6 +337,9 @@ async function createEvent(data: EventData) {
 
     const startDateTime = addTimeToDate(manualTime, manualDate)
     const endDateTime = getEndTime(startDateTime, durationNumber)
+    if (!deadlineMessage) {
+      deadlineMessage = 'Manually scheduled'
+    }
     await scheduleEvent(summary, startDateTime, endDateTime, deadlineMessage)
   } else {
     // Schedule event automatically
@@ -332,11 +371,7 @@ async function createEvent(data: EventData) {
           )
         }
       } else {
-        await scheduleEvent(
-          summary,
-          startDateTime,
-          endDateTime
-        )
+        await scheduleEvent(summary, startDateTime, endDateTime)
       }
     } else {
       // findHighPriorityAvailability()

@@ -19,7 +19,7 @@ async function getUserTimeZone() {
   return cal.data.timeZone
 }
 
-async function freeBusy(queryStartTime: string, queryEndTime: string) {
+async function getAllBusyTimes(queryStartTime: string, queryEndTime: string) {
   const availabilityQuery = await calendar.freebusy.query({
     auth: oAuth2Client,
     requestBody: {
@@ -108,7 +108,7 @@ async function findHighPriorityAvailability(
   queryEndTimeDate: Date,
   eventDuration: number
 ) {
-  const unavailableTimes = await getHighPriorityEventsList(
+  const unavailableTimes = await getHighPriorityBusyTimes(
     queryStartTimeDate.toISOString(),
     queryEndTimeDate.toISOString()
   )
@@ -175,7 +175,7 @@ async function findLowPriorityAvailability(
   queryEndTimeDate: Date,
   eventDuration: number
 ) {
-  const unavailableTimes = await freeBusy(
+  const unavailableTimes = await getAllBusyTimes(
     queryStartTimeDate.toISOString(),
     queryEndTimeDate.toISOString()
   )
@@ -256,7 +256,7 @@ async function getDayAvailability(
   }
 }
 
-async function getHighPriorityEventsList(
+async function getHighPriorityBusyTimes(
   queryStartTime: string,
   queryEndTime: string
 ) {

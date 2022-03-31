@@ -1,7 +1,7 @@
 import { google } from 'googleapis'
+import oAuth2Client from '../configs/google-client.config'
 import { userCurrentDateTime } from '../services/sign-in.service'
 import { EventData, WeeklyHoursData } from '../types'
-import oAuth2Client from '../configs/google-client.config'
 import {
   addTimeToDate,
   assertDefined,
@@ -213,8 +213,8 @@ async function getUserTimeZone() {
   return cal.data.timeZone
 }
 
-// This function finds the next available time slot on the user's calendar for
-// an event to be scheduled.
+// Finds the next available time slot on the user's calendar for an event to be
+// scheduled
 async function findAvailability(
   givenQueryStartTime: Date,
   eventDuration: number,
@@ -268,6 +268,7 @@ async function findAvailability(
   return
 }
 
+// Finds the next available time slot for the day
 async function getDayAvailability(
   highPriority: boolean,
   queryStartTimeDate: Date,
@@ -292,6 +293,7 @@ async function getDayAvailability(
   }
 }
 
+// Finds the next high priority available time during the queried time
 async function findHighPriorityAvailability(
   queryStartTimeDate: Date,
   queryEndTimeDate: Date,
@@ -301,7 +303,6 @@ async function findHighPriorityAvailability(
     queryStartTimeDate.toISOString(),
     queryEndTimeDate.toISOString()
   )
-  console.log('query is hp')
 
   // Check if there are any busy times within the queried time slot
   if (busyTimes.length === 0) {
@@ -319,10 +320,7 @@ async function findHighPriorityAvailability(
       // Check if there is enough time for the event from the start of the
       // queried time slot to the start of the first busy time
       if (i === 0) {
-        const availableTime = checkTimeDuration(
-          queryStartTimeDate,
-          eventStart
-        )
+        const availableTime = checkTimeDuration(queryStartTimeDate, eventStart)
         if (availableTime >= eventDuration) {
           return queryStartTimeDate
         }
@@ -355,6 +353,7 @@ async function findHighPriorityAvailability(
   return
 }
 
+// Finds the next available time during the queried time
 async function findLowPriorityAvailability(
   queryStartTimeDate: Date,
   queryEndTimeDate: Date,
@@ -364,7 +363,6 @@ async function findLowPriorityAvailability(
     queryStartTimeDate.toISOString(),
     queryEndTimeDate.toISOString()
   )
-  console.log('query is lp')
 
   // Check if there are any busy times within the queried time slot
   if (busyTimes.length === 0) {
@@ -382,10 +380,7 @@ async function findLowPriorityAvailability(
       // Check if there is enough time for the event from the start of the
       // queried time slot to the start of the first busy time
       if (i === 0) {
-        const availableTime = checkTimeDuration(
-          queryStartTimeDate,
-          eventStart
-        )
+        const availableTime = checkTimeDuration(queryStartTimeDate, eventStart)
         if (availableTime >= eventDuration) {
           return queryStartTimeDate
         }
@@ -415,9 +410,11 @@ async function findLowPriorityAvailability(
       }
     }
   }
-  return 
+  return
 }
 
+// Queries the times of high priority events in the calendar during the given
+// query time
 async function getHighPriorityBusyTimes(
   queryStartTime: string,
   queryEndTime: string
@@ -439,7 +436,8 @@ async function getHighPriorityBusyTimes(
   for (let i = 0; i < eventsList.data.items.length; i++) {
     const event = eventsList.data.items[i]
 
-    // If an event has a description, it is an indicator that it is a high priority event.
+    // If an event has a description, it is an indicator that it is a high
+    // priority event.
     if (event.description) {
       busyTimes.push(event)
     }
@@ -448,6 +446,7 @@ async function getHighPriorityBusyTimes(
   return busyTimes
 }
 
+// Queries the times of events during the given query time
 async function getAllBusyTimes(queryStartTime: string, queryEndTime: string) {
   const availabilityQuery = await calendar.freebusy.query({
     auth: oAuth2Client,
@@ -469,6 +468,7 @@ async function getAllBusyTimes(queryStartTime: string, queryEndTime: string) {
   return busyTimes
 }
 
+// Checks the duration of time between the two given times
 function checkTimeDuration(timeSlotStart: Date, timeSlotEnd: Date) {
   assertDefined(timeSlotStart)
   assertDefined(timeSlotEnd)

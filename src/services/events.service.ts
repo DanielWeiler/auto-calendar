@@ -34,10 +34,10 @@ async function getAllBusyTimes(queryStartTime: string, queryEndTime: string) {
     },
   })
 
-  const unavailableTimes = availabilityQuery.data.calendars?.primary.busy
-  assertDefined(unavailableTimes)
+  const busyTimes = availabilityQuery.data.calendars?.primary.busy
+  assertDefined(busyTimes)
 
-  return unavailableTimes
+  return busyTimes
 }
 
 function checkTimeDuration(timeSlotStart: Date, timeSlotEnd: Date) {
@@ -108,21 +108,20 @@ async function findHighPriorityAvailability(
   queryEndTimeDate: Date,
   eventDuration: number
 ) {
-  const unavailableTimes = await getHighPriorityBusyTimes(
+  const busyTimes = await getHighPriorityBusyTimes(
     queryStartTimeDate.toISOString(),
     queryEndTimeDate.toISOString()
   )
   console.log('query is hp')
 
   // Check if there are any busy times within the queried time slot
-  if (unavailableTimes.length === 0) {
-    //rescheduleConflictingEvents!!!!!!!!!!!!!!!!!!!!!!!! HAVE OUTSIDE AFTER THIS FUNC "if was HP then reschedule" and in reschedule check if it is really needed
+  if (busyTimes.length === 0) {
     return queryStartTimeDate
   } else {
-    // Begin loop to iterate over the busy times in the <unavailableTimes>
+    // Begin loop to iterate over the busy times in the <busyTimes>
     // array to continue to check for available time within the queried time
-    for (let i = 0; i < unavailableTimes.length; i++) {
-      const event = unavailableTimes[i]
+    for (let i = 0; i < busyTimes.length; i++) {
+      const event = busyTimes[i]
       assertDefined(event.start?.dateTime)
       assertDefined(event.end?.dateTime)
       const eventStart = new Date(event.start.dateTime)
@@ -136,22 +135,20 @@ async function findHighPriorityAvailability(
           eventStart
         )
         if (availableTime >= eventDuration) {
-          //rescheduleConflictingEvents!!!!!!!!!!!!!!!!!!!!!!!!
           return queryStartTimeDate
         }
       }
 
-      // Check if there is another busy time in the <unavailableTimes> array
-      if (unavailableTimes[i + 1]) {
+      // Check if there is another busy time in the <busyTimes> array
+      if (busyTimes[i + 1]) {
         // If so, check if there is enough time for the event in between
         // these two busy times
-        const nextEvent = unavailableTimes[i + 1]
+        const nextEvent = busyTimes[i + 1]
         assertDefined(nextEvent.start?.dateTime)
         const nextEventStart = new Date(nextEvent.start.dateTime)
 
         const availableTime = checkTimeDuration(eventEnd, nextEventStart)
         if (availableTime >= eventDuration) {
-          //rescheduleConflictingEvents!!!!!!!!!!!!!!!!!!!!!!!!
           return eventEnd
         } else {
           continue
@@ -161,7 +158,6 @@ async function findHighPriorityAvailability(
         // of the last busy time to the end of the queried time slot
         const availableTime = checkTimeDuration(eventEnd, queryEndTimeDate)
         if (availableTime >= eventDuration) {
-          //rescheduleConflictingEvents!!!!!!!!!!!!!!!!!!!!!!!!
           return eventEnd
         }
       }
@@ -175,20 +171,20 @@ async function findLowPriorityAvailability(
   queryEndTimeDate: Date,
   eventDuration: number
 ) {
-  const unavailableTimes = await getAllBusyTimes(
+  const busyTimes = await getAllBusyTimes(
     queryStartTimeDate.toISOString(),
     queryEndTimeDate.toISOString()
   )
   console.log('query is lp')
 
   // Check if there are any busy times within the queried time slot
-  if (unavailableTimes.length === 0) {
+  if (busyTimes.length === 0) {
     return queryStartTimeDate
   } else {
-    // Begin loop to iterate over the busy times in the <unavailableTimes>
+    // Begin loop to iterate over the busy times in the <busyTimes>
     // array to continue to check for available time within the queried time
-    for (let i = 0; i < unavailableTimes.length; i++) {
-      const event = unavailableTimes[i]
+    for (let i = 0; i < busyTimes.length; i++) {
+      const event = busyTimes[i]
       assertDefined(event.start)
       assertDefined(event.end)
       const eventStart = new Date(event.start)
@@ -206,11 +202,11 @@ async function findLowPriorityAvailability(
         }
       }
 
-      // Check if there is another busy time in the <unavailableTimes> array
-      if (unavailableTimes[i + 1]) {
+      // Check if there is another busy time in the <busyTimes> array
+      if (busyTimes[i + 1]) {
         // If so, check if there is enough time for the event in between
         // these two busy times
-        const nextEvent = unavailableTimes[i + 1]
+        const nextEvent = busyTimes[i + 1]
         assertDefined(nextEvent.start)
         const nextEventStart = new Date(nextEvent.start)
 
@@ -245,6 +241,7 @@ async function getDayAvailability(
       queryEndTimeDate,
       eventDuration
     )
+    //rescheduleConflictingEvents() and check if needed
     return startDateTime
   } else {
     const startDateTime = await findLowPriorityAvailability(
@@ -273,17 +270,17 @@ async function getHighPriorityBusyTimes(
   })
   assertDefined(eventsList.data.items)
 
-  const unavailableTimes = []
+  const busyTimes = []
   for (let i = 0; i < eventsList.data.items.length; i++) {
     const event = eventsList.data.items[i]
 
     // If an event has a description, it is an indicator that it is a high priority event.
     if (event.description) {
-      unavailableTimes.push(event)
+      busyTimes.push(event)
     }
   }
 
-  return unavailableTimes
+  return busyTimes
 }
 
 /* async function findHighPriorityAvailability(

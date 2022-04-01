@@ -188,53 +188,6 @@ function getEndTime(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60000)
 }
 
-async function findAvailabilityBeforeDeadline(
-  userCurrentDateTime: Date,
-  durationNumber: number,
-  deadline: Date,
-  summary: string,
-  deadlineMessage: string
-) {
-  const highpriority = true
-  const startDateTime = await findAvailability(
-    userCurrentDateTime,
-    durationNumber,
-    deadline,
-    highpriority
-  )
-
-  // If an available time could be found before the deadline, the event is
-  // scheduled.
-  if (startDateTime) {
-    const endDateTime = getEndTime(startDateTime, durationNumber)
-    // If the available time found on the day of the deadline is past the
-    // time of the deadline, ...
-    if (endDateTime > deadline) {
-      console.log(
-        'endDateTime is after deadline: send warning that no hp time could be found'
-      )
-    } else {
-      await scheduleEvent(summary, startDateTime, endDateTime, deadlineMessage)
-      // Conflicting low priority events need to be rescheduled. This time
-      // slot will have low priority events because a high priority event
-      // cannot be scheduled during other high priority events and if the time
-      // slot had been empty then this event would have been scheduled on a
-      // previous attempt.
-      //rescheduleConflictingEvents()
-      console.log('conflicting events to reschedule?')
-    }
-  }
-  // If not, it is because either 1) every time slot between now and the
-  // deadline was already filled with a high priority event or 2) there was not
-  // enough time between high priority events to schedule this event.
-  // Therefore...
-  else {
-    console.log(
-      'queryDayCount has past deadline: send warning that no hp time could be found'
-    )
-  }
-}
-
 async function scheduleEvent(
   summary: string,
   startDateTime: Date,
@@ -319,6 +272,53 @@ async function findAvailability(
     queryDayCount += 1
   }
   return
+}
+
+async function findAvailabilityBeforeDeadline(
+  userCurrentDateTime: Date,
+  durationNumber: number,
+  deadline: Date,
+  summary: string,
+  deadlineMessage: string
+) {
+  const highpriority = true
+  const startDateTime = await findAvailability(
+    userCurrentDateTime,
+    durationNumber,
+    deadline,
+    highpriority
+  )
+
+  // If an available time could be found before the deadline, the event is
+  // scheduled.
+  if (startDateTime) {
+    const endDateTime = getEndTime(startDateTime, durationNumber)
+    // If the available time found on the day of the deadline is past the
+    // time of the deadline, ...
+    if (endDateTime > deadline) {
+      console.log(
+        'endDateTime is after deadline: send warning that no hp time could be found'
+      )
+    } else {
+      await scheduleEvent(summary, startDateTime, endDateTime, deadlineMessage)
+      // Conflicting low priority events need to be rescheduled. This time
+      // slot will have low priority events because a high priority event
+      // cannot be scheduled during other high priority events and if the time
+      // slot had been empty then this event would have been scheduled on a
+      // previous attempt.
+      //rescheduleConflictingEvents()
+      console.log('conflicting events to reschedule?')
+    }
+  }
+  // If not, it is because either 1) every time slot between now and the
+  // deadline was already filled with a high priority event or 2) there was not
+  // enough time between high priority events to schedule this event.
+  // Therefore...
+  else {
+    console.log(
+      'queryDayCount has past deadline: send warning that no hp time could be found'
+    )
+  }
 }
 
 // Finds the next available time slot for the day

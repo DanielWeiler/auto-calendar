@@ -123,36 +123,39 @@ async function createEvent(data: EventData) {
     deadlineMessage = `Deadline: ${deadline}`
   }
 
-  if (manualDate && manualTime) {
-    // Schedule event at the given time
-
+  // Schedule event at the given time
+  if (manualDate && manualTime) { 
     const startDateTime = addTimeToDate(manualTime, manualDate)
     const endDateTime = getEndTime(startDateTime, durationNumber)
     if (!deadlineMessage) {
       deadlineMessage = 'Manually scheduled'
     }
     await scheduleEvent(summary, startDateTime, endDateTime, deadlineMessage)
-  } else {
-    // Schedule event automatically
-
+  } 
+  // Schedule event automatically
+  else {
     const startDateTime = await findAvailability(
       userCurrentDateTime,
       durationNumber,
       deadline
     )
 
-    // If an available time could be found before the event deadline, the
-    // event is scheduled. If not, a high priority time is queried for the
-    // event before it's deadline.
+    // If an available time could be found, the event is scheduled.
     if (startDateTime) {
       const endDateTime = getEndTime(startDateTime, durationNumber)
+      // It must be checked if the available time is before the event deadline
       if (deadline) {
-        // If a day had available time, but the time was past the event
-        // deadline, a high priority time is queried for the event before it's
-        // deadline. Otherwise, the event is scheduled.
+        // If the available time found on this day is past the event deadline, 
+        // a high priority available time is queried for the event before it's
+        // deadline.
         if (endDateTime > deadline) {
-          // findHighPriorityAvailability()
-          console.log('A high priority time needs to be queried')
+          await findAvailabilityBeforeDeadline(
+            userCurrentDateTime,
+            durationNumber,
+            deadline,
+            summary,
+            deadlineMessage
+          )
         } else {
           await scheduleEvent(
             summary,
@@ -164,15 +167,53 @@ async function createEvent(data: EventData) {
       } else {
         await scheduleEvent(summary, startDateTime, endDateTime)
       }
-    } else {
-      // findHighPriorityAvailability()
-      console.log('A high priority time needs to be queried')
+    }
+    // If not, it is because a time could not be found before the given event 
+    // deadline and a high priority available time is queried for the event 
+    // before it's deadline.
+    else {
+      assertDefined(deadline)
+      await findAvailabilityBeforeDeadline(
+        userCurrentDateTime,
+        durationNumber,
+        deadline,
+        summary,
+        deadlineMessage
+      )
     }
   }
 }
 
 function getEndTime(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60000)
+}
+
+async function findAvailabilityBeforeDeadline(
+  userCurrentDateTime: Date,
+  durationNumber: number,
+  deadline: Date,
+  summary: string,
+  deadlineMessage: string
+) {
+  const highpriority = true
+
+  const startDateTime = await findAvailability(
+    userCurrentDateTime,
+    durationNumber,
+    deadline,
+    highpriority
+  )
+
+  if (startDateTime) {
+    const endDateTime = getEndTime(startDateTime, durationNumber)
+    if (endDateTime > deadline) {
+      console.log('send warning that no time could be found')
+    } else {
+      await scheduleEvent(summary, startDateTime, endDateTime, deadlineMessage)
+    }
+  } else {
+    console.log('send warning that no time could be found')
+  }
 }
 
 async function scheduleEvent(
@@ -235,6 +276,8 @@ async function findAvailability(
     if (queryDayCount > 0) {
       queryStartTimeDate.setHours(0, 0, 0, 0)
       if (deadline) {
+        // Ends the loop as soon as the current day being queried is past the 
+        // event deadline
         if (queryStartTimeDate > deadline) {
           break
         }
@@ -254,15 +297,6 @@ async function findAvailability(
       findingAvailability = false
       return availableTime
     }
-
-    if (queryDayCount === 180) {
-      console.log(
-        'Message for user: "Reminder could not be scheduled. No available \
-          time could be found in the next 6 months"'
-      )
-      break
-    }
-
     queryDayCount += 1
   }
   return

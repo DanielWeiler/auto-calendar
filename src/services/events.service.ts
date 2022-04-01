@@ -124,14 +124,14 @@ async function createEvent(data: EventData) {
   }
 
   // Schedule event at the given time
-  if (manualDate && manualTime) { 
+  if (manualDate && manualTime) {
     const startDateTime = addTimeToDate(manualTime, manualDate)
     const endDateTime = getEndTime(startDateTime, durationNumber)
     if (!deadlineMessage) {
       deadlineMessage = 'Manually scheduled'
     }
     await scheduleEvent(summary, startDateTime, endDateTime, deadlineMessage)
-  } 
+  }
   // Schedule event automatically
   else {
     const startDateTime = await findAvailability(
@@ -145,9 +145,9 @@ async function createEvent(data: EventData) {
       const endDateTime = getEndTime(startDateTime, durationNumber)
       // It must be checked if the available time is before the event deadline
       if (deadline) {
-        // If the available time found on this day is past the event deadline, 
-        // a high priority available time is queried for the event before it's
-        // deadline.
+        // If the available time found on the day of the deadline is past the
+        // time of the deadline, a high priority available time is queried for
+        // the event before it's deadline.
         if (endDateTime > deadline) {
           await findAvailabilityBeforeDeadline(
             userCurrentDateTime,
@@ -168,8 +168,8 @@ async function createEvent(data: EventData) {
         await scheduleEvent(summary, startDateTime, endDateTime)
       }
     }
-    // If not, it is because a time could not be found before the given event 
-    // deadline and a high priority available time is queried for the event 
+    // If not, it is because a time could not be found before the given event
+    // deadline and a high priority available time is queried for the event
     // before it's deadline.
     else {
       assertDefined(deadline)
@@ -196,7 +196,6 @@ async function findAvailabilityBeforeDeadline(
   deadlineMessage: string
 ) {
   const highpriority = true
-
   const startDateTime = await findAvailability(
     userCurrentDateTime,
     durationNumber,
@@ -204,15 +203,35 @@ async function findAvailabilityBeforeDeadline(
     highpriority
   )
 
+  // If an available time could be found before the deadline, the event is
+  // scheduled.
   if (startDateTime) {
     const endDateTime = getEndTime(startDateTime, durationNumber)
+    // If the available time found on the day of the deadline is past the
+    // time of the deadline, ...
     if (endDateTime > deadline) {
-      console.log('send warning that no time could be found')
+      console.log(
+        'endDateTime is after deadline: send warning that no hp time could be found'
+      )
     } else {
       await scheduleEvent(summary, startDateTime, endDateTime, deadlineMessage)
+      // Conflicting low priority events need to be rescheduled. This time
+      // slot will have low priority events because a high priority event
+      // cannot be scheduled during other high priority events and if the time
+      // slot had been empty then this event would have been scheduled on a
+      // previous attempt.
+      //rescheduleConflictingEvents()
+      console.log('conflicting events to reschedule?')
     }
-  } else {
-    console.log('send warning that no time could be found')
+  }
+  // If not, it is because either 1) every time slot between now and the
+  // deadline was already filled with a high priority event or 2) there was not
+  // enough time between high priority events to schedule this event.
+  // Therefore...
+  else {
+    console.log(
+      'queryDayCount has past deadline: send warning that no hp time could be found'
+    )
   }
 }
 
@@ -276,7 +295,7 @@ async function findAvailability(
     if (queryDayCount > 0) {
       queryStartTimeDate.setHours(0, 0, 0, 0)
       if (deadline) {
-        // Ends the loop as soon as the current day being queried is past the 
+        // Ends the loop as soon as the current day being queried is past the
         // event deadline
         if (queryStartTimeDate > deadline) {
           break
@@ -315,7 +334,6 @@ async function getDayAvailability(
       queryEndTimeDate,
       eventDuration
     )
-    //rescheduleConflictingEvents() and check if needed
     return startDateTime
   } else {
     const startDateTime = await findLowPriorityAvailability(

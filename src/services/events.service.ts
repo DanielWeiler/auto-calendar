@@ -470,22 +470,11 @@ async function getHighPriorityBusyTimes(
   queryStartTime: string,
   queryEndTime: string
 ) {
-  const eventsList = await calendar.events.list({
-    // Formatted in the same way as Google's example for this method.
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    auth: oAuth2Client,
-    calendarId: 'primary',
-    orderBy: 'startTime',
-    singleEvents: true,
-    timeMin: queryStartTime,
-    timeMax: queryEndTime,
-  })
-  assertDefined(eventsList.data.items)
+  const events = await getEventsList(queryStartTime, queryEndTime)
 
   const busyTimes = []
-  for (let i = 0; i < eventsList.data.items.length; i++) {
-    const event = eventsList.data.items[i]
+  for (let i = 0; i < events.length; i++) {
+    const event = events[i]
 
     // If an event has a description, it is an indicator that it is a high
     // priority event.
@@ -528,13 +517,29 @@ function checkTimeDuration(timeSlotStart: Date, timeSlotEnd: Date) {
   return availableTime
 }
 
+async function getEventsList(queryStartTime: string, queryEndTime: string) {
+  const eventsList = await calendar.events.list({
+    // Formatted in the same way as Google's example for this method.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    auth: oAuth2Client,
+    calendarId: 'primary',
+    singleEvents: true,
+    timeMin: queryStartTime,
+    timeMax: queryEndTime,
+  })
+  assertDefined(eventsList.data.items)
+
+  return eventsList.data.items
+}
+
 // When a high priority event is scheduled over low priority events, this
 // function is called.
 async function rescheduleConflictingEvents(
   highPriorityEventStart: string,
   highPriorityEventEnd: string
 ) {
-  const conflictingEvents = await getConflictingEvents(
+  const conflictingEvents = await getEventsList(
     highPriorityEventStart,
     highPriorityEventEnd
   )
@@ -578,25 +583,6 @@ async function rescheduleConflictingEvents(
       },
     })
   }
-}
-
-async function getConflictingEvents(
-  queryStartTime: string,
-  queryEndTime: string
-) {
-  const eventsList = await calendar.events.list({
-    // Formatted in the same way as Google's example for this method.
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    auth: oAuth2Client,
-    calendarId: 'primary',
-    singleEvents: true,
-    timeMin: queryStartTime,
-    timeMax: queryEndTime,
-  })
-  assertDefined(eventsList.data.items)
-
-  return eventsList.data.items
 }
 
 export default { setWorkingHours, setUnavailableHours, createEvent }

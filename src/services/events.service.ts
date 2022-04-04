@@ -237,31 +237,31 @@ async function findAvailability(
   let findingAvailability = true
   let queryDayCount = 0
   while (findingAvailability) {
-    const queryStartTimeDate = new Date(givenQueryStartTime)
+    const queryStartTime = new Date(givenQueryStartTime)
 
     // Set <queryStartTime> to current day being queried for availability
-    queryStartTimeDate.setDate(queryStartTimeDate.getDate() + queryDayCount)
+    queryStartTime.setDate(queryStartTime.getDate() + queryDayCount)
 
     // Enables searching from the given time on the given day and from the
     // beginning of the day on following days
     if (queryDayCount > 0) {
-      queryStartTimeDate.setHours(0, 0, 0, 0)
+      queryStartTime.setHours(0, 0, 0, 0)
       if (deadline) {
         // Ends the loop as soon as the current day being queried is past the
         // event deadline
-        if (queryStartTimeDate > deadline) {
+        if (queryStartTime > deadline) {
           break
         }
       }
     }
 
-    const queryEndTimeDate = new Date(queryStartTimeDate)
-    queryEndTimeDate.setHours(24, 0, 0, 0)
+    const queryEndTime = new Date(queryStartTime)
+    queryEndTime.setHours(24, 0, 0, 0)
 
     const availableTime = await getDayAvailability(
       highPriority,
-      queryStartTimeDate,
-      queryEndTimeDate,
+      queryStartTime,
+      queryEndTime,
       eventDuration
     )
     if (availableTime) {
@@ -327,21 +327,21 @@ async function findAvailabilityBeforeDeadline(
 // Finds the next available time slot for the day
 async function getDayAvailability(
   highPriority: boolean,
-  queryStartTimeDate: Date,
-  queryEndTimeDate: Date,
+  queryStartTime: Date,
+  queryEndTime: Date,
   eventDuration: number
 ) {
   if (highPriority) {
     const startDateTime = await findHighPriorityAvailability(
-      queryStartTimeDate,
-      queryEndTimeDate,
+      queryStartTime,
+      queryEndTime,
       eventDuration
     )
     return startDateTime
   } else {
     const startDateTime = await findLowPriorityAvailability(
-      queryStartTimeDate,
-      queryEndTimeDate,
+      queryStartTime,
+      queryEndTime,
       eventDuration
     )
     return startDateTime
@@ -353,18 +353,18 @@ async function getDayAvailability(
 // event times are considered busy and low priority event times are considered 
 // available. 
 async function findHighPriorityAvailability(
-  queryStartTimeDate: Date,
-  queryEndTimeDate: Date,
+  queryStartTime: Date,
+  queryEndTime: Date,
   eventDuration: number
 ) {
   const busyTimes = await getHighPriorityEvents(
-    queryStartTimeDate.toISOString(),
-    queryEndTimeDate.toISOString()
+    queryStartTime.toISOString(),
+    queryEndTime.toISOString()
   )
 
   // Check if there are any busy times within the queried time slot
   if (busyTimes.length === 0) {
-    return queryStartTimeDate
+    return queryStartTime
   } else {
     // Begin loop to iterate over the busy times in the <busyTimes> array to 
     // continue to check for available time within the queried time
@@ -378,9 +378,9 @@ async function findHighPriorityAvailability(
       // Check if there is enough time for the event from the start of the
       // queried time slot to the start of the first busy time
       if (i === 0) {
-        const availableTime = checkTimeDuration(queryStartTimeDate, eventStart)
+        const availableTime = checkTimeDuration(queryStartTime, eventStart)
         if (availableTime >= eventDuration) {
-          return queryStartTimeDate
+          return queryStartTime
         }
       }
 
@@ -399,7 +399,7 @@ async function findHighPriorityAvailability(
       } else {
         // If not, check if there is enough time for the event from the end
         // of the last busy time to the end of the queried time slot
-        const availableTime = checkTimeDuration(eventEnd, queryEndTimeDate)
+        const availableTime = checkTimeDuration(eventEnd, queryEndTime)
         if (availableTime >= eventDuration) {
           return eventEnd
         }
@@ -412,18 +412,18 @@ async function findHighPriorityAvailability(
 // Finds the next empty time slot within the queried time that is long enough
 // for the event being scheduled
 async function findLowPriorityAvailability(
-  queryStartTimeDate: Date,
-  queryEndTimeDate: Date,
+  queryStartTime: Date,
+  queryEndTime: Date,
   eventDuration: number
 ) {
   const busyTimes = await getAllBusyTimes(
-    queryStartTimeDate.toISOString(),
-    queryEndTimeDate.toISOString()
+    queryStartTime.toISOString(),
+    queryEndTime.toISOString()
   )
 
   // Check if there are any busy times within the queried time slot
   if (busyTimes.length === 0) {
-    return queryStartTimeDate
+    return queryStartTime
   } else {
     // Begin loop to iterate over the busy times in the <busyTimes> array to 
     // continue to check for available time within the queried time
@@ -437,9 +437,9 @@ async function findLowPriorityAvailability(
       // Check if there is enough time for the event from the start of the
       // queried time slot to the start of the first busy time
       if (i === 0) {
-        const availableTime = checkTimeDuration(queryStartTimeDate, eventStart)
+        const availableTime = checkTimeDuration(queryStartTime, eventStart)
         if (availableTime >= eventDuration) {
-          return queryStartTimeDate
+          return queryStartTime
         }
       }
 
@@ -458,7 +458,7 @@ async function findLowPriorityAvailability(
       } else {
         // If not, check if there is enough time for the event from the end
         // of the last busy time to the end of the queried time slot
-        const availableTime = checkTimeDuration(eventEnd, queryEndTimeDate)
+        const availableTime = checkTimeDuration(eventEnd, queryEndTime)
         if (availableTime >= eventDuration) {
           return eventEnd
         }

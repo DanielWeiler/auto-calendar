@@ -212,7 +212,6 @@ async function scheduleEvent(
         timeZone: await getUserTimeZone(),
       },
       description: deadlineMessage,
-      // see req.body available properties that could help with timeagent
     },
   })
 }
@@ -234,7 +233,7 @@ async function findAvailability(
   deadline: Date | null = null,
   highPriority = false
 ) {
-  // Begin loop to iterate over the days from the given start time
+  // Begin loop to iterate over the following days from the given start time
   let findingAvailability = true
   let queryDayCount = 0
   while (findingAvailability) {
@@ -274,6 +273,8 @@ async function findAvailability(
   return
 }
 
+// If the findAvailability function could not find availability before an
+// event's deadline, this function is called.
 async function findAvailabilityBeforeDeadline(
   userCurrentDateTime: Date,
   durationNumber: number,
@@ -389,8 +390,6 @@ async function findHighPriorityAvailability(
         const availableTime = checkTimeDuration(eventEnd, nextEventStart)
         if (availableTime >= eventDuration) {
           return eventEnd
-        } else {
-          continue
         }
       } else {
         // If not, check if there is enough time for the event from the end
@@ -449,8 +448,6 @@ async function findLowPriorityAvailability(
         const availableTime = checkTimeDuration(eventEnd, nextEventStart)
         if (availableTime >= eventDuration) {
           return eventEnd
-        } else {
-          continue
         }
       } else {
         // If not, check if there is enough time for the event from the end

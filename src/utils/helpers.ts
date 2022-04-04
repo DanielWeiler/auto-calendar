@@ -1,6 +1,6 @@
 import { userCurrentDateTime } from '../services/sign-in.service'
 
-export function addTimeToDate(time: string, date: Date | string) {
+export function addTimeToDate(time: string, date: Date | string): Date {
   const dateTime = new Date(date)
   const t = parseTime(time)
   dateTime.setHours(t.hours, t.minutes)
@@ -19,7 +19,7 @@ export function getNextDayOfTheWeek(
   dayName: string,
   excludeToday = false,
   refDate = new Date(userCurrentDateTime)
-) {
+): Date | undefined {
   const dayOfWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].indexOf(
     dayName.slice(0, 2)
   )
@@ -33,7 +33,7 @@ export function getNextDayOfTheWeek(
   return refDate
 }
 
-export function parseTime(time: string) {
+export function parseTime(time: string): { hours: number; minutes: number } {
   const h = time.split(':')[0]
   const m = time.split(':')[1]
 

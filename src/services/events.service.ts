@@ -15,33 +15,53 @@ function setWorkingHours(weeklyHours: WeeklyHoursData): void {
     const date = getNextDayOfTheWeek(item[0])
     assertDefined(date)
 
+    const eventName = 'Working hours'
+    const colorId = '4'
+    const weekDay = item[0]
+
     // Check if the day has working hours
     if (item[1].startTime || item[1].endTime !== '') {
       const startWorkingHours = addTimeToDate(item[1].startTime, date)
       const endWorkingHours = addTimeToDate(item[1].endTime, date)
 
-      await calendar.events.insert({
-        // Formatted in the same way as Google's example for this method.
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        auth: oAuth2Client,
-        calendarId: 'primary',
-        requestBody: {
-          summary: 'Working hours',
-          colorId: '4',
-          start: {
-            dateTime: startWorkingHours,
-            timeZone: await getUserTimeZone(),
-          },
-          end: {
-            dateTime: endWorkingHours,
-            timeZone: await getUserTimeZone(),
-          },
-          description: 'Working hours',
-          recurrence: [`RRULE:FREQ=WEEKLY;BYDAY=${item[0].slice(0, 2)}`],
-        },
-      })
+      await scheduleWeeklyEvent(
+        eventName,
+        colorId,
+        startWorkingHours,
+        endWorkingHours,
+        weekDay
+      )
     }
+  })
+}
+
+async function scheduleWeeklyEvent(
+  summary: string,
+  colorId: string,
+  startDateTime: Date,
+  endDateTime: Date,
+  weekDay: string
+): Promise<void> {
+  await calendar.events.insert({
+    // Formatted in the same way as Google's example for this method.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    auth: oAuth2Client,
+    calendarId: 'primary',
+    requestBody: {
+      summary: summary,
+      colorId: colorId,
+      start: {
+        dateTime: startDateTime,
+        timeZone: await getUserTimeZone(),
+      },
+      end: {
+        dateTime: endDateTime,
+        timeZone: await getUserTimeZone(),
+      },
+      description: summary,
+      recurrence: [`RRULE:FREQ=WEEKLY;BYDAY=${weekDay.slice(0, 2)}`],
+    },
   })
 }
 
@@ -50,57 +70,36 @@ function setUnavailableHours(weeklyHours: WeeklyHoursData): void {
     const date = getNextDayOfTheWeek(item[0])
     assertDefined(date)
 
+    const eventName = 'Unavailable hours'
+    const colorId = '8'
+    const weekDay = item[0]
+
     // Check if the day has unavailable hours
     if (item[1].startTime || item[1].endTime !== '') {
       const startAvailableHours = addTimeToDate(item[1].startTime, date)
       const endAvailableHours = addTimeToDate(item[1].endTime, date)
 
-      const startUnavailableHours = date.setHours(0, 0, 0, 0)
-      const endUnavailableHours = date.setHours(24, 0, 0, 0)
+      const startUnavailableHoursNumber = date.setHours(0, 0, 0, 0)
+      const startUnavailableHours = new Date(startUnavailableHoursNumber)
 
-      await calendar.events.insert({
-        // Formatted in the same way as Google's example for this method.
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        auth: oAuth2Client,
-        calendarId: 'primary',
-        requestBody: {
-          summary: 'Unavailable hours',
-          colorId: '8',
-          start: {
-            dateTime: new Date(startUnavailableHours),
-            timeZone: await getUserTimeZone(),
-          },
-          end: {
-            dateTime: startAvailableHours,
-            timeZone: await getUserTimeZone(),
-          },
-          description: 'Unavailable hours',
-          recurrence: [`RRULE:FREQ=WEEKLY;BYDAY=${item[0].slice(0, 2)}`],
-        },
-      })
+      const endUnavailableHoursNumber = date.setHours(24, 0, 0, 0)
+      const endUnavailableHours = new Date(endUnavailableHoursNumber)
 
-      await calendar.events.insert({
-        // Formatted in the same way as Google's example for this method.
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        auth: oAuth2Client,
-        calendarId: 'primary',
-        requestBody: {
-          summary: 'Unavailable hours',
-          colorId: '8',
-          start: {
-            dateTime: endAvailableHours,
-            timeZone: await getUserTimeZone(),
-          },
-          end: {
-            dateTime: new Date(endUnavailableHours),
-            timeZone: await getUserTimeZone(),
-          },
-          description: 'Unavailable hours',
-          recurrence: [`RRULE:FREQ=WEEKLY;BYDAY=${item[0].slice(0, 2)}`],
-        },
-      })
+      await scheduleWeeklyEvent(
+        eventName,
+        colorId,
+        startUnavailableHours,
+        startAvailableHours,
+        weekDay
+      )
+
+      await scheduleWeeklyEvent(
+        eventName,
+        colorId,
+        endAvailableHours,
+        endUnavailableHours,
+        weekDay
+      )
     }
   })
 }

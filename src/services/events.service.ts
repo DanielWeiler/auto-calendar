@@ -308,8 +308,8 @@ async function findAvailabilityBeforeDeadline(
       // slot had been empty then this event would have been scheduled on a
       // previous attempt.
       await rescheduleConflictingEvents(
-        startDateTime.toISOString(),
-        endDateTime.toISOString()
+        startDateTime,
+        endDateTime
       )
     }
   }
@@ -358,8 +358,8 @@ async function findHighPriorityAvailability(
   eventDuration: number
 ) {
   const busyTimes = await getHighPriorityEvents(
-    queryStartTime.toISOString(),
-    queryEndTime.toISOString()
+    queryStartTime,
+    queryEndTime
   )
 
   // Check if there are any busy times within the queried time slot
@@ -417,8 +417,8 @@ async function findLowPriorityAvailability(
   eventDuration: number
 ) {
   const busyTimes = await getAllBusyTimes(
-    queryStartTime.toISOString(),
-    queryEndTime.toISOString()
+    queryStartTime,
+    queryEndTime
   )
 
   // Check if there are any busy times within the queried time slot
@@ -470,8 +470,8 @@ async function findLowPriorityAvailability(
 
 // Gets a list of the high priority events during the given query time
 async function getHighPriorityEvents(
-  queryStartTime: string,
-  queryEndTime: string
+  queryStartTime: Date,
+  queryEndTime: Date
 ) {
   const events = await getEventsList(queryStartTime, queryEndTime)
 
@@ -490,12 +490,12 @@ async function getHighPriorityEvents(
 }
 
 // Gets a list of all the busy times during the given query time
-async function getAllBusyTimes(queryStartTime: string, queryEndTime: string) {
+async function getAllBusyTimes(queryStartTime: Date, queryEndTime: Date) {
   const availabilityQuery = await calendar.freebusy.query({
     auth: oAuth2Client,
     requestBody: {
-      timeMin: queryStartTime,
-      timeMax: queryEndTime,
+      timeMin: queryStartTime.toISOString(),
+      timeMax: queryEndTime.toISOString(),
       timeZone: await getUserTimeZone(),
       items: [
         {
@@ -520,7 +520,7 @@ function checkTimeDuration(timeSlotStart: Date, timeSlotEnd: Date) {
   return availableTime
 }
 
-async function getEventsList(queryStartTime: string, queryEndTime: string) {
+async function getEventsList(queryStartTime: Date, queryEndTime: Date) {
   const eventsList = await calendar.events.list({
     // Formatted in the same way as Google's example for this method.
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -528,8 +528,8 @@ async function getEventsList(queryStartTime: string, queryEndTime: string) {
     auth: oAuth2Client,
     calendarId: 'primary',
     singleEvents: true,
-    timeMin: queryStartTime,
-    timeMax: queryEndTime,
+    timeMin: queryStartTime.toISOString(),
+    timeMax: queryEndTime.toISOString(),
   })
   assertDefined(eventsList.data.items)
 
@@ -539,8 +539,8 @@ async function getEventsList(queryStartTime: string, queryEndTime: string) {
 // When a high priority event is scheduled over low priority events, this
 // function is called.
 async function rescheduleConflictingEvents(
-  highPriorityEventStart: string,
-  highPriorityEventEnd: string
+  highPriorityEventStart: Date,
+  highPriorityEventEnd: Date
 ) {
   const conflictingEvents = await getEventsList(
     highPriorityEventStart,

@@ -1,4 +1,4 @@
-import { google } from 'googleapis'
+import { calendar_v3, google } from 'googleapis'
 import oAuth2Client from '../configs/google-client.config'
 import { userCurrentDateTime } from '../services/sign-in.service'
 import { EventData, WeeklyHoursData } from '../types'
@@ -10,7 +10,7 @@ import {
 require('express-async-errors')
 const calendar = google.calendar('v3')
 
-function setWorkingHours(weeklyHours: WeeklyHoursData) {
+function setWorkingHours(weeklyHours: WeeklyHoursData): void {
   Object.entries(weeklyHours.data).map(async (item) => {
     const date = getNextDayOfTheWeek(item[0])
     assertDefined(date)
@@ -45,7 +45,7 @@ function setWorkingHours(weeklyHours: WeeklyHoursData) {
   })
 }
 
-function setUnavailableHours(weeklyHours: WeeklyHoursData) {
+function setUnavailableHours(weeklyHours: WeeklyHoursData): void {
   Object.entries(weeklyHours.data).map(async (item) => {
     const date = getNextDayOfTheWeek(item[0])
     assertDefined(date)
@@ -105,7 +105,7 @@ function setUnavailableHours(weeklyHours: WeeklyHoursData) {
   })
 }
 
-async function createEvent(data: EventData) {
+async function createEvent(data: EventData): Promise<void> {
   const {
     summary,
     duration,
@@ -184,7 +184,7 @@ async function createEvent(data: EventData) {
   }
 }
 
-function getEndTime(date: Date, minutes: number) {
+function getEndTime(date: Date, minutes: number): Date {
   return new Date(date.getTime() + minutes * 60000)
 }
 
@@ -193,7 +193,7 @@ async function scheduleEvent(
   startDateTime: Date,
   endDateTime: Date,
   deadlineMessage = ''
-) {
+): Promise<void> {
   await calendar.events.insert({
     // Formatted in the same way as Google's example for this method.
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -216,7 +216,7 @@ async function scheduleEvent(
   })
 }
 
-async function getUserTimeZone() {
+async function getUserTimeZone(): Promise<string | null | undefined> {
   const cal = await calendar.calendars.get({
     auth: oAuth2Client,
     calendarId: 'primary',
@@ -232,7 +232,7 @@ async function findAvailability(
   eventDuration: number,
   deadline: Date | null = null,
   highPriority = false
-) {
+): Promise<Date | undefined> {
   // Begin loop to iterate over the following days from the given start time
   let findingAvailability = true
   let queryDayCount = 0
@@ -273,7 +273,7 @@ async function findAvailability(
   return
 }
 
-// If no empty time slots long enough for an event could be found before its 
+// If no empty time slots long enough for an event could be found before its
 // deadline, this function is called.
 async function findAvailabilityBeforeDeadline(
   userCurrentDateTime: Date,
@@ -281,7 +281,7 @@ async function findAvailabilityBeforeDeadline(
   deadline: Date,
   summary: string,
   deadlineMessage: string
-) {
+): Promise<void> {
   const highpriority = true
   const startDateTime = await findAvailability(
     userCurrentDateTime,
@@ -307,10 +307,7 @@ async function findAvailabilityBeforeDeadline(
       // cannot be scheduled during other high priority events and if the time
       // slot had been empty then this event would have been scheduled on a
       // previous attempt.
-      await rescheduleConflictingEvents(
-        startDateTime,
-        endDateTime
-      )
+      await rescheduleConflictingEvents(startDateTime, endDateTime)
     }
   }
   // If not, it is because either 1) every time slot between now and the
@@ -330,7 +327,7 @@ async function getDayAvailability(
   queryStartTime: Date,
   queryEndTime: Date,
   eventDuration: number
-) {
+): Promise<Date | undefined> {
   if (highPriority) {
     const startDateTime = await findHighPriorityAvailability(
       queryStartTime,
@@ -348,25 +345,22 @@ async function getDayAvailability(
   }
 }
 
-// This function finds a time slot long enough within the queried time for a 
-// high priority event during the times of low priority events. High priority 
-// event times are considered busy and low priority event times are considered 
-// available. 
+// This function finds a time slot long enough within the queried time for a
+// high priority event during the times of low priority events. High priority
+// event times are considered busy and low priority event times are considered
+// available.
 async function findHighPriorityAvailability(
   queryStartTime: Date,
   queryEndTime: Date,
   eventDuration: number
-) {
-  const busyTimes = await getHighPriorityEvents(
-    queryStartTime,
-    queryEndTime
-  )
+): Promise<Date | undefined> {
+  const busyTimes = await getHighPriorityEvents(queryStartTime, queryEndTime)
 
   // Check if there are any busy times within the queried time slot
   if (busyTimes.length === 0) {
     return queryStartTime
   } else {
-    // Begin loop to iterate over the busy times in the <busyTimes> array to 
+    // Begin loop to iterate over the busy times in the <busyTimes> array to
     // continue to check for available time within the queried time
     for (let i = 0; i < busyTimes.length; i++) {
       const highPriorityEvent = busyTimes[i]
@@ -415,17 +409,14 @@ async function findLowPriorityAvailability(
   queryStartTime: Date,
   queryEndTime: Date,
   eventDuration: number
-) {
-  const busyTimes = await getAllBusyTimes(
-    queryStartTime,
-    queryEndTime
-  )
+): Promise<Date | undefined> {
+  const busyTimes = await getAllBusyTimes(queryStartTime, queryEndTime)
 
   // Check if there are any busy times within the queried time slot
   if (busyTimes.length === 0) {
     return queryStartTime
   } else {
-    // Begin loop to iterate over the busy times in the <busyTimes> array to 
+    // Begin loop to iterate over the busy times in the <busyTimes> array to
     // continue to check for available time within the queried time
     for (let i = 0; i < busyTimes.length; i++) {
       const event = busyTimes[i]
@@ -472,7 +463,7 @@ async function findLowPriorityAvailability(
 async function getHighPriorityEvents(
   queryStartTime: Date,
   queryEndTime: Date
-) {
+): Promise<calendar_v3.Schema$Event[]> {
   const events = await getEventsList(queryStartTime, queryEndTime)
 
   const highPriorityEvents = []
@@ -490,7 +481,10 @@ async function getHighPriorityEvents(
 }
 
 // Gets a list of all the busy times during the given query time
-async function getAllBusyTimes(queryStartTime: Date, queryEndTime: Date) {
+async function getAllBusyTimes(
+  queryStartTime: Date,
+  queryEndTime: Date
+): Promise<calendar_v3.Schema$TimePeriod[]> {
   const availabilityQuery = await calendar.freebusy.query({
     auth: oAuth2Client,
     requestBody: {
@@ -512,7 +506,7 @@ async function getAllBusyTimes(queryStartTime: Date, queryEndTime: Date) {
 }
 
 // Checks the duration of time between the two given times
-function checkTimeDuration(timeSlotStart: Date, timeSlotEnd: Date) {
+function checkTimeDuration(timeSlotStart: Date, timeSlotEnd: Date): number {
   assertDefined(timeSlotStart)
   assertDefined(timeSlotEnd)
   const availableTime =
@@ -520,7 +514,10 @@ function checkTimeDuration(timeSlotStart: Date, timeSlotEnd: Date) {
   return availableTime
 }
 
-async function getEventsList(queryStartTime: Date, queryEndTime: Date) {
+async function getEventsList(
+  queryStartTime: Date,
+  queryEndTime: Date
+): Promise<calendar_v3.Schema$Event[]> {
   const eventsList = await calendar.events.list({
     // Formatted in the same way as Google's example for this method.
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -541,7 +538,7 @@ async function getEventsList(queryStartTime: Date, queryEndTime: Date) {
 async function rescheduleConflictingEvents(
   highPriorityEventStart: Date,
   highPriorityEventEnd: Date
-) {
+): Promise<void> {
   const conflictingEvents = await getEventsList(
     highPriorityEventStart,
     highPriorityEventEnd

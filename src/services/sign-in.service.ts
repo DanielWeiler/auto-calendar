@@ -7,7 +7,7 @@ require('express-async-errors')
 
 export let userCurrentDateTime: Date
 
-function signIn(data: SignInData) {
+function signIn(data: SignInData): void {
   void (async () => {
     const { code, clientCurrentDateTime } = data
     const { tokens } = await oAuth2Client.getToken(code)

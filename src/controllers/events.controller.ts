@@ -4,7 +4,7 @@ import { NextFunction, Response } from 'express'
 import eventsService from '../services/events.service'
 import { CreateEventRequest, SetWeeklyHoursRequest } from '../types'
 
-function setWorkingHours(req: SetWeeklyHoursRequest, res: Response, next: NextFunction) {
+function setWorkingHours(req: SetWeeklyHoursRequest, res: Response, next: NextFunction): void {
   try {
     res.json(eventsService.setWorkingHours(req.body))
   } catch (error: any) {
@@ -13,7 +13,7 @@ function setWorkingHours(req: SetWeeklyHoursRequest, res: Response, next: NextFu
   }
 }
 
-function setUnavailableHours(req: SetWeeklyHoursRequest, res: Response, next: NextFunction) {
+function setUnavailableHours(req: SetWeeklyHoursRequest, res: Response, next: NextFunction): void {
   try {
     res.json(eventsService.setUnavailableHours(req.body))
   } catch (error: any) {
@@ -22,7 +22,7 @@ function setUnavailableHours(req: SetWeeklyHoursRequest, res: Response, next: Ne
   }
 }
 
-function createEvent(req: CreateEventRequest, res: Response, next: NextFunction) {
+function createEvent(req: CreateEventRequest, res: Response, next: NextFunction): void {
   try {
     res.json(eventsService.createEvent(req.body.data))
   } catch (error: any) {

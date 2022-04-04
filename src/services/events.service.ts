@@ -307,8 +307,10 @@ async function findAvailabilityBeforeDeadline(
       // cannot be scheduled during other high priority events and if the time
       // slot had been empty then this event would have been scheduled on a
       // previous attempt.
-      //rescheduleConflictingEvents()
-      console.log('conflicting events to reschedule?')
+      await rescheduleConflictingEvents(
+        startDateTime.toISOString(),
+        endDateTime.toISOString()
+      )
     }
   }
   // If not, it is because either 1) every time slot between now and the
@@ -524,6 +526,77 @@ function checkTimeDuration(timeSlotStart: Date, timeSlotEnd: Date) {
   const availableTime =
     (timeSlotEnd.getTime() - timeSlotStart.getTime()) / 60000
   return availableTime
+}
+
+// When a high priority event is scheduled over low priority events, this
+// function is called.
+async function rescheduleConflictingEvents(
+  highPriorityEventStart: string,
+  highPriorityEventEnd: string
+) {
+  const conflictingEvents = await getConflictingEvents(
+    highPriorityEventStart,
+    highPriorityEventEnd
+  )
+
+  for (let i = 0; i < conflictingEvents.length; i++) {
+    const event = conflictingEvents[i]
+
+    // Skips over the high priority event creating the conflict(s)
+    if (event.description) {
+      continue
+    }
+
+    assertDefined(event.start?.dateTime)
+    assertDefined(event.end?.dateTime)
+    const eventStart = new Date(event.start?.dateTime)
+    const eventEnd = new Date(event.end?.dateTime)
+
+    // Gets the duration of the event to be rescheduled
+    const durationNumber = checkTimeDuration(eventStart, eventEnd)
+    const startDateTime = await findAvailability(
+      userCurrentDateTime,
+      durationNumber
+    )
+    assertDefined(startDateTime)
+    const endDateTime = getEndTime(startDateTime, durationNumber)
+
+    await calendar.events.patch({
+      // Formatted in the same way as Google's example for this method.
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      auth: oAuth2Client,
+      calendarId: 'primary',
+      eventId: event.id,
+      requestBody: {
+        start: {
+          dateTime: startDateTime,
+        },
+        end: {
+          dateTime: endDateTime,
+        },
+      },
+    })
+  }
+}
+
+async function getConflictingEvents(
+  queryStartTime: string,
+  queryEndTime: string
+) {
+  const eventsList = await calendar.events.list({
+    // Formatted in the same way as Google's example for this method.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    auth: oAuth2Client,
+    calendarId: 'primary',
+    singleEvents: true,
+    timeMin: queryStartTime,
+    timeMax: queryEndTime,
+  })
+  assertDefined(eventsList.data.items)
+
+  return eventsList.data.items
 }
 
 export default { setWorkingHours, setUnavailableHours, createEvent }

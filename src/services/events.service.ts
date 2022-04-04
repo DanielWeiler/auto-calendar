@@ -273,8 +273,8 @@ async function findAvailability(
   return
 }
 
-// If the findAvailability function could not find availability before an
-// event's deadline, this function is called.
+// If no empty time slots long enough for an event could be found before its 
+// deadline, this function is called.
 async function findAvailabilityBeforeDeadline(
   userCurrentDateTime: Date,
   durationNumber: number,
@@ -348,13 +348,16 @@ async function getDayAvailability(
   }
 }
 
-// Finds the next high priority available time during the queried time
+// This function finds a time slot long enough within the queried time for a 
+// high priority event during the times of low priority events. High priority 
+// event times are considered busy and low priority event times are considered 
+// available. 
 async function findHighPriorityAvailability(
   queryStartTimeDate: Date,
   queryEndTimeDate: Date,
   eventDuration: number
 ) {
-  const busyTimes = await getHighPriorityBusyTimes(
+  const busyTimes = await getHighPriorityEvents(
     queryStartTimeDate.toISOString(),
     queryEndTimeDate.toISOString()
   )
@@ -363,14 +366,14 @@ async function findHighPriorityAvailability(
   if (busyTimes.length === 0) {
     return queryStartTimeDate
   } else {
-    // Begin loop to iterate over the busy times in the <busyTimes>
-    // array to continue to check for available time within the queried time
+    // Begin loop to iterate over the busy times in the <busyTimes> array to 
+    // continue to check for available time within the queried time
     for (let i = 0; i < busyTimes.length; i++) {
-      const event = busyTimes[i]
-      assertDefined(event.start?.dateTime)
-      assertDefined(event.end?.dateTime)
-      const eventStart = new Date(event.start.dateTime)
-      const eventEnd = new Date(event.end.dateTime)
+      const highPriorityEvent = busyTimes[i]
+      assertDefined(highPriorityEvent.start?.dateTime)
+      assertDefined(highPriorityEvent.end?.dateTime)
+      const eventStart = new Date(highPriorityEvent.start.dateTime)
+      const eventEnd = new Date(highPriorityEvent.end.dateTime)
 
       // Check if there is enough time for the event from the start of the
       // queried time slot to the start of the first busy time
@@ -406,7 +409,8 @@ async function findHighPriorityAvailability(
   return
 }
 
-// Finds the next available time during the queried time
+// Finds the next empty time slot within the queried time that is long enough
+// for the event being scheduled
 async function findLowPriorityAvailability(
   queryStartTimeDate: Date,
   queryEndTimeDate: Date,
@@ -421,8 +425,8 @@ async function findLowPriorityAvailability(
   if (busyTimes.length === 0) {
     return queryStartTimeDate
   } else {
-    // Begin loop to iterate over the busy times in the <busyTimes>
-    // array to continue to check for available time within the queried time
+    // Begin loop to iterate over the busy times in the <busyTimes> array to 
+    // continue to check for available time within the queried time
     for (let i = 0; i < busyTimes.length; i++) {
       const event = busyTimes[i]
       assertDefined(event.start)
@@ -464,29 +468,28 @@ async function findLowPriorityAvailability(
   return
 }
 
-// Queries the times of high priority events in the calendar during the given
-// query time
-async function getHighPriorityBusyTimes(
+// Gets a list of the high priority events during the given query time
+async function getHighPriorityEvents(
   queryStartTime: string,
   queryEndTime: string
 ) {
   const events = await getEventsList(queryStartTime, queryEndTime)
 
-  const busyTimes = []
+  const highPriorityEvents = []
   for (let i = 0; i < events.length; i++) {
     const event = events[i]
 
     // If an event has a description, it is an indicator that it is a high
     // priority event.
     if (event.description) {
-      busyTimes.push(event)
+      highPriorityEvents.push(event)
     }
   }
 
-  return busyTimes
+  return highPriorityEvents
 }
 
-// Queries the times of events during the given query time
+// Gets a list of all the busy times during the given query time
 async function getAllBusyTimes(queryStartTime: string, queryEndTime: string) {
   const availabilityQuery = await calendar.freebusy.query({
     auth: oAuth2Client,

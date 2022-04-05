@@ -115,16 +115,16 @@ async function createEvent(data: EventData): Promise<void> {
   } = data
   const durationNumber = parseInt(duration)
 
-  let deadline = null
-  let deadlineMessage = ''
-  if (deadlineDate && deadlineTime) {
-    deadline = addTimeToDate(deadlineTime, deadlineDate)
-    deadlineMessage = `Deadline: ${deadline}`
-  }
-
   if (manualDate && manualTime) {
     await manualSchedule(summary, manualDate, manualTime, durationNumber)
   } else {
+    let deadline = null
+    let deadlineMessage = ''
+    if (deadlineDate && deadlineTime) {
+      deadline = addTimeToDate(deadlineTime, deadlineDate)
+      deadlineMessage = `Deadline: ${deadline}`
+    }
+    
     await autoSchedule(summary, durationNumber, deadline, deadlineMessage)
   }
 }

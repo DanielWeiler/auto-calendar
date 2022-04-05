@@ -74,7 +74,6 @@ const ReminderForm = () => {
           id="duration"
           {...register('duration', { required: true })}
         >
-          <option value="0">0 minutes</option>
           <option value="5">5 minutes</option>
           <option value="10">10 minutes</option>
           <option value="15">15 minutes</option>
@@ -106,24 +105,6 @@ const ReminderForm = () => {
           <option value="420">7 hours</option>
           <option value="450">7 hr 30 min</option>
           <option value="480">8 hours</option>
-          <option value="510">8 hr 30 min</option>
-          <option value="540">9 hours</option>
-          <option value="600">10 hours</option>
-          <option value="660">11 hours</option>
-          <option value="720">12 hours</option>
-          <option value="780">13 hours</option>
-          <option value="840">14 hours</option>
-          <option value="900">15 hours</option>
-          <option value="960">16 hours</option>
-          <option value="1020">17 hours</option>
-          <option value="1080">18 hours</option>
-          <option value="1140">19 hours</option>
-          <option value="1200">20 hours</option>
-          <option value="1260">21 hours</option>
-          <option value="1320">22 hours</option>
-          <option value="1380">23 hours</option>
-          <option value="1440">1 day</option>
-          <option value="2880">2 days</option>
         </Form.Select>
 
         <Form.Label>Manual Time:</Form.Label>

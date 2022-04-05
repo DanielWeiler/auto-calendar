@@ -122,73 +122,30 @@ async function createEvent(data: EventData): Promise<void> {
     deadlineMessage = `Deadline: ${deadline}`
   }
 
-  // Schedule event at the given time
   if (manualDate && manualTime) {
-    const startDateTime = addTimeToDate(manualTime, manualDate)
-    const endDateTime = getEndTime(startDateTime, durationNumber)
-    deadlineMessage = 'Manually scheduled'
-    await scheduleEvent(summary, startDateTime, endDateTime, deadlineMessage)
-    await rescheduleConflictingEvents(startDateTime, endDateTime, summary)
-  }
-  // Schedule event automatically
-  else {
+    await manualSchedule(summary, manualDate, manualTime, durationNumber)
+  } else {
     await autoSchedule(summary, durationNumber, deadline, deadlineMessage)
   }
 }
 
-function getEndTime(date: Date, minutes: number): Date {
-  return new Date(date.getTime() + minutes * 60000)
-}
-
-async function scheduleEvent(
+// Schedules an event at the user given time
+async function manualSchedule(
   summary: string,
-  startDateTime: Date,
-  endDateTime: Date,
-  deadlineMessage = '',
-  eventId = ''
-): Promise<void> {
-  if (eventId) {
-    await calendar.events.patch({
-      // Formatted in the same way as Google's example for this method.
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      auth: oAuth2Client,
-      calendarId: 'primary',
-      eventId: eventId,
-      requestBody: {
-        start: {
-          dateTime: startDateTime,
-        },
-        end: {
-          dateTime: endDateTime,
-        },
-      },
-    })
-  } else {
-    await calendar.events.insert({
-      // Formatted in the same way as Google's example for this method.
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      auth: oAuth2Client,
-      calendarId: 'primary',
-      requestBody: {
-        summary: summary,
-        colorId: '7',
-        start: {
-          dateTime: startDateTime,
-          timeZone: await getUserTimeZone(),
-        },
-        end: {
-          dateTime: endDateTime,
-          timeZone: await getUserTimeZone(),
-        },
-        description: deadlineMessage,
-      },
-    })
-  }
+  manualDate: string,
+  manualTime: string,
+  durationNumber: number,
+
+) {
+  const startDateTime = addTimeToDate(manualTime, manualDate)
+  const endDateTime = getEndTime(startDateTime, durationNumber)
+  const description = 'Manually scheduled'
+
+  await scheduleEvent(summary, startDateTime, endDateTime, description)
+  await rescheduleConflictingEvents(startDateTime, endDateTime, summary)
 }
 
-//
+// Schedules an event according to calendar availability
 async function autoSchedule(
   summary: string,
   durationNumber: number,
@@ -248,13 +205,118 @@ async function autoSchedule(
   }
 }
 
-async function getUserTimeZone(): Promise<string | null | undefined> {
-  const cal = await calendar.calendars.get({
-    auth: oAuth2Client,
-    calendarId: 'primary',
-  })
+function getEndTime(date: Date, minutes: number): Date {
+  return new Date(date.getTime() + minutes * 60000)
+}
 
-  return cal.data.timeZone
+async function scheduleEvent(
+  summary: string,
+  startDateTime: Date,
+  endDateTime: Date,
+  deadlineMessage = '',
+  eventId = ''
+): Promise<void> {
+  if (eventId) {
+    await calendar.events.patch({
+      // Formatted in the same way as Google's example for this method.
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      auth: oAuth2Client,
+      calendarId: 'primary',
+      eventId: eventId,
+      requestBody: {
+        start: {
+          dateTime: startDateTime,
+        },
+        end: {
+          dateTime: endDateTime,
+        },
+      },
+    })
+  } else {
+    await calendar.events.insert({
+      // Formatted in the same way as Google's example for this method.
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      auth: oAuth2Client,
+      calendarId: 'primary',
+      requestBody: {
+        summary: summary,
+        colorId: '7',
+        start: {
+          dateTime: startDateTime,
+          timeZone: await getUserTimeZone(),
+        },
+        end: {
+          dateTime: endDateTime,
+          timeZone: await getUserTimeZone(),
+        },
+        description: deadlineMessage,
+      },
+    })
+  }
+}
+
+// This function is called when a manually scheduled event or a high priority
+// event is scheduled to check if there are any conflicting events that need
+// rescheduling.
+async function rescheduleConflictingEvents(
+  highPriorityEventStart: Date,
+  highPriorityEventEnd: Date,
+  highPriorityEventSummary: string
+): Promise<void> {
+  const conflictingEvents = await getEventsList(
+    highPriorityEventStart,
+    highPriorityEventEnd
+  )
+
+  // Length will always be at least 1 because the array contains the event
+  // creating the conflict(s)
+  if (conflictingEvents.length === 1) {
+    return
+  }
+
+  for (let i = 0; i < conflictingEvents.length; i++) {
+    const event = conflictingEvents[i]
+
+    // This if statement disregards events not concerned with conflicts since 
+    // manually scheduled events can be scheduled at any time, regardless of 
+    // what else is on the calendar at that time. These events will not be
+    // disregarded for auto scheduled events because auto scheduled events are
+    // never scheduled over these events. This statement also skips over the 
+    // high priority event that created the conflict(s).
+    if (
+      event.description === 'Working hours' ||
+      event.description === 'Unavailable hours' ||
+      event.description?.slice(0, 6) === 'Manual' ||
+      event.summary === highPriorityEventSummary
+    ) {
+      continue
+    }
+
+    assertDefined(event.summary)
+    assertDefined(event.id)
+    assertDefined(event.start?.dateTime)
+    assertDefined(event.end?.dateTime)
+
+    const eventStart = new Date(event.start?.dateTime)
+    const eventEnd = new Date(event.end?.dateTime)
+    const durationNumber = checkTimeDuration(eventStart, eventEnd)
+
+    // If an event has a deadline, the description will be the deadline.
+    let deadline = null
+    if (event.description) {
+      deadline = new Date(event.description)
+    }
+
+    await autoSchedule(
+      event.summary,
+      durationNumber,
+      deadline,
+      undefined,
+      event.id
+    )
+  }
 }
 
 // Finds the next available time slot on the user's calendar for an event to be
@@ -561,66 +623,13 @@ async function getEventsList(
   return eventsList.data.items
 }
 
-// This function is called when a manually scheduled event or a high priority
-// event is scheduled to check if there are any conflicting events that need
-// rescheduling.
-async function rescheduleConflictingEvents(
-  highPriorityEventStart: Date,
-  highPriorityEventEnd: Date,
-  highPriorityEventSummary: string
-): Promise<void> {
-  const conflictingEvents = await getEventsList(
-    highPriorityEventStart,
-    highPriorityEventEnd
-  )
+async function getUserTimeZone(): Promise<string | null | undefined> {
+  const cal = await calendar.calendars.get({
+    auth: oAuth2Client,
+    calendarId: 'primary',
+  })
 
-  // Length will always be at least 1 because the array contains the event
-  // creating the conflict(s)
-  if (conflictingEvents.length === 1) {
-    return
-  }
-
-  for (let i = 0; i < conflictingEvents.length; i++) {
-    const event = conflictingEvents[i]
-
-    // This if statement disregards events not concerned with conflicts since 
-    // manually scheduled events can be scheduled at any time, regardless of 
-    // what else is on the calendar at that time. These events will not be
-    // disregarded for auto scheduled events because auto scheduled events are
-    // never scheduled over these events. This statement also skips over the 
-    // high priority event that created the conflict(s).
-    if (
-      event.description === 'Working hours' ||
-      event.description === 'Unavailable hours' ||
-      event.description?.slice(0, 6) === 'Manual' ||
-      event.summary === highPriorityEventSummary
-    ) {
-      continue
-    }
-
-    assertDefined(event.summary)
-    assertDefined(event.id)
-    assertDefined(event.start?.dateTime)
-    assertDefined(event.end?.dateTime)
-
-    const eventStart = new Date(event.start?.dateTime)
-    const eventEnd = new Date(event.end?.dateTime)
-    const durationNumber = checkTimeDuration(eventStart, eventEnd)
-
-    // If an event has a deadline, the description will be the deadline.
-    let deadline = null
-    if (event.description) {
-      deadline = new Date(event.description)
-    }
-
-    await autoSchedule(
-      event.summary,
-      durationNumber,
-      deadline,
-      undefined,
-      event.id
-    )
-  }
+  return cal.data.timeZone
 }
 
 export default { setWorkingHours, setUnavailableHours, createEvent }

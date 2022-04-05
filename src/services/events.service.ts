@@ -126,60 +126,13 @@ async function createEvent(data: EventData): Promise<void> {
   if (manualDate && manualTime) {
     const startDateTime = addTimeToDate(manualTime, manualDate)
     const endDateTime = getEndTime(startDateTime, durationNumber)
-    if (!deadlineMessage) {
-      deadlineMessage = 'Manually scheduled'
-    }
+    deadlineMessage = 'Manually scheduled'
     await scheduleEvent(summary, startDateTime, endDateTime, deadlineMessage)
+    await rescheduleConflictingEvents(startDateTime, endDateTime, summary)
   }
   // Schedule event automatically
   else {
-    const startDateTime = await findAvailability(
-      userCurrentDateTime,
-      durationNumber,
-      deadline
-    )
-
-    // If an available time could be found, the event is scheduled.
-    if (startDateTime) {
-      const endDateTime = getEndTime(startDateTime, durationNumber)
-      // It must be checked if the available time is before the event deadline
-      if (deadline) {
-        // If the available time found on the day of the deadline is past the
-        // time of the deadline, a high priority available time is queried for
-        // the event before it's deadline.
-        if (endDateTime > deadline) {
-          await findAvailabilityBeforeDeadline(
-            userCurrentDateTime,
-            durationNumber,
-            deadline,
-            summary,
-            deadlineMessage
-          )
-        } else {
-          await scheduleEvent(
-            summary,
-            startDateTime,
-            endDateTime,
-            deadlineMessage
-          )
-        }
-      } else {
-        await scheduleEvent(summary, startDateTime, endDateTime)
-      }
-    }
-    // If not, it is because a time could not be found before the given event
-    // deadline and a high priority available time is queried for the event
-    // before it's deadline.
-    else {
-      assertDefined(deadline)
-      await findAvailabilityBeforeDeadline(
-        userCurrentDateTime,
-        durationNumber,
-        deadline,
-        summary,
-        deadlineMessage
-      )
-    }
+    await autoSchedule(summary, durationNumber, deadline, deadlineMessage)
   }
 }
 
@@ -191,28 +144,108 @@ async function scheduleEvent(
   summary: string,
   startDateTime: Date,
   endDateTime: Date,
-  deadlineMessage = ''
+  deadlineMessage = '',
+  eventId = ''
 ): Promise<void> {
-  await calendar.events.insert({
-    // Formatted in the same way as Google's example for this method.
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    auth: oAuth2Client,
-    calendarId: 'primary',
-    requestBody: {
-      summary: summary,
-      colorId: '7',
-      start: {
-        dateTime: startDateTime,
-        timeZone: await getUserTimeZone(),
+  if (eventId) {
+    await calendar.events.patch({
+      // Formatted in the same way as Google's example for this method.
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      auth: oAuth2Client,
+      calendarId: 'primary',
+      eventId: eventId,
+      requestBody: {
+        start: {
+          dateTime: startDateTime,
+        },
+        end: {
+          dateTime: endDateTime,
+        },
       },
-      end: {
-        dateTime: endDateTime,
-        timeZone: await getUserTimeZone(),
+    })
+  } else {
+    await calendar.events.insert({
+      // Formatted in the same way as Google's example for this method.
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      auth: oAuth2Client,
+      calendarId: 'primary',
+      requestBody: {
+        summary: summary,
+        colorId: '7',
+        start: {
+          dateTime: startDateTime,
+          timeZone: await getUserTimeZone(),
+        },
+        end: {
+          dateTime: endDateTime,
+          timeZone: await getUserTimeZone(),
+        },
+        description: deadlineMessage,
       },
-      description: deadlineMessage,
-    },
-  })
+    })
+  }
+}
+
+//
+async function autoSchedule(
+  summary: string,
+  durationNumber: number,
+  deadline: Date | null = null,
+  deadlineMessage = '',
+  eventId = ''
+): Promise<void> {
+  const startDateTime = await findAvailability(
+    userCurrentDateTime,
+    durationNumber,
+    deadline
+  )
+
+  // If an available time could be found, the event is scheduled.
+  if (startDateTime) {
+    const endDateTime = getEndTime(startDateTime, durationNumber)
+    // It must be checked if the available time is before the event deadline
+    if (deadline) {
+      // If the available time found on the day of the deadline is past the
+      // time of the deadline, a high priority available time is queried for
+      // the event before it's deadline.
+      if (endDateTime > deadline) {
+        await findAvailabilityBeforeDeadline(
+          userCurrentDateTime,
+          durationNumber,
+          deadline,
+          summary,
+          deadlineMessage,
+          eventId
+        )
+      } else {
+        await scheduleEvent(
+          summary,
+          startDateTime,
+          endDateTime,
+          deadlineMessage,
+          eventId
+        )
+      }
+    } else {
+      await scheduleEvent(summary, startDateTime, endDateTime, undefined, eventId)
+    }
+  }
+  // If not, it is because a time could not be found before the given event
+  // deadline and a high priority available time is queried for the event
+  // before it's deadline.
+  else {
+    assertDefined(deadline)
+    await findAvailabilityBeforeDeadline(
+      userCurrentDateTime,
+      durationNumber,
+      deadline,
+      summary,
+      deadlineMessage,
+      eventId
+    )
+  }
 }
 
 async function getUserTimeZone(): Promise<string | null | undefined> {
@@ -279,7 +312,8 @@ async function findAvailabilityBeforeDeadline(
   durationNumber: number,
   deadline: Date,
   summary: string,
-  deadlineMessage: string
+  deadlineMessage: string,
+  eventId = ''
 ): Promise<void> {
   const highpriority = true
   const startDateTime = await findAvailability(
@@ -300,13 +334,8 @@ async function findAvailabilityBeforeDeadline(
         'endDateTime is after deadline: send warning that no hp time could be found'
       )
     } else {
-      await scheduleEvent(summary, startDateTime, endDateTime, deadlineMessage)
-      // Conflicting low priority events need to be rescheduled. This time
-      // slot will have low priority events because a high priority event
-      // cannot be scheduled during other high priority events and if the time
-      // slot had been empty then this event would have been scheduled on a
-      // previous attempt.
-      await rescheduleConflictingEvents(startDateTime, endDateTime)
+      await scheduleEvent(summary, startDateTime, endDateTime, deadlineMessage, eventId)
+      await rescheduleConflictingEvents(startDateTime, endDateTime, summary)
     }
   }
   // If not, it is because either 1) every time slot between now and the
@@ -532,55 +561,65 @@ async function getEventsList(
   return eventsList.data.items
 }
 
-// When a high priority event is scheduled over low priority events, this
-// function is called.
+// This function is called when a manually scheduled event or a high priority
+// event is scheduled to check if there are any conflicting events that need
+// rescheduling.
 async function rescheduleConflictingEvents(
   highPriorityEventStart: Date,
-  highPriorityEventEnd: Date
+  highPriorityEventEnd: Date,
+  highPriorityEventSummary: string
 ): Promise<void> {
   const conflictingEvents = await getEventsList(
     highPriorityEventStart,
     highPriorityEventEnd
   )
 
+  // Length will always be at least 1 because the array contains the event
+  // creating the conflict(s)
+  if (conflictingEvents.length === 1) {
+    return
+  }
+
   for (let i = 0; i < conflictingEvents.length; i++) {
     const event = conflictingEvents[i]
 
-    // Skips over the high priority event creating the conflict(s)
-    if (event.description) {
+    // This if statement disregards events not concerned with conflicts since 
+    // manually scheduled events can be scheduled at any time, regardless of 
+    // what else is on the calendar at that time. These events will not be
+    // disregarded for auto scheduled events because auto scheduled events are
+    // never scheduled over these events. This statement also skips over the 
+    // high priority event that created the conflict(s).
+    if (
+      event.description === 'Working hours' ||
+      event.description === 'Unavailable hours' ||
+      event.description?.slice(0, 6) === 'Manual' ||
+      event.summary === highPriorityEventSummary
+    ) {
       continue
     }
 
+    assertDefined(event.summary)
+    assertDefined(event.id)
     assertDefined(event.start?.dateTime)
     assertDefined(event.end?.dateTime)
+
     const eventStart = new Date(event.start?.dateTime)
     const eventEnd = new Date(event.end?.dateTime)
-
-    // Gets the duration of the event to be rescheduled
     const durationNumber = checkTimeDuration(eventStart, eventEnd)
-    const startDateTime = await findAvailability(
-      userCurrentDateTime,
-      durationNumber
-    )
-    assertDefined(startDateTime)
-    const endDateTime = getEndTime(startDateTime, durationNumber)
 
-    await calendar.events.patch({
-      // Formatted in the same way as Google's example for this method.
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      auth: oAuth2Client,
-      calendarId: 'primary',
-      eventId: event.id,
-      requestBody: {
-        start: {
-          dateTime: startDateTime,
-        },
-        end: {
-          dateTime: endDateTime,
-        },
-      },
-    })
+    // If an event has a deadline, the description will be the deadline.
+    let deadline = null
+    if (event.description) {
+      deadline = new Date(event.description)
+    }
+
+    await autoSchedule(
+      event.summary,
+      durationNumber,
+      deadline,
+      undefined,
+      event.id
+    )
   }
 }
 

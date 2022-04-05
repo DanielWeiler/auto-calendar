@@ -5,13 +5,10 @@ import oAuth2Client from '../configs/google-client.config'
 import { assertDefined } from '../utils/helpers'
 require('express-async-errors')
 
-export let userCurrentDateTime: Date
-
 function signIn(data: SignInData): void {
   void (async () => {
-    const { code, clientCurrentDateTime } = data
+    const { code } = data
     const { tokens } = await oAuth2Client.getToken(code)
-    userCurrentDateTime = clientCurrentDateTime
 
     // According to the Google OAuth 2.0 documentation, the "sub" field of the
     // ID token is the unique-identifier key for Google users.

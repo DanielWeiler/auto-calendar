@@ -1,6 +1,5 @@
 import { calendar_v3, google } from 'googleapis'
 import oAuth2Client from '../configs/google-client.config'
-import { userCurrentDateTime } from '../services/sign-in.service'
 import { EventData, WeeklyHoursData } from '../types'
 import {
   addTimeToDate,
@@ -124,7 +123,7 @@ async function createEvent(data: EventData): Promise<void> {
       deadline = addTimeToDate(deadlineTime, deadlineDate)
       deadlineMessage = `Deadline: ${deadline}`
     }
-    
+
     await autoSchedule(summary, durationNumber, deadline, deadlineMessage)
   }
 }
@@ -134,8 +133,7 @@ async function manualSchedule(
   summary: string,
   manualDate: string,
   manualTime: string,
-  durationNumber: number,
-
+  durationNumber: number
 ) {
   const startDateTime = addTimeToDate(manualTime, manualDate)
   const endDateTime = getEndTime(startDateTime, durationNumber)
@@ -153,11 +151,7 @@ async function autoSchedule(
   deadlineMessage = '',
   eventId = ''
 ): Promise<void> {
-  const startDateTime = await findAvailability(
-    userCurrentDateTime,
-    durationNumber,
-    deadline
-  )
+  const startDateTime = await findAvailability(durationNumber, deadline)
 
   // If an available time could be found, the event is scheduled.
   if (startDateTime) {
@@ -169,7 +163,6 @@ async function autoSchedule(
       // the event before it's deadline.
       if (endDateTime > deadline) {
         await findAvailabilityBeforeDeadline(
-          userCurrentDateTime,
           durationNumber,
           deadline,
           summary,
@@ -186,7 +179,13 @@ async function autoSchedule(
         )
       }
     } else {
-      await scheduleEvent(summary, startDateTime, endDateTime, undefined, eventId)
+      await scheduleEvent(
+        summary,
+        startDateTime,
+        endDateTime,
+        undefined,
+        eventId
+      )
     }
   }
   // If not, it is because a time could not be found before the given event
@@ -195,7 +194,6 @@ async function autoSchedule(
   else {
     assertDefined(deadline)
     await findAvailabilityBeforeDeadline(
-      userCurrentDateTime,
       durationNumber,
       deadline,
       summary,
@@ -227,9 +225,11 @@ async function scheduleEvent(
       requestBody: {
         start: {
           dateTime: startDateTime,
+          timeZone: await getUserTimeZone(),
         },
         end: {
           dateTime: endDateTime,
+          timeZone: await getUserTimeZone(),
         },
       },
     })
@@ -279,11 +279,11 @@ async function rescheduleConflictingEvents(
   for (let i = 0; i < conflictingEvents.length; i++) {
     const event = conflictingEvents[i]
 
-    // This if statement disregards events not concerned with conflicts since 
-    // manually scheduled events can be scheduled at any time, regardless of 
+    // This if statement disregards events not concerned with conflicts since
+    // manually scheduled events can be scheduled at any time, regardless of
     // what else is on the calendar at that time. These events will not be
     // disregarded for auto scheduled events because auto scheduled events are
-    // never scheduled over these events. This statement also skips over the 
+    // never scheduled over these events. This statement also skips over the
     // high priority event that created the conflict(s).
     if (
       event.description === 'Working hours' ||
@@ -322,7 +322,6 @@ async function rescheduleConflictingEvents(
 // Finds the next available time slot on the user's calendar for an event to be
 // scheduled
 async function findAvailability(
-  givenQueryStartTime: Date,
   eventDuration: number,
   deadline: Date | null = null,
   highPriority = false
@@ -331,7 +330,7 @@ async function findAvailability(
   let findingAvailability = true
   let queryDayCount = 0
   while (findingAvailability) {
-    const queryStartTime = new Date(givenQueryStartTime)
+    const queryStartTime = new Date()
 
     // Set <queryStartTime> to current day being queried for availability
     queryStartTime.setDate(queryStartTime.getDate() + queryDayCount)
@@ -370,7 +369,6 @@ async function findAvailability(
 // If no empty time slots long enough for an event could be found before its
 // deadline, this function is called.
 async function findAvailabilityBeforeDeadline(
-  userCurrentDateTime: Date,
   durationNumber: number,
   deadline: Date,
   summary: string,
@@ -379,7 +377,6 @@ async function findAvailabilityBeforeDeadline(
 ): Promise<void> {
   const highpriority = true
   const startDateTime = await findAvailability(
-    userCurrentDateTime,
     durationNumber,
     deadline,
     highpriority
@@ -396,7 +393,13 @@ async function findAvailabilityBeforeDeadline(
         'endDateTime is after deadline: send warning that no hp time could be found'
       )
     } else {
-      await scheduleEvent(summary, startDateTime, endDateTime, deadlineMessage, eventId)
+      await scheduleEvent(
+        summary,
+        startDateTime,
+        endDateTime,
+        deadlineMessage,
+        eventId
+      )
       await rescheduleConflictingEvents(startDateTime, endDateTime, summary)
     }
   }
@@ -617,17 +620,19 @@ async function getEventsList(
     singleEvents: true,
     timeMin: queryStartTime.toISOString(),
     timeMax: queryEndTime.toISOString(),
+    timeZone: await getUserTimeZone(),
   })
   assertDefined(eventsList.data.items)
 
   return eventsList.data.items
 }
 
-async function getUserTimeZone(): Promise<string | null | undefined> {
+async function getUserTimeZone(): Promise<string> {
   const cal = await calendar.calendars.get({
     auth: oAuth2Client,
     calendarId: 'primary',
   })
+  assertDefined(cal.data.timeZone)
 
   return cal.data.timeZone
 }

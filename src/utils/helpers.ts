@@ -1,5 +1,3 @@
-import { userCurrentDateTime } from '../services/sign-in.service'
-
 export function addTimeToDate(time: string, date: Date | string): Date {
   const dateTime = new Date(date)
   const t = parseTime(time)
@@ -18,7 +16,7 @@ export function assertDefined<T>(
 export function getNextDayOfTheWeek(
   dayName: string,
   excludeToday = false,
-  refDate = new Date(userCurrentDateTime)
+  refDate = new Date()
 ): Date | undefined {
   const dayOfWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].indexOf(
     dayName.slice(0, 2)

@@ -17,18 +17,25 @@ import signInService from './services/sign-in'
 function App() {
   const [user, setUser] = useState('')
 
-  const handleLogin = (
+  const handleLogin = async (
     response: GoogleLoginResponse | GoogleLoginResponseOffline
   ) => {
     const { code } = response
-    code ? setUser(code) : null
 
-    signInService.signIn({ code })
-    console.log('signed in')
+    try {
+      await signInService.signIn({ code })
+      code ? setUser(code) : null
+    } catch (error) {
+      console.log(
+        '500 Internal Server Error \n Oh no! Something bad happened. Please',
+        'come back later when we have fixed this problem. Thanks.'
+      )
+    }
   }
 
   const handleLoginFailure = (error: object) => {
-    console.log(error)
+    // insert notification
+    console.log('Failed to log in', error)
   }
 
   const handleLogout = () => {
@@ -36,6 +43,7 @@ function App() {
   }
 
   const handleLogoutFailure = () => {
+    // insert notification
     console.log('Failed to log out')
   }
 

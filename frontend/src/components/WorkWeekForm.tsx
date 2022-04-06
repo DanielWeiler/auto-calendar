@@ -39,8 +39,15 @@ const WorkingHoursForm = () => {
     },
   })
 
-  const onSubmit = (data: WeeklyHoursFormValues) => {
-    eventService.setWorkingHours('/set-working-hours', { data })
+  const onSubmit = async (data: WeeklyHoursFormValues) => {
+    try {
+      await eventService.setWorkingHours('/set-working-hours', { data })
+    } catch (error) {
+      console.log(
+        '500 Internal Server Error \n Oh no! Something bad happened. Please',
+        'come back later when we have fixed this problem. Thanks.'
+      )
+    }
   }
 
   return (

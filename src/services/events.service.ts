@@ -11,12 +11,10 @@ const calendar = google.calendar('v3')
 
 function setWorkingHours(weeklyHours: WeeklyHoursData): void {
   Object.entries(weeklyHours.data).map(async (item) => {
-    const date = getNextDayOfTheWeek(item[0])
-    assertDefined(date)
-
     const eventName = 'Working hours'
     const colorId = '4'
     const weekDay = item[0]
+    const date = getNextDayOfTheWeek(weekDay)
 
     // Check if the day has working hours
     if (item[1].startTime || item[1].endTime !== '') {
@@ -66,12 +64,10 @@ async function scheduleWeeklyEvent(
 
 function setUnavailableHours(weeklyHours: WeeklyHoursData): void {
   Object.entries(weeklyHours.data).map(async (item) => {
-    const date = getNextDayOfTheWeek(item[0])
-    assertDefined(date)
-
     const eventName = 'Unavailable hours'
     const colorId = '8'
     const weekDay = item[0]
+    const date = getNextDayOfTheWeek(weekDay)
 
     // Check if the day has unavailable hours
     if (item[1].startTime || item[1].endTime !== '') {

@@ -19,6 +19,7 @@ const setUnavailableHours = async (
 
 const createReminder = async (endpoint: string, reminderObject: object) => {
   const response = await axios.post(`${baseUrl}${endpoint}`, reminderObject)
+  console.log(response)
   return response.data
 }
 

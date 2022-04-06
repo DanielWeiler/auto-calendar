@@ -17,11 +17,10 @@ export function getNextDayOfTheWeek(
   dayName: string,
   excludeToday = false,
   refDate = new Date()
-): Date | undefined {
+): Date {
   const dayOfWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].indexOf(
     dayName.slice(0, 2)
   )
-  if (dayOfWeek < 0) return
   refDate.setHours(0, 0, 0, 0)
   refDate.setDate(
     refDate.getDate() +

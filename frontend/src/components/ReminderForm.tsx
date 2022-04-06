@@ -16,7 +16,7 @@ const ReminderForm = () => {
     },
   })
 
-  const onSubmit = (data: ReminderFormValues) => {
+  const onSubmit = async (data: ReminderFormValues) => {
     const { manualDate, manualTime, deadlineDate, deadlineTime } = data
     if (manualDate) {
       if (!manualTime) {
@@ -56,7 +56,14 @@ const ReminderForm = () => {
       }
     }
 
-    eventService.createReminder('/create-event', { data })
+    try {
+      await eventService.createReminder('/create-event', { data })
+    } catch (error) {
+      console.log(
+        '500 Internal Server Error \n Oh no! Something bad happened. Please',
+        'come back later when we have fixed this problem. Thanks.'
+      )
+    }
   }
 
   return (

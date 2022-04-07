@@ -2,7 +2,7 @@ import React from 'react'
 import { Button, Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import eventService from '../services/events'
-import { ReminderFormValues } from '../types'
+import { ReminderFormValues, UserMessage } from '../types'
 
 const ReminderForm = () => {
   const {
@@ -57,7 +57,11 @@ const ReminderForm = () => {
     }
 
     try {
-      await eventService.createReminder('/create-event', { data })
+      const userMessage: UserMessage = await eventService.createReminder(
+        '/create-event',
+        { data }
+      )
+      console.log(userMessage)
     } catch (error) {
       console.log(
         '500 Internal Server Error \n Oh no! Something bad happened. Please',

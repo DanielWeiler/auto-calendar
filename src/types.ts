@@ -110,3 +110,8 @@ export interface EventData {
   deadlineDate: string
   deadlineTime: string
 }
+
+export interface UserMessage {
+  eventBeingScheduled: string,
+  conflictingEvents: string
+}

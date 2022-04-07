@@ -37,3 +37,8 @@ export interface ReminderFormValues {
   deadlineDate: string
   deadlineTime: string
 }
+
+export interface UserMessage {
+  eventBeingScheduled: string,
+  conflictingEvents: string
+}

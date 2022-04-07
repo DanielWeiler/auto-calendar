@@ -1,6 +1,6 @@
 import { calendar_v3, google } from 'googleapis'
 import oAuth2Client from '../configs/google-client.config'
-import { EventData, WeeklyHoursData } from '../types'
+import { EventData, UserMessage, WeeklyHoursData } from '../types'
 import {
   addTimeToDate,
   assertDefined,
@@ -99,7 +99,7 @@ function setUnavailableHours(weeklyHours: WeeklyHoursData): void {
   })
 }
 
-async function createEvent(data: EventData): Promise<void> {
+async function createEvent(data: EventData): Promise<UserMessage> {
   const {
     summary,
     duration,
@@ -110,8 +110,15 @@ async function createEvent(data: EventData): Promise<void> {
   } = data
   const durationNumber = parseInt(duration)
 
+  let userMessage: UserMessage
+
   if (manualDate && manualTime) {
-    await manualSchedule(summary, manualDate, manualTime, durationNumber)
+    userMessage = await manualSchedule(
+      summary,
+      manualDate,
+      manualTime,
+      durationNumber
+    )
   } else {
     let deadline = null
     let deadlineMessage = ''
@@ -120,8 +127,15 @@ async function createEvent(data: EventData): Promise<void> {
       deadlineMessage = `Deadline: ${deadline}`
     }
 
-    await autoSchedule(summary, durationNumber, deadline, deadlineMessage)
+    userMessage = await autoSchedule(
+      summary,
+      durationNumber,
+      deadline,
+      deadlineMessage
+    )
   }
+
+  return userMessage
 }
 
 // Schedules an event at the user given time
@@ -130,13 +144,24 @@ async function manualSchedule(
   manualDate: string,
   manualTime: string,
   durationNumber: number
-) {
+): Promise<UserMessage> {
+  const userMessage: UserMessage = {
+    eventBeingScheduled: 'Event scheduled',
+    conflictingEvents: '',
+  }
+
   const startDateTime = addTimeToDate(manualTime, manualDate)
   const endDateTime = getEndTime(startDateTime, durationNumber)
   const description = 'Manually scheduled'
 
   await scheduleEvent(summary, startDateTime, endDateTime, description)
-  await rescheduleConflictingEvents(startDateTime, endDateTime, summary)
+  userMessage.conflictingEvents = await rescheduleConflictingEvents(
+    startDateTime,
+    endDateTime,
+    summary
+  )
+
+  return userMessage
 }
 
 // Schedules an event according to calendar availability
@@ -146,7 +171,12 @@ async function autoSchedule(
   deadline: Date | null = null,
   deadlineMessage = '',
   eventId = ''
-): Promise<void> {
+): Promise<UserMessage> {
+  let userMessage: UserMessage = {
+    eventBeingScheduled: '',
+    conflictingEvents: '',
+  }
+
   const startDateTime = await findAvailability(durationNumber, deadline)
 
   // If an available time could be found, the event is scheduled.
@@ -158,7 +188,7 @@ async function autoSchedule(
       // time of the deadline, a high priority available time is queried for
       // the event before it's deadline.
       if (endDateTime > deadline) {
-        await findAvailabilityBeforeDeadline(
+        userMessage = await findAvailabilityBeforeDeadline(
           durationNumber,
           deadline,
           summary,
@@ -173,6 +203,7 @@ async function autoSchedule(
           deadlineMessage,
           eventId
         )
+        userMessage.eventBeingScheduled = startDateTime.toString()
       }
     } else {
       await scheduleEvent(
@@ -182,6 +213,7 @@ async function autoSchedule(
         undefined,
         eventId
       )
+      userMessage.eventBeingScheduled = startDateTime.toString()
     }
   }
   // If not, it is because a time could not be found before the given event
@@ -189,7 +221,7 @@ async function autoSchedule(
   // before it's deadline.
   else {
     assertDefined(deadline)
-    await findAvailabilityBeforeDeadline(
+    userMessage = await findAvailabilityBeforeDeadline(
       durationNumber,
       deadline,
       summary,
@@ -197,6 +229,8 @@ async function autoSchedule(
       eventId
     )
   }
+
+  return userMessage
 }
 
 function getEndTime(date: Date, minutes: number): Date {
@@ -260,7 +294,10 @@ async function rescheduleConflictingEvents(
   highPriorityEventStart: Date,
   highPriorityEventEnd: Date,
   highPriorityEventSummary: string
-): Promise<void> {
+): Promise<string> {
+  let conflictingEventsMessage = ''
+  let deadlineIssue = false
+
   const conflictingEvents = await getEventsList(
     highPriorityEventStart,
     highPriorityEventEnd
@@ -269,7 +306,7 @@ async function rescheduleConflictingEvents(
   // Length will always be at least 1 because the array contains the event
   // creating the conflict(s)
   if (conflictingEvents.length === 1) {
-    return
+    return conflictingEventsMessage
   }
 
   for (let i = 0; i < conflictingEvents.length; i++) {
@@ -305,14 +342,30 @@ async function rescheduleConflictingEvents(
       deadline = new Date(event.description)
     }
 
-    await autoSchedule(
+    const conflictingEventMessage = await autoSchedule(
       event.summary,
       durationNumber,
       deadline,
       undefined,
       event.id
     )
+
+    if (
+      conflictingEventMessage.eventBeingScheduled ===
+      'This event could not be scheduled before its deadline.'
+    ) {
+      deadlineIssue = true
+    } else {
+      conflictingEventsMessage = 'Conflicting events rescheduled.'
+    }
   }
+
+  if (deadlineIssue) {
+    conflictingEventsMessage =
+      'One or more conflicting events could not be rescheduled before their deadline.'
+  }
+
+  return conflictingEventsMessage
 }
 
 // Finds the next available time slot on the user's calendar for an event to be
@@ -370,7 +423,12 @@ async function findAvailabilityBeforeDeadline(
   summary: string,
   deadlineMessage: string,
   eventId = ''
-): Promise<void> {
+): Promise<UserMessage> {
+  const userMessage: UserMessage = {
+    eventBeingScheduled: '',
+    conflictingEvents: '',
+  }
+
   const highpriority = true
   const startDateTime = await findAvailability(
     durationNumber,
@@ -378,16 +436,17 @@ async function findAvailabilityBeforeDeadline(
     highpriority
   )
 
+  const warningMessage =
+    'This event could not be scheduled before its deadline.'
+
   // If an available time could be found before the deadline, the event is
   // scheduled.
   if (startDateTime) {
     const endDateTime = getEndTime(startDateTime, durationNumber)
     // If the available time found on the day of the deadline is past the
-    // time of the deadline, ...
+    // time of the deadline, the event is not scheduled and the user is notified.
     if (endDateTime > deadline) {
-      console.log(
-        'endDateTime is after deadline: send warning that no hp time could be found'
-      )
+      userMessage.eventBeingScheduled = warningMessage
     } else {
       await scheduleEvent(
         summary,
@@ -396,18 +455,23 @@ async function findAvailabilityBeforeDeadline(
         deadlineMessage,
         eventId
       )
-      await rescheduleConflictingEvents(startDateTime, endDateTime, summary)
+      userMessage.eventBeingScheduled = startDateTime.toString()
+      userMessage.conflictingEvents = await rescheduleConflictingEvents(
+        startDateTime,
+        endDateTime,
+        summary
+      )
     }
   }
   // If not, it is because either 1) every time slot between now and the
   // deadline was already filled with a high priority event or 2) there was not
-  // enough time between high priority events to schedule this event.
-  // Therefore...
+  // enough time between high priority events to schedule this event. And the
+  // event is not scheduled and the user is notified.
   else {
-    console.log(
-      'queryDayCount has past deadline: send warning that no hp time could be found'
-    )
+    userMessage.eventBeingScheduled = warningMessage
   }
+
+  return userMessage
 }
 
 // Finds the next available time slot for the day

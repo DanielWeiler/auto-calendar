@@ -45,6 +45,7 @@ const WeekAvailabilityForm = () => {
   })
 
   const onSubmit = async (daysData: WeeklyHoursFormValues) => {
+    let error = false
     Object.keys(daysData).forEach((day: string) => {
       if (
         !daysData[day as keyof WeeklyHoursFormValues].startTime !==
@@ -68,10 +69,15 @@ const WeekAvailabilityForm = () => {
                   } time`,
                 }
               )
+              error = true
           }
         )
       }
     })
+
+    if (error) {
+      return
+    }
 
     try {
       await eventService.setUnavailableHours('/set-unavailable-hours', {

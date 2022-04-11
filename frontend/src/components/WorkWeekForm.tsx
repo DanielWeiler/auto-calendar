@@ -45,6 +45,7 @@ const WorkingHoursForm = () => {
   })
 
   const onSubmit = async (daysData: WeeklyHoursFormValues) => {
+    let error = false
     Object.keys(daysData).forEach((day: string) => {
       if (
         !daysData[day as keyof WeeklyHoursFormValues].startTime !==
@@ -68,10 +69,15 @@ const WorkingHoursForm = () => {
                   } time`,
                 }
               )
+              error = true
           }
         )
       }
     })
+
+    if (error) {
+      return
+    }
 
     try {
       await eventService.setWorkingHours('/set-working-hours', { daysData })

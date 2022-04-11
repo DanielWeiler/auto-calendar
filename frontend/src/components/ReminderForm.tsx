@@ -10,6 +10,7 @@ const ReminderForm = () => {
     handleSubmit,
     formState: { errors },
     setError,
+    reset
   } = useForm<ReminderFormValues>({
     defaultValues: {
       duration: '30',
@@ -61,6 +62,7 @@ const ReminderForm = () => {
         '/create-event',
         { data }
       )
+      reset()
       console.log(userMessage)
     } catch (error) {
       console.log(

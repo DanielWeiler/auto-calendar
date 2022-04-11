@@ -2,11 +2,16 @@ import React from 'react'
 import { Button, Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import eventService from '../services/events'
-import { WeeklyHoursFormValues } from '../types'
+import { TimePeriod, WeeklyHoursFormValues } from '../types'
 import WorkDayForm from './WeekDayForm'
 
 const WorkingHoursForm = () => {
-  const { register, handleSubmit } = useForm<WeeklyHoursFormValues>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<WeeklyHoursFormValues>({
     defaultValues: {
       Monday: {
         startTime: '08:00:00',
@@ -39,9 +44,37 @@ const WorkingHoursForm = () => {
     },
   })
 
-  const onSubmit = async (data: WeeklyHoursFormValues) => {
+  const onSubmit = async (daysData: WeeklyHoursFormValues) => {
+    Object.keys(daysData).forEach((day: string) => {
+      if (
+        !daysData[day as keyof WeeklyHoursFormValues].startTime !==
+        !daysData[day as keyof WeeklyHoursFormValues].endTime
+      ) {
+        Object.keys(daysData[day as keyof WeeklyHoursFormValues]).forEach(
+          (time) => {
+            !daysData[day as keyof WeeklyHoursFormValues][
+              time as keyof TimePeriod
+            ] &&
+              setError(
+                `${day as keyof WeeklyHoursFormValues}.${
+                  time as keyof TimePeriod
+                }`,
+                {
+                  type: 'required',
+                  message: `${
+                    time === 'startTime' ? 'A start' : 'An end'
+                  } time is needed for the given ${
+                    time === 'startTime' ? 'end' : 'start'
+                  } time`,
+                }
+              )
+          }
+        )
+      }
+    })
+
     try {
-      await eventService.setWorkingHours('/set-working-hours', { data })
+      await eventService.setWorkingHours('/set-working-hours', { daysData })
     } catch (error) {
       console.log(
         '500 Internal Server Error \n Oh no! Something bad happened. Please',
@@ -53,13 +86,23 @@ const WorkingHoursForm = () => {
   return (
     <div>
       <Form onSubmit={handleSubmit(onSubmit)}>
-        <WorkDayForm day="Monday" register={register} />
-        <WorkDayForm day="Tuesday" register={register} />
-        <WorkDayForm day="Wednesday" register={register} />
-        <WorkDayForm day="Thursday" register={register} />
-        <WorkDayForm day="Friday" register={register} />
-        <WorkDayForm day="Saturday" register={register} />
-        <WorkDayForm day="Sunday" register={register} />
+        {[
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
+        ].map((day) => (
+          <WorkDayForm
+            key={day}
+            day={day}
+            register={register}
+            error={errors[day as keyof WeeklyHoursFormValues]}
+          />
+        ))}
+
         <Button
           id="save"
           type="submit"

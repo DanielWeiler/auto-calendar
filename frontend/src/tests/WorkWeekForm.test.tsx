@@ -11,16 +11,25 @@ describe('WorkingHoursForm', () => {
     HTMLElement
   > | null = null
 
-  const mockRegister = jest.fn()
   let innerComponent: RenderResult<
     typeof import('@testing-library/dom/types/queries'),
     HTMLElement
   > | null = null
 
+  const mockRegister = jest.fn()
+  const mockError = {
+    type: '',
+    message: '',
+  }
+
   beforeEach(() => {
     component = render(<WorkingHoursForm />)
     innerComponent = render(
-      <WorkDayForm day="(weekDayName)" register={mockRegister} />
+      <WorkDayForm
+        day="(weekDayName)"
+        register={mockRegister}
+        error={mockError}
+      />
     )
   })
 

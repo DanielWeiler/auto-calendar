@@ -28,13 +28,15 @@ function setUnavailableHours(
   }
 }
 
-async function createEvent(
+function createEvent(
   req: CreateEventRequest,
   res: Response,
   next: NextFunction
-): Promise<void> {
+): void {
   try {
-    res.send(await eventsService.createEvent(req.body.data))
+    void (async () => {
+      res.send(await eventsService.createEvent(req.body.data))
+    })()
   } catch (error) {
     console.error('Error while creating event')
     next(error)

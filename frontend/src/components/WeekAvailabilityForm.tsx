@@ -122,7 +122,7 @@ const WeekAvailabilityForm = () => {
     }
 
     try {
-      await eventService.setUnavailableHours('/set-unavailable-hours', {
+      await eventService.setUnavailableHours('/set-available-hours', {
         data,
       })
     } catch (error) {

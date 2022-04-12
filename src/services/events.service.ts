@@ -10,16 +10,16 @@ require('express-async-errors')
 const calendar = google.calendar('v3')
 
 function setWorkingHours(weeklyHours: WeeklyHoursData): void {
-  Object.entries(weeklyHours.data).map(async (item) => {
+  Object.entries(weeklyHours.data).map(async (day) => {
     const eventName = 'Working hours'
     const colorId = '4'
-    const weekDay = item[0]
+    const weekDay = day[0]
     const date = getNextDayOfTheWeek(weekDay)
 
     // Check if the day has working hours
-    if (item[1].startTime && item[1].endTime) {
-      const startWorkingHours = addTimeToDate(item[1].startTime, date)
-      const endWorkingHours = addTimeToDate(item[1].endTime, date)
+    if (day[1].startTime && day[1].endTime) {
+      const startWorkingHours = addTimeToDate(day[1].startTime, date)
+      const endWorkingHours = addTimeToDate(day[1].endTime, date)
 
       await scheduleWeeklyEvent(
         eventName,
@@ -63,10 +63,10 @@ async function scheduleWeeklyEvent(
 }
 
 function setUnavailableHours(weeklyHours: WeeklyHoursData): void {
-  Object.entries(weeklyHours.data).map(async (item) => {
+  Object.entries(weeklyHours.data).map(async (day) => {
     const eventName = 'Unavailable hours'
     const colorId = '8'
-    const weekDay = item[0]
+    const weekDay = day[0]
     const date = getNextDayOfTheWeek(weekDay)
 
     const startUnavailableHoursNumber = date.setHours(0, 0, 0, 0)
@@ -77,9 +77,9 @@ function setUnavailableHours(weeklyHours: WeeklyHoursData): void {
 
     // Check if the day has available hours and if not then the whole day is 
     // set as unavailable
-    if (item[1].startTime && item[1].endTime) {
-      const startAvailableHours = addTimeToDate(item[1].startTime, date)
-      const endAvailableHours = addTimeToDate(item[1].endTime, date)
+    if (day[1].startTime && day[1].endTime) {
+      const startAvailableHours = addTimeToDate(day[1].startTime, date)
+      const endAvailableHours = addTimeToDate(day[1].endTime, date)
 
       await scheduleWeeklyEvent(
         eventName,

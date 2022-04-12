@@ -3,20 +3,20 @@ const baseUrl = '/api/events'
 
 const setWorkingHours = async (
   endpoint: string,
-  workingHoursObject: object
+  workingHoursData: object
 ) => {
-  await axios.post(`${baseUrl}${endpoint}`, workingHoursObject)
+  await axios.post(`${baseUrl}${endpoint}`, workingHoursData)
 }
 
 const setUnavailableHours = async (
   endpoint: string,
-  unavailableHoursObject: object
+  unavailableHoursData: object
 ) => {
-  await axios.post(`${baseUrl}${endpoint}`, unavailableHoursObject)
+  await axios.post(`${baseUrl}${endpoint}`, unavailableHoursData)
 }
 
-const createReminder = async (endpoint: string, reminderObject: object) => {
-  const response = await axios.post(`${baseUrl}${endpoint}`, reminderObject)
+const createReminder = async (endpoint: string, reminderData: object) => {
+  const response = await axios.post(`${baseUrl}${endpoint}`, reminderData)
   return response.data
 }
 

@@ -77,7 +77,7 @@ function App() {
             <Routes>
               <Route path="/" element={<ReminderForm />} />
               <Route path="/set-working-hours" element={<WorkingHoursForm />} />
-              <Route path="/set-unavailable-hours" element={<WeekAvailabilityForm />} />
+              <Route path="/set-available-hours" element={<WeekAvailabilityForm />} />
             </Routes>
           </div>
         )}

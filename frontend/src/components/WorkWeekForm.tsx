@@ -69,9 +69,18 @@ const WorkingHoursForm = () => {
                   } time`,
                 }
               )
-              error = true
+            error = true
           }
         )
+      } else if (
+        daysData[day as keyof WeeklyHoursFormValues].startTime >
+        daysData[day as keyof WeeklyHoursFormValues].endTime
+      ) {
+        setError(`${day as keyof WeeklyHoursFormValues}.endTime`, {
+          type: 'required',
+          message: 'Start time must be before end time',
+        })
+        error = true
       }
     })
 

@@ -17,7 +17,7 @@ function setWorkingHours(weeklyHours: WeeklyHoursData): void {
     const date = getNextDayOfTheWeek(weekDay)
 
     // Check if the day has working hours
-    if (item[1].startTime || item[1].endTime !== '') {
+    if (item[1].startTime && item[1].endTime) {
       const startWorkingHours = addTimeToDate(item[1].startTime, date)
       const endWorkingHours = addTimeToDate(item[1].endTime, date)
 
@@ -69,16 +69,17 @@ function setUnavailableHours(weeklyHours: WeeklyHoursData): void {
     const weekDay = item[0]
     const date = getNextDayOfTheWeek(weekDay)
 
-    // Check if the day has unavailable hours
-    if (item[1].startTime || item[1].endTime !== '') {
+    const startUnavailableHoursNumber = date.setHours(0, 0, 0, 0)
+    const startUnavailableHours = new Date(startUnavailableHoursNumber)
+
+    const endUnavailableHoursNumber = date.setHours(23, 59, 0, 0)
+    const endUnavailableHours = new Date(endUnavailableHoursNumber)
+
+    // Check if the day has available hours and if not then the whole day is 
+    // set as unavailable
+    if (item[1].startTime && item[1].endTime) {
       const startAvailableHours = addTimeToDate(item[1].startTime, date)
       const endAvailableHours = addTimeToDate(item[1].endTime, date)
-
-      const startUnavailableHoursNumber = date.setHours(0, 0, 0, 0)
-      const startUnavailableHours = new Date(startUnavailableHoursNumber)
-
-      const endUnavailableHoursNumber = date.setHours(24, 0, 0, 0)
-      const endUnavailableHours = new Date(endUnavailableHoursNumber)
 
       await scheduleWeeklyEvent(
         eventName,
@@ -92,6 +93,14 @@ function setUnavailableHours(weeklyHours: WeeklyHoursData): void {
         eventName,
         colorId,
         endAvailableHours,
+        endUnavailableHours,
+        weekDay
+      )
+    } else {
+      await scheduleWeeklyEvent(
+        eventName,
+        colorId,
+        startUnavailableHours,
         endUnavailableHours,
         weekDay
       )

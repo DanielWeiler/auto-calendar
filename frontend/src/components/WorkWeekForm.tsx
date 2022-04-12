@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Button, Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import eventService from '../services/events'
@@ -44,16 +44,49 @@ const WorkingHoursForm = () => {
     },
   })
 
-  const onSubmit = async (daysData: WeeklyHoursFormValues) => {
+  const [checkedState, setCheckedState] = useState([
+    { name: 'Monday', display: '' },
+    { name: 'Tuesday', display: '' },
+    { name: 'Wednesday', display: '' },
+    { name: 'Thursday', display: '' },
+    { name: 'Friday', display: '' },
+    { name: 'Saturday', display: 'none' },
+    { name: 'Sunday', display: 'none' },
+  ])
+
+  const handleOnChange = (position: number) => {
+    const updatedCheckedState = checkedState.map(({ name, display }, index) => {
+      if (index === position) {
+        return { name, display: display ? '' : 'none' }
+      } else {
+        return { name, display }
+      }
+    })
+
+    setCheckedState(updatedCheckedState)
+  }
+
+  const onSubmit = async (data: WeeklyHoursFormValues) => {
+    checkedState.map(({ name, display }) => {
+      if (display === 'none') {
+        Object.entries(data).map((day) => {
+          if (day[0] === name) {
+            day[1].startTime = ''
+            day[1].endTime = ''
+          }
+        })
+      }
+    })
+
     let error = false
-    Object.keys(daysData).forEach((day: string) => {
+    Object.keys(data).forEach((day: string) => {
       if (
-        !daysData[day as keyof WeeklyHoursFormValues].startTime !==
-        !daysData[day as keyof WeeklyHoursFormValues].endTime
+        !data[day as keyof WeeklyHoursFormValues].startTime !==
+        !data[day as keyof WeeklyHoursFormValues].endTime
       ) {
-        Object.keys(daysData[day as keyof WeeklyHoursFormValues]).forEach(
+        Object.keys(data[day as keyof WeeklyHoursFormValues]).forEach(
           (time) => {
-            !daysData[day as keyof WeeklyHoursFormValues][
+            !data[day as keyof WeeklyHoursFormValues][
               time as keyof TimePeriod
             ] &&
               setError(
@@ -73,12 +106,12 @@ const WorkingHoursForm = () => {
           }
         )
       } else if (
-        daysData[day as keyof WeeklyHoursFormValues].startTime >
-        daysData[day as keyof WeeklyHoursFormValues].endTime
+        data[day as keyof WeeklyHoursFormValues].startTime >
+        data[day as keyof WeeklyHoursFormValues].endTime
       ) {
         setError(`${day as keyof WeeklyHoursFormValues}.endTime`, {
           type: 'required',
-          message: 'Start time must be before end time',
+          message: 'The start time must be before the end time',
         })
         error = true
       }
@@ -89,7 +122,7 @@ const WorkingHoursForm = () => {
     }
 
     try {
-      await eventService.setWorkingHours('/set-working-hours', { daysData })
+      await eventService.setWorkingHours('/set-working-hours', { data })
     } catch (error) {
       console.log(
         '500 Internal Server Error \n Oh no! Something bad happened. Please',
@@ -100,21 +133,24 @@ const WorkingHoursForm = () => {
 
   return (
     <div>
+      {checkedState.map(({ name, display }, index) => (
+        <input
+          key={name}
+          id={name}
+          type="checkbox"
+          checked={display ? false : true}
+          onChange={() => handleOnChange(index)}
+        />
+      ))}
+
       <Form onSubmit={handleSubmit(onSubmit)}>
-        {[
-          'Monday',
-          'Tuesday',
-          'Wednesday',
-          'Thursday',
-          'Friday',
-          'Saturday',
-          'Sunday',
-        ].map((day) => (
+        {checkedState.map(({ name, display }) => (
           <WorkDayForm
-            key={day}
-            day={day}
+            key={name}
+            day={name}
+            display={display}
             register={register}
-            error={errors[day as keyof WeeklyHoursFormValues]}
+            error={errors[name as keyof WeeklyHoursFormValues]}
           />
         ))}
 

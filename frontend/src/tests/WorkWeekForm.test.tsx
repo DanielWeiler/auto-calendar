@@ -26,7 +26,8 @@ describe('WorkingHoursForm', () => {
     component = render(<WorkingHoursForm />)
     innerComponent = render(
       <WorkDayForm
-        day="(weekDayName)"
+        day='(weekDayName)'
+        display=''
         register={mockRegister}
         error={mockError}
       />

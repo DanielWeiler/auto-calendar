@@ -134,13 +134,16 @@ const WorkingHoursForm = () => {
   return (
     <div>
       {checkedState.map(({ name, display }, index) => (
+        <span key={name} className="weekDays-selector">
         <input
-          key={name}
           id={name}
           type="checkbox"
+          className="weekday"
           checked={display ? false : true}
           onChange={() => handleOnChange(index)}
         />
+        <label htmlFor={name}>{name.slice(0, 1)}</label>
+      </span>
       ))}
 
       <Form onSubmit={handleSubmit(onSubmit)}>

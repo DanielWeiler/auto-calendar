@@ -3,6 +3,8 @@ import { Button, Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import eventService from '../services/events'
 import { TimePeriod, WeeklyHoursFormValues } from '../types'
+import { serverErrorMessage } from '../utils/helpers'
+import Notification from './Notification'
 import WeekDayForm from './WeekDayForm'
 
 const WeekAvailabilityForm = () => {
@@ -53,6 +55,31 @@ const WeekAvailabilityForm = () => {
     { name: 'Saturday', display: '' },
     { name: 'Sunday', display: '' },
   ])
+
+  let newNotification = {
+    style: '',
+    heading: '',
+    body: '',
+  }
+  const [notification, setNotification] = useState(newNotification)
+
+  const createNotification = (style: string, heading: string, body = '') => {
+    newNotification = {
+      style: style,
+      heading: heading,
+      body: body,
+    }
+
+    setNotification(newNotification)
+    setTimeout(() => {
+      setNotification({
+        style: '',
+        heading: '',
+        body: '',
+      })
+    }, 5000)
+  }
+
 
   const handleOnChange = (position: number) => {
     const updatedCheckedState = checkedState.map(({ name, display }, index) => {
@@ -125,16 +152,19 @@ const WeekAvailabilityForm = () => {
       await eventService.setUnavailableHours('/set-available-hours', {
         data,
       })
+      createNotification('success', 'Available hours set')
     } catch (error) {
-      console.log(
-        '500 Internal Server Error \n Oh no! Something bad happened. Please',
-        'come back later when we have fixed this problem. Thanks.'
+      createNotification(
+        'danger',
+        '500 Internal Server Error',
+        serverErrorMessage
       )
     }
   }
 
   return (
     <div>
+      <Notification notification={notification} />
       {checkedState.map(({ name, display }, index) => (
         <span key={name} className="weekDays-selector">
           <input

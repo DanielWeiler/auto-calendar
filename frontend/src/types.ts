@@ -22,3 +22,9 @@ export interface ReminderFormValues {
   deadlineDate: string
   deadlineTime: string
 }
+
+export interface NotificationDetails {
+  heading: string
+  body: string
+  style: string
+}

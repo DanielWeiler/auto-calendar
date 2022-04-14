@@ -3,7 +3,7 @@ import { Button, Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import eventService from '../services/events'
 import { ReminderFormValues } from '../types'
-import { serverErrorMessage } from '../utils/helpers'
+import { serverErrorMessage, warningMessages } from '../utils/helpers'
 import Notification from './Notification'
 
 const ReminderForm = () => {
@@ -19,12 +19,52 @@ const ReminderForm = () => {
     },
   })
 
-  const [message, setMessage] = useState('')
+  let newNotification = {
+    style: '',
+    heading: '',
+    body: '',
+  }
+  const [notification, setNotification] = useState(newNotification)
 
   const createNotification = (message: string) => {
-    setMessage(message)
+    // Text that is unnecessary for the user is removed
+    if (message.includes('Manually scheduled')) {
+      message = message.substring(18)
+    }
+
+    newNotification = {
+      style: 'success',
+      heading: 'Reminder scheduled',
+      body: message,
+    }
+
+    let warning = false
+    warningMessages.map((warningMessage) =>
+      message === warningMessage ? (warning = true) : null
+    )
+
+    if (warning) {
+      newNotification.style = 'warning'
+      newNotification.heading = 'Reminder scheduled with conflicts'
+    } else if (
+      message.includes(
+        'There was no time slot available for this event before its deadline.'
+      )
+    ) {
+      newNotification.style = 'danger'
+      newNotification.heading = 'Reminder was not scheduled'
+    } else if (message === serverErrorMessage) {
+      newNotification.style = 'danger'
+      newNotification.heading = '500 Internal Server Error'
+    }
+
+    setNotification(newNotification)
     setTimeout(() => {
-      setMessage('')
+      setNotification({
+        style: '',
+        heading: '',
+        body: '',
+      })
     }, 10000)
   }
 
@@ -116,7 +156,7 @@ const ReminderForm = () => {
 
   return (
     <div>
-      <Notification message={message} />
+      <Notification notification={notification} />
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Form.Control
           id="summary"

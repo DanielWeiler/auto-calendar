@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Button, Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import eventService from '../services/events'
-import { ReminderFormValues, UserMessage } from '../types'
+import { ReminderFormValues } from '../types'
+import { serverErrorMessage } from '../utils/helpers'
+import Notification from './Notification'
 
 const ReminderForm = () => {
   const {
@@ -16,6 +18,15 @@ const ReminderForm = () => {
       duration: '30',
     },
   })
+
+  const [message, setMessage] = useState('')
+
+  const createNotification = (message: string) => {
+    setMessage(message)
+    setTimeout(() => {
+      setMessage('')
+    }, 10000)
+  }
 
   const durationOptions = [
     { value: '5', text: '5 minutes' },
@@ -92,22 +103,20 @@ const ReminderForm = () => {
     }
 
     try {
-      const userMessage: UserMessage = await eventService.createReminder(
+      const reminderMessage: string = await eventService.createReminder(
         '/create-event',
         { data }
       )
       reset()
-      console.log(userMessage)
+      createNotification(reminderMessage)
     } catch (error) {
-      console.log(
-        '500 Internal Server Error \n Oh no! Something bad happened. Please',
-        'come back later when we have fixed this problem. Thanks.'
-      )
+      createNotification(serverErrorMessage)
     }
   }
 
   return (
     <div>
+      <Notification message={message} />
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Form.Control
           id="summary"

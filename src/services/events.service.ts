@@ -75,7 +75,7 @@ function setUnavailableHours(weeklyHours: WeeklyHoursData): void {
     const endUnavailableHoursNumber = date.setHours(23, 59, 0, 0)
     const endUnavailableHours = new Date(endUnavailableHoursNumber)
 
-    // Check if the day has available hours and if not then the whole day is 
+    // Check if the day has available hours and if not then the whole day is
     // set as unavailable
     if (day[1].startTime && day[1].endTime) {
       const startAvailableHours = addTimeToDate(day[1].startTime, date)
@@ -108,7 +108,7 @@ function setUnavailableHours(weeklyHours: WeeklyHoursData): void {
   })
 }
 
-async function createEvent(data: EventData): Promise<UserMessage> {
+async function createEvent(data: EventData): Promise<string> {
   const {
     summary,
     duration,
@@ -144,7 +144,9 @@ async function createEvent(data: EventData): Promise<UserMessage> {
     )
   }
 
-  return userMessage
+  const messageString = convertMessageToString(userMessage)
+
+  return messageString
 }
 
 // Schedules an event at the user given time
@@ -155,7 +157,7 @@ async function manualSchedule(
   durationNumber: number
 ): Promise<UserMessage> {
   const userMessage: UserMessage = {
-    eventBeingScheduled: 'Event scheduled',
+    eventBeingScheduled: 'Manually scheduled',
     conflictingEvents: '',
   }
 
@@ -240,6 +242,35 @@ async function autoSchedule(
   }
 
   return userMessage
+}
+
+// Converts the message for the user from an object to a string
+function convertMessageToString(userMessage: UserMessage): string {
+  let messageString = ''
+  if (
+    userMessage.eventBeingScheduled !==
+      'There was no time slot available for this event before its deadline.' &&
+    userMessage.eventBeingScheduled !== 'Manually scheduled'
+  ) {
+    const dateString = new Date(
+      userMessage.eventBeingScheduled
+    ).toLocaleDateString(undefined, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    })
+    const timeString = new Date(
+      userMessage.eventBeingScheduled
+    ).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+
+    messageString = `Scheduled on ${dateString} at ${timeString}. 
+    ${userMessage.conflictingEvents}`
+  } else {
+    messageString =
+      userMessage.eventBeingScheduled + userMessage.conflictingEvents
+  }
+
+  return messageString
 }
 
 function getEndTime(date: Date, minutes: number): Date {
@@ -351,6 +382,7 @@ async function rescheduleConflictingEvents(
       deadline = new Date(event.description)
     }
 
+    // Try to reschedule the conflicting event
     const conflictingEventMessage = await autoSchedule(
       event.summary,
       durationNumber,
@@ -359,9 +391,11 @@ async function rescheduleConflictingEvents(
       event.id
     )
 
+    // Check if the event was successfully rescheduled and set the corresponding
+    // message
     if (
       conflictingEventMessage.eventBeingScheduled ===
-      'This event could not be scheduled before its deadline.'
+      'There was no time slot available for this event before its deadline.'
     ) {
       deadlineIssue = true
     } else {
@@ -369,6 +403,8 @@ async function rescheduleConflictingEvents(
     }
   }
 
+  // If one or more of the conflicting events could not be rescheduled before
+  // their deadline, the corresponding message is set.
   if (deadlineIssue) {
     conflictingEventsMessage =
       'One or more conflicting events could not be rescheduled before their deadline.'
@@ -446,7 +482,7 @@ async function findAvailabilityBeforeDeadline(
   )
 
   const warningMessage =
-    'This event could not be scheduled before its deadline.'
+    'There was no time slot available for this event before its deadline.'
 
   // If an available time could be found before the deadline, the event is
   // scheduled.

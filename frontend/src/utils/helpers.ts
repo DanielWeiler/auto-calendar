@@ -12,4 +12,7 @@ export const serverErrorMessage =
 
 export const warningMessages = [
   'One or more conflicting events could not be rescheduled before their deadline.',
+  'Another manually scheduled reminder is scheduled during this time.',
+  'This reminder was scheduled during working hours.',
+  'This reminder was scheduled outside of available hours.',
 ]

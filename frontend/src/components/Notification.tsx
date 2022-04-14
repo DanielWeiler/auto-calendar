@@ -20,7 +20,12 @@ const Notification = (props: { message: string }) => {
     body: message,
   }
 
-  if (warningMessages.map((warning) => message === warning)) {
+  let warning = false
+  warningMessages.map((warningMessage) =>
+    message === warningMessage ? (warning = true) : null
+  )
+
+  if (warning) {
     newNotification.style = 'warning'
     newNotification.heading = 'Reminder scheduled with conflicts'
   } else if (

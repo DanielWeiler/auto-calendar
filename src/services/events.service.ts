@@ -281,7 +281,7 @@ async function scheduleEvent(
   summary: string,
   startDateTime: Date,
   endDateTime: Date,
-  deadlineMessage = '',
+  description = '',
   eventId = ''
 ): Promise<void> {
   if (eventId) {
@@ -321,7 +321,7 @@ async function scheduleEvent(
           dateTime: endDateTime,
           timeZone: await getUserTimeZone(),
         },
-        description: deadlineMessage,
+        description: description,
       },
     })
   }
@@ -352,18 +352,25 @@ async function rescheduleConflictingEvents(
   for (let i = 0; i < conflictingEvents.length; i++) {
     const event = conflictingEvents[i]
 
-    // This if statement disregards events not concerned with conflicts since
+    // These if statements disregard events not concerned with conflicts since
     // manually scheduled events can be scheduled at any time, regardless of
     // what else is on the calendar at that time. These events will not be
     // disregarded for auto scheduled events because auto scheduled events are
     // never scheduled over these events. This statement also skips over the
     // high priority event that created the conflict(s).
-    if (
-      event.description === 'Working hours' ||
-      event.description === 'Unavailable hours' ||
-      event.description?.slice(0, 6) === 'Manual' ||
-      event.summary === highPriorityEventSummary
-    ) {
+    if (event.summary === highPriorityEventSummary) {
+      continue
+    } else if (event.description === 'Manually scheduled') {
+      conflictingEventsMessage =
+        'Another manually scheduled reminder is scheduled during this time.'
+      continue
+    } else if (event.description === 'Working hours') {
+      conflictingEventsMessage =
+        'This reminder was scheduled during working hours.'
+      continue
+    } else if (event.description === 'Unavailable hours') {
+      conflictingEventsMessage =
+        'This reminder was scheduled outside of available hours.'
       continue
     }
 

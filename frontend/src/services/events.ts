@@ -1,6 +1,11 @@
 import axios from 'axios'
 const baseUrl = '/api/events'
 
+const getEvents = () => {
+  const request = axios.get(baseUrl)
+  return request.then((response) => response.data)
+}
+
 const setWorkingHours = async (
   endpoint: string,
   workingHoursData: object
@@ -20,4 +25,9 @@ const createReminder = async (endpoint: string, reminderData: object) => {
   return response.data
 }
 
-export default { setWorkingHours, setUnavailableHours, createReminder }
+export default { 
+  getEvents, 
+  setWorkingHours, 
+  setUnavailableHours, 
+  createReminder 
+}

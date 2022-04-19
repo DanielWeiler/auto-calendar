@@ -21,6 +21,13 @@ export interface SignInData {
   clientCurrentDateTime: Date
 }
 
+export interface EventDisplayFormat {
+  title: string | null | undefined
+  start: string | null | undefined
+  end: string | null | undefined
+  backgroundColor: string
+}
+
 export interface SetWeeklyHoursRequest extends express.Request {
   body: {
     data: {
@@ -112,6 +119,6 @@ export interface EventData {
 }
 
 export interface UserMessage {
-  eventBeingScheduled: string,
+  eventBeingScheduled: string
   conflictingEvents: string
 }

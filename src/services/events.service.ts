@@ -1,6 +1,11 @@
 import { calendar_v3, google } from 'googleapis'
 import oAuth2Client from '../configs/google-client.config'
-import { EventData, UserMessage, WeeklyHoursData } from '../types'
+import {
+  EventData,
+  EventDisplayFormat,
+  UserMessage,
+  WeeklyHoursData,
+} from '../types'
 import {
   addTimeToDate,
   assertDefined,
@@ -8,6 +13,40 @@ import {
 } from '../utils/helpers'
 require('express-async-errors')
 const calendar = google.calendar('v3')
+
+async function getEvents(): Promise<EventDisplayFormat[]> {
+  // Get the date 12 months from now
+  const timeMax = new Date(new Date().setMonth(new Date().getMonth() + 12))
+
+  const events = await calendar.events.list({
+    auth: oAuth2Client,
+    calendarId: 'primary',
+    singleEvents: true,
+    timeMax: timeMax.toISOString(),
+    maxResults: 2500,
+  })
+  assertDefined(events.data.items)
+
+  const formattedEvents: EventDisplayFormat[] = []
+  events.data.items.map((event) => {
+    let color = 'SkyBlue'
+    if (event.summary === 'Unavailable hours') {
+      color = 'LightGray'
+    } else if (event.summary === 'Working hours') {
+      color = 'PaleGoldenRod'
+    }
+
+    const formattedEvent: EventDisplayFormat = {
+      title: event.summary,
+      start: event.start?.dateTime,
+      end: event.end?.dateTime,
+      backgroundColor: color,
+    }
+    formattedEvents.push(formattedEvent)
+  })
+
+  return formattedEvents
+}
 
 function setWorkingHours(weeklyHours: WeeklyHoursData): void {
   Object.entries(weeklyHours.data).map(async (day) => {
@@ -329,7 +368,7 @@ async function rescheduleConflictingEvents(
   let conflictingEventsMessage = ''
   let deadlineIssue = false
 
-  const conflictingEvents = await getEventsList(
+  const conflictingEvents = await getEventsInTimePeriod(
     highPriorityEventStart,
     highPriorityEventEnd
   )
@@ -660,7 +699,7 @@ async function getHighPriorityEvents(
   queryStartTime: Date,
   queryEndTime: Date
 ): Promise<calendar_v3.Schema$Event[]> {
-  const events = await getEventsList(queryStartTime, queryEndTime)
+  const events = await getEventsInTimePeriod(queryStartTime, queryEndTime)
 
   const highPriorityEvents = []
   for (let i = 0; i < events.length; i++) {
@@ -710,7 +749,7 @@ function checkTimeDuration(timeSlotStart: Date, timeSlotEnd: Date): number {
   return availableTime
 }
 
-async function getEventsList(
+async function getEventsInTimePeriod(
   queryStartTime: Date,
   queryEndTime: Date
 ): Promise<calendar_v3.Schema$Event[]> {
@@ -737,4 +776,4 @@ async function getUserTimeZone(): Promise<string> {
   return cal.data.timeZone
 }
 
-export default { setWorkingHours, setUnavailableHours, createEvent }
+export default { getEvents, setWorkingHours, setUnavailableHours, createEvent }

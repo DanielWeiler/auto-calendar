@@ -40,20 +40,17 @@ async function scheduleWeeklyEvent(
   weekDay: string
 ): Promise<void> {
   await calendar.events.insert({
-    // Formatted in the same way as Google's example for this method.
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     auth: oAuth2Client,
     calendarId: 'primary',
     requestBody: {
       summary: summary,
       colorId: colorId,
       start: {
-        dateTime: startDateTime,
+        dateTime: startDateTime.toISOString(),
         timeZone: await getUserTimeZone(),
       },
       end: {
-        dateTime: endDateTime,
+        dateTime: endDateTime.toISOString(),
         timeZone: await getUserTimeZone(),
       },
       description: summary,
@@ -286,39 +283,33 @@ async function scheduleEvent(
 ): Promise<void> {
   if (eventId) {
     await calendar.events.patch({
-      // Formatted in the same way as Google's example for this method.
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       auth: oAuth2Client,
       calendarId: 'primary',
       eventId: eventId,
       requestBody: {
         start: {
-          dateTime: startDateTime,
+          dateTime: startDateTime.toISOString(),
           timeZone: await getUserTimeZone(),
         },
         end: {
-          dateTime: endDateTime,
+          dateTime: endDateTime.toISOString(),
           timeZone: await getUserTimeZone(),
         },
       },
     })
   } else {
     await calendar.events.insert({
-      // Formatted in the same way as Google's example for this method.
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       auth: oAuth2Client,
       calendarId: 'primary',
       requestBody: {
         summary: summary,
         colorId: '7',
         start: {
-          dateTime: startDateTime,
+          dateTime: startDateTime.toISOString(),
           timeZone: await getUserTimeZone(),
         },
         end: {
-          dateTime: endDateTime,
+          dateTime: endDateTime.toISOString(),
           timeZone: await getUserTimeZone(),
         },
         description: description,
@@ -724,9 +715,6 @@ async function getEventsList(
   queryEndTime: Date
 ): Promise<calendar_v3.Schema$Event[]> {
   const eventsList = await calendar.events.list({
-    // Formatted in the same way as Google's example for this method.
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     auth: oAuth2Client,
     calendarId: 'primary',
     singleEvents: true,

@@ -71,13 +71,6 @@ const WorkingHoursForm = () => {
     }
 
     setNotification(newNotification)
-    setTimeout(() => {
-      setNotification({
-        style: '',
-        heading: '',
-        body: '',
-      })
-    }, 5000)
   }
 
   const handleOnChange = (position: number) => {

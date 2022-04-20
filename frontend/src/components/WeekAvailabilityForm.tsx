@@ -71,13 +71,6 @@ const WeekAvailabilityForm = () => {
     }
 
     setNotification(newNotification)
-    setTimeout(() => {
-      setNotification({
-        style: '',
-        heading: '',
-        body: '',
-      })
-    }, 5000)
   }
 
 

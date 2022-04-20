@@ -59,13 +59,6 @@ const ReminderForm = () => {
     }
 
     setNotification(newNotification)
-    setTimeout(() => {
-      setNotification({
-        style: '',
-        heading: '',
-        body: '',
-      })
-    }, 10000)
   }
 
   const durationOptions = [

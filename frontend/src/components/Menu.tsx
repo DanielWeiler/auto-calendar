@@ -2,7 +2,7 @@ import React from 'react'
 import { Nav, Navbar } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 
-const Menu = (/* { user } */) => {
+const Menu = () => {
 
   const padding = {
     paddingRight: 10,
@@ -19,6 +19,11 @@ const Menu = (/* { user } */) => {
             </Link>
           </Nav.Link>
           <Nav.Link href="#" as="span">
+            <Link style={padding} to="/create-event">
+              Create Reminder
+            </Link>
+          </Nav.Link>
+          <Nav.Link href="#" as="span">
             <Link style={padding} to="/set-working-hours">
               Set Working Hours
             </Link>
@@ -28,14 +33,6 @@ const Menu = (/* { user } */) => {
               Set Available Hours
             </Link>
           </Nav.Link>
-{/*           <Nav.Link href="#" as="span">
-            {user ? (
-              <div>
-                <em style={padding}>{user.name} logged in</em>
-                <Button onClick={handleLogout}>log out</Button>
-              </div>
-            ) : null }
-          </Nav.Link> */}
         </Nav>
       </Navbar.Collapse>
     </Navbar>

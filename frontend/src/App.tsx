@@ -7,6 +7,7 @@ import {
 } from 'react-google-login'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import './App.css'
+import Calendar from './components/Calendar'
 import Menu from './components/Menu'
 import Notification from './components/Notification'
 import ReminderForm from './components/ReminderForm'
@@ -16,7 +17,6 @@ import signInService from './services/sign-in'
 import { assertDefined, serverErrorMessage } from './utils/helpers'
 
 function App() {
-
   let newNotification = {
     style: '',
     heading: '',
@@ -105,7 +105,8 @@ function App() {
             />
             <Menu />
             <Routes>
-              <Route path="/" element={<ReminderForm />} />
+              <Route path="/" element={<Calendar />} />
+              <Route path="/create-event" element={<ReminderForm />} />
               <Route path="/set-working-hours" element={<WorkingHoursForm />} />
               <Route path="/set-available-hours" element={<WeekAvailabilityForm />} />
             </Routes>

@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   GoogleLogin,
   GoogleLoginResponse,
   GoogleLoginResponseOffline,
-  GoogleLogout
+  GoogleLogout,
 } from 'react-google-login'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import './App.css'
@@ -11,11 +11,18 @@ import Menu from './components/Menu'
 import ReminderForm from './components/ReminderForm'
 import WeekAvailabilityForm from './components/WeekAvailabilityForm'
 import WorkingHoursForm from './components/WorkWeekForm'
-import { assertDefined } from './utils/helpers'
 import signInService from './services/sign-in'
+import { assertDefined } from './utils/helpers'
 
 function App() {
   const [user, setUser] = useState('')
+
+  useEffect(() => {
+    const loggedUser = window.localStorage.getItem('loggedUser')
+    if (loggedUser) {
+      setUser(loggedUser)
+    }
+  }, [])
 
   const handleLogin = async (
     response: GoogleLoginResponse | GoogleLoginResponseOffline
@@ -23,8 +30,10 @@ function App() {
     const { code } = response
 
     try {
+      assertDefined(code)
+      window.localStorage.setItem('loggedUser', code)
       await signInService.signIn({ code })
-      code ? setUser(code) : null
+      setUser(code)
     } catch (error) {
       console.log(
         '500 Internal Server Error \n Oh no! Something bad happened. Please',
@@ -39,6 +48,7 @@ function App() {
   }
 
   const handleLogout = () => {
+    window.localStorage.removeItem('loggedUser')
     setUser('')
   }
 

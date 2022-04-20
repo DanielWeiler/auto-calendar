@@ -8,13 +8,21 @@ import {
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import './App.css'
 import Menu from './components/Menu'
+import Notification from './components/Notification'
 import ReminderForm from './components/ReminderForm'
 import WeekAvailabilityForm from './components/WeekAvailabilityForm'
 import WorkingHoursForm from './components/WorkWeekForm'
 import signInService from './services/sign-in'
-import { assertDefined } from './utils/helpers'
+import { assertDefined, serverErrorMessage } from './utils/helpers'
 
 function App() {
+
+  let newNotification = {
+    style: '',
+    heading: '',
+    body: '',
+  }
+  const [notification, setNotification] = useState(newNotification)
   const [user, setUser] = useState('')
 
   useEffect(() => {
@@ -23,6 +31,23 @@ function App() {
       setUser(loggedUser)
     }
   }, [])
+
+  const createNotification = (heading: string, body = '') => {
+    newNotification = {
+      style: 'danger',
+      heading: heading,
+      body: body,
+    }
+
+    setNotification(newNotification)
+    setTimeout(() => {
+      setNotification({
+        style: '',
+        heading: '',
+        body: '',
+      })
+    }, 10000)
+  }
 
   const handleLogin = async (
     response: GoogleLoginResponse | GoogleLoginResponseOffline
@@ -35,16 +60,12 @@ function App() {
       await signInService.signIn({ code })
       setUser(code)
     } catch (error) {
-      console.log(
-        '500 Internal Server Error \n Oh no! Something bad happened. Please',
-        'come back later when we have fixed this problem. Thanks.'
-      )
+      createNotification('500 Internal Server Error', serverErrorMessage)
     }
   }
 
-  const handleLoginFailure = (error: object) => {
-    // insert notification
-    console.log('Failed to log in', error)
+  const handleLoginFailure = () => {
+    createNotification('Failed to sign in', serverErrorMessage)
   }
 
   const handleLogout = () => {
@@ -53,8 +74,7 @@ function App() {
   }
 
   const handleLogoutFailure = () => {
-    // insert notification
-    console.log('Failed to log out')
+    createNotification('Failed to sign out', serverErrorMessage)
   }
 
   assertDefined(process.env.REACT_APP_GOOGLE_CLIENT_ID)
@@ -63,6 +83,7 @@ function App() {
     <Router>
       <div className="container">
         <h1>Time Agent</h1>
+        <Notification notification={notification} />
         {!user ? (
           <GoogleLogin
             clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
@@ -83,7 +104,6 @@ function App() {
               onFailure={handleLogoutFailure}
             />
             <Menu />
-            {/* <Notification /> */}
             <Routes>
               <Route path="/" element={<ReminderForm />} />
               <Route path="/set-working-hours" element={<WorkingHoursForm />} />

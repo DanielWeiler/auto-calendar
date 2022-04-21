@@ -1,5 +1,5 @@
+import { Alert, AlertTitle } from '@mui/material'
 import React from 'react'
-import { Alert } from 'react-bootstrap'
 import { NotificationDetails } from '../types'
 
 const Notification = (props: { notification: NotificationDetails }) => {
@@ -11,9 +11,9 @@ const Notification = (props: { notification: NotificationDetails }) => {
   }
 
   return (
-    <Alert variant={style}>
-      <Alert.Heading>{heading}</Alert.Heading>
-      <p>{body}</p>
+    <Alert severity={style}>
+      <AlertTitle>{heading}</AlertTitle>
+      {body}
     </Alert>
   )
 }

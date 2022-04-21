@@ -14,11 +14,12 @@ import ReminderForm from './components/ReminderForm'
 import WeekAvailabilityForm from './components/WeekAvailabilityForm'
 import WorkingHoursForm from './components/WorkWeekForm'
 import signInService from './services/sign-in'
+import { NotificationDetails } from './types'
 import { assertDefined, serverErrorMessage } from './utils/helpers'
 
 function App() {
-  let newNotification = {
-    style: '',
+  let newNotification: NotificationDetails = {
+    style: undefined,
     heading: '',
     body: '',
   }
@@ -34,7 +35,7 @@ function App() {
 
   const createNotification = (heading: string, body = '') => {
     newNotification = {
-      style: 'danger',
+      style: 'error',
       heading: heading,
       body: body,
     }
@@ -42,7 +43,7 @@ function App() {
     setNotification(newNotification)
     setTimeout(() => {
       setNotification({
-        style: '',
+        style: undefined,
         heading: '',
         body: '',
       })
@@ -108,7 +109,10 @@ function App() {
               <Route path="/" element={<Calendar />} />
               <Route path="/create-event" element={<ReminderForm />} />
               <Route path="/set-working-hours" element={<WorkingHoursForm />} />
-              <Route path="/set-available-hours" element={<WeekAvailabilityForm />} />
+              <Route
+                path="/set-available-hours"
+                element={<WeekAvailabilityForm />}
+              />
             </Routes>
           </div>
         )}

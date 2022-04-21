@@ -1,5 +1,5 @@
+import { TextField } from '@mui/material'
 import React from 'react'
-import { Form } from 'react-bootstrap'
 
 const WeekDayForm = (props: {
   day: string
@@ -12,11 +12,13 @@ const WeekDayForm = (props: {
   const { day, display, register, error } = props
 
   return (
-    <div style={{display: display}}>
-      <Form.Label id="dayName">{day}</Form.Label>
-      <Form.Control id="startTime" type="time" {...register(`${day}.startTime`)} />
-      <Form.Control id="endTime" type="time" {...register(`${day}.endTime`)} />
-      <p style={{ color: 'red' }}>{error?.startTime?.message || error?.endTime?.message}</p>
+    <div style={{ display: display }}>
+      <label id="dayName">{day}</label>
+      <TextField id="startTime" type="time" {...register(`${day}.startTime`)} />
+      <TextField id="endTime" type="time" {...register(`${day}.endTime`)} />
+      <p style={{ color: 'red' }}>
+        {error?.startTime?.message || error?.endTime?.message}
+      </p>
     </div>
   )
 }

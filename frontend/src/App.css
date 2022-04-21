@@ -1,3 +1,8 @@
+.drawer-link {
+  text-decoration: none;
+  color: #000000;
+}
+
 .weekDays-selector input {
   display: none!important;
 }

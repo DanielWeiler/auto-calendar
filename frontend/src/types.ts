@@ -1,3 +1,5 @@
+import { AlertColor } from '@mui/material'
+
 export interface WeeklyHoursFormValues {
   Monday: TimePeriod,
   Tuesday: TimePeriod,
@@ -24,7 +26,7 @@ export interface ReminderFormValues {
 }
 
 export interface NotificationDetails {
+  style: AlertColor | undefined
   heading: string
   body: string
-  style: string
 }

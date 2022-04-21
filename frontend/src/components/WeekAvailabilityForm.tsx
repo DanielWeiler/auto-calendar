@@ -1,8 +1,12 @@
+import { AlertColor, Button } from '@mui/material'
 import React, { useState } from 'react'
-import { Button, Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import eventService from '../services/events'
-import { TimePeriod, WeeklyHoursFormValues } from '../types'
+import {
+  NotificationDetails,
+  TimePeriod,
+  WeeklyHoursFormValues,
+} from '../types'
 import { serverErrorMessage } from '../utils/helpers'
 import Notification from './Notification'
 import WeekDayForm from './WeekDayForm'
@@ -56,14 +60,18 @@ const WeekAvailabilityForm = () => {
     { name: 'Sunday', display: '' },
   ])
 
-  let newNotification = {
-    style: '',
+  let newNotification: NotificationDetails = {
+    style: undefined,
     heading: '',
     body: '',
   }
   const [notification, setNotification] = useState(newNotification)
 
-  const createNotification = (style: string, heading: string, body = '') => {
+  const createNotification = (
+    style: AlertColor | undefined,
+    heading: string,
+    body = ''
+  ) => {
     newNotification = {
       style: style,
       heading: heading,
@@ -72,7 +80,6 @@ const WeekAvailabilityForm = () => {
 
     setNotification(newNotification)
   }
-
 
   const handleOnChange = (position: number) => {
     const updatedCheckedState = checkedState.map(({ name, display }, index) => {
@@ -148,7 +155,7 @@ const WeekAvailabilityForm = () => {
       createNotification('success', 'Available hours set')
     } catch (error) {
       createNotification(
-        'danger',
+        'error',
         '500 Internal Server Error',
         serverErrorMessage
       )
@@ -171,7 +178,7 @@ const WeekAvailabilityForm = () => {
         </span>
       ))}
 
-      <Form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         {checkedState.map(({ name, display }) => (
           <WeekDayForm
             key={name}
@@ -190,7 +197,7 @@ const WeekAvailabilityForm = () => {
         >
           Save
         </Button>
-      </Form>
+      </form>
     </div>
   )
 }

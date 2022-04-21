@@ -1,8 +1,8 @@
+import { Button, MenuItem, Select, TextField } from '@mui/material'
 import React, { useState } from 'react'
-import { Button, Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import eventService from '../services/events'
-import { ReminderFormValues } from '../types'
+import { NotificationDetails, ReminderFormValues } from '../types'
 import { serverErrorMessage, warningMessages } from '../utils/helpers'
 import Notification from './Notification'
 
@@ -13,14 +13,10 @@ const ReminderForm = () => {
     formState: { errors },
     setError,
     reset,
-  } = useForm<ReminderFormValues>({
-    defaultValues: {
-      duration: '30',
-    },
-  })
+  } = useForm<ReminderFormValues>()
 
-  let newNotification = {
-    style: '',
+  let newNotification: NotificationDetails = {
+    style: undefined,
     heading: '',
     body: '',
   }
@@ -51,10 +47,10 @@ const ReminderForm = () => {
         'There was no time slot available for this event before its deadline.'
       )
     ) {
-      newNotification.style = 'danger'
+      newNotification.style = 'error'
       newNotification.heading = 'Reminder was not scheduled'
     } else if (message === serverErrorMessage) {
-      newNotification.style = 'danger'
+      newNotification.style = 'error'
       newNotification.heading = '500 Internal Server Error'
     }
 
@@ -150,48 +146,50 @@ const ReminderForm = () => {
   return (
     <div>
       <Notification notification={notification} />
-      <Form onSubmit={handleSubmit(onSubmit)}>
-        <Form.Control
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <label>Summary:</label>
+        <TextField
           id="summary"
-          {...register('summary', { required: 'Please enter a summary' })}
           placeholder="Make time in my calendar for..."
+          {...register('summary', { required: 'Please enter a summary' })}
         />
         <p style={{ color: 'red' }}>{errors.summary?.message}</p>
 
-        <Form.Label>Duration:</Form.Label>
-        <Form.Select
+        <label>Duration:</label>
+        <Select
           id="duration"
+          defaultValue={30}
           {...register('duration', { required: true })}
         >
           {durationOptions.map((option) => (
-            <option key={option.value} value={option.value}>
+            <MenuItem key={option.value} value={option.value}>
               {option.text}
-            </option>
+            </MenuItem>
           ))}
-        </Form.Select>
+        </Select>
 
-        <Form.Label>Manual Time:</Form.Label>
-        <Form.Control
+        <label>Manual Time:</label>
+        <TextField
           id="manualStartDate"
           type="date"
           {...register('manualDate')}
         />
         <p style={{ color: 'red' }}>{errors.manualDate?.message}</p>
-        <Form.Control
+        <TextField
           id="manualStartTime"
           type="time"
           {...register('manualTime')}
         />
         <p style={{ color: 'red' }}>{errors.manualTime?.message}</p>
 
-        <Form.Label>Deadline:</Form.Label>
-        <Form.Control
+        <label>Deadline:</label>
+        <TextField
           id="deadlineDate"
           type="date"
           {...register('deadlineDate')}
         />
         <p style={{ color: 'red' }}>{errors.deadlineDate?.message}</p>
-        <Form.Control
+        <TextField
           id="deadlineTime"
           type="time"
           {...register('deadlineTime')}
@@ -201,7 +199,7 @@ const ReminderForm = () => {
         <Button id="submit" type="submit">
           Submit
         </Button>
-      </Form>
+      </form>
     </div>
   )
 }

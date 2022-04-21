@@ -1,8 +1,12 @@
+import { AlertColor, Button } from '@mui/material'
 import React, { useState } from 'react'
-import { Button, Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import eventService from '../services/events'
-import { TimePeriod, WeeklyHoursFormValues } from '../types'
+import {
+  NotificationDetails,
+  TimePeriod,
+  WeeklyHoursFormValues,
+} from '../types'
 import { serverErrorMessage } from '../utils/helpers'
 import Notification from './Notification'
 import WorkDayForm from './WeekDayForm'
@@ -56,14 +60,18 @@ const WorkingHoursForm = () => {
     { name: 'Sunday', display: 'none' },
   ])
 
-  let newNotification = {
-    style: '',
+  let newNotification: NotificationDetails = {
+    style: undefined,
     heading: '',
     body: '',
   }
   const [notification, setNotification] = useState(newNotification)
 
-  const createNotification = (style: string, heading: string, body = '') => {
+  const createNotification = (
+    style: AlertColor | undefined,
+    heading: string,
+    body = ''
+  ) => {
     newNotification = {
       style: style,
       heading: heading,
@@ -145,7 +153,7 @@ const WorkingHoursForm = () => {
       createNotification('success', 'Working hours set')
     } catch (error) {
       createNotification(
-        'danger',
+        'error',
         '500 Internal Server Error',
         serverErrorMessage
       )
@@ -168,7 +176,7 @@ const WorkingHoursForm = () => {
         </span>
       ))}
 
-      <Form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         {checkedState.map(({ name, display }) => (
           <WorkDayForm
             key={name}
@@ -187,7 +195,7 @@ const WorkingHoursForm = () => {
         >
           Save
         </Button>
-      </Form>
+      </form>
     </div>
   )
 }

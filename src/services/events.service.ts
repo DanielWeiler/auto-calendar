@@ -152,6 +152,7 @@ async function createEvent(data: EventData): Promise<string> {
     manualTime,
     deadlineDate,
     deadlineTime,
+    minimumStartTime,
   } = data
   const durationNumber = parseInt(duration)
 
@@ -167,16 +168,31 @@ async function createEvent(data: EventData): Promise<string> {
   } else {
     let deadline = null
     let deadlineMessage = ''
+    let minimumStartTimeDate = null
     if (deadlineDate && deadlineTime) {
       deadline = addTimeToDate(deadlineTime, deadlineDate)
-      deadlineMessage = `Deadline: ${deadline}`
+
+      if (minimumStartTime !== '0') {
+        let minimumStartTimeNumber = parseInt(minimumStartTime)
+
+        // Convert from minutes to miliseconds
+        minimumStartTimeNumber = minimumStartTimeNumber * 60000
+
+        minimumStartTimeDate = new Date(
+          deadline.getTime() - minimumStartTimeNumber
+        )
+        deadlineMessage = `Deadline: ${deadline} | Minimum start time: ${minimumStartTimeDate}`
+      } else {
+        deadlineMessage = `Deadline: ${deadline}`
+      }
     }
 
     userMessage = await autoSchedule(
       summary,
       durationNumber,
       deadline,
-      deadlineMessage
+      deadlineMessage,
+      minimumStartTimeDate
     )
   }
 
@@ -217,6 +233,7 @@ async function autoSchedule(
   durationNumber: number,
   deadline: Date | null = null,
   deadlineMessage = '',
+  minimumStartTime: Date | null = null,
   eventId = ''
 ): Promise<UserMessage> {
   let userMessage: UserMessage = {
@@ -224,7 +241,11 @@ async function autoSchedule(
     conflictingEvents: '',
   }
 
-  const startDateTime = await findAvailability(durationNumber, deadline)
+  const startDateTime = await findAvailability(
+    durationNumber,
+    deadline,
+    minimumStartTime
+  )
 
   // If an available time could be found, the event is scheduled.
   if (startDateTime) {
@@ -238,6 +259,7 @@ async function autoSchedule(
         userMessage = await findAvailabilityBeforeDeadline(
           durationNumber,
           deadline,
+          minimumStartTime,
           summary,
           deadlineMessage,
           eventId
@@ -271,6 +293,7 @@ async function autoSchedule(
     userMessage = await findAvailabilityBeforeDeadline(
       durationNumber,
       deadline,
+      minimumStartTime,
       summary,
       deadlineMessage,
       eventId
@@ -415,8 +438,15 @@ async function rescheduleConflictingEvents(
 
     // If an event has a deadline, the description will be the deadline.
     let deadline = null
+    let minimumStartTime = null
+    let deadlineMessage = undefined
     if (event.description) {
-      deadline = new Date(event.description)
+      deadlineMessage = event.description
+      const deadlineInfo = event.description.split('|')
+      deadline = new Date(deadlineInfo[0])
+      if (deadlineInfo[1]) {
+        minimumStartTime = new Date(deadlineInfo[1])
+      }
     }
 
     // Try to reschedule the conflicting event
@@ -424,7 +454,8 @@ async function rescheduleConflictingEvents(
       event.summary,
       durationNumber,
       deadline,
-      undefined,
+      deadlineMessage,
+      minimumStartTime,
       event.id
     )
 
@@ -455,13 +486,23 @@ async function rescheduleConflictingEvents(
 async function findAvailability(
   eventDuration: number,
   deadline: Date | null = null,
+  minimumStartTime: Date | null = null,
   highPriority = false
 ): Promise<Date | undefined> {
   // Begin loop to iterate over the following days from the given start time
   let findingAvailability = true
   let queryDayCount = 0
   while (findingAvailability) {
-    const queryStartTime = new Date()
+    // <queryStartTime> is initiated at the beginning of every iteration of
+    // the loop so that the current day being queried can be correctly
+    // calculated.
+    let queryStartTime = new Date()
+    if (minimumStartTime) {
+      // The minimum start time is only used if it is in the future.
+      if (minimumStartTime > new Date()) {
+        queryStartTime = new Date(minimumStartTime)
+      }
+    }
 
     // Set <queryStartTime> to current day being queried for availability
     queryStartTime.setDate(queryStartTime.getDate() + queryDayCount)
@@ -502,6 +543,7 @@ async function findAvailability(
 async function findAvailabilityBeforeDeadline(
   durationNumber: number,
   deadline: Date,
+  minimumStartTime: Date | null = null,
   summary: string,
   deadlineMessage: string,
   eventId = ''
@@ -515,6 +557,7 @@ async function findAvailabilityBeforeDeadline(
   const startDateTime = await findAvailability(
     durationNumber,
     deadline,
+    minimumStartTime,
     highpriority
   )
 

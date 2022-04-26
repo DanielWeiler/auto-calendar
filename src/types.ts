@@ -105,6 +105,7 @@ export interface CreateEventRequest extends express.Request {
       manualTime: string
       deadlineDate: string
       deadlineTime: string
+      minimumStartTime: string
     }
   }
 }
@@ -116,6 +117,7 @@ export interface EventData {
   manualTime: string
   deadlineDate: string
   deadlineTime: string
+  minimumStartTime: string
 }
 
 export interface UserMessage {

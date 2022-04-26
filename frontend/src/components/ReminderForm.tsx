@@ -91,6 +91,25 @@ const ReminderForm = () => {
     { value: '480', text: '8 hours' },
   ]
 
+  const minimumStartTimeOptions = [
+    { value: '0', text: 'any time' },
+    { value: '60', text: '1 hour' },
+    { value: '120', text: '2 hours' },
+    { value: '180', text: '3 hours' },
+    { value: '240', text: '4 hours' },
+    { value: '480', text: '8 hours' },
+    { value: '1440', text: '1 day' },
+    { value: '2880', text: '2 days' },
+    { value: '4320', text: '3 days' },
+    { value: '5760', text: '4 days' },
+    { value: '7200', text: '5 days' },
+    { value: '10080', text: '1 week' },
+    { value: '15120', text: '1.5 weeks' },
+    { value: '20160', text: '2 weeks' },
+    { value: '30240', text: '3 weeks' },
+    { value: '43800', text: '1 month' },
+  ]
+
   const onSubmit = async (data: ReminderFormValues) => {
     const { manualDate, manualTime, deadlineDate, deadlineTime } = data
     if (manualDate) {
@@ -195,6 +214,23 @@ const ReminderForm = () => {
           {...register('deadlineTime')}
         />
         <p style={{ color: 'red' }}>{errors.deadlineTime?.message}</p>
+        
+        <div>
+          Schedule within
+          <Select
+            id="minimumStartTime"
+            style={{ marginLeft: '5px', marginRight: '5px' }}
+            defaultValue={0}
+            {...register('minimumStartTime')}
+          >
+            {minimumStartTimeOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.text}
+              </MenuItem>
+            ))}
+          </Select>
+          before the deadline
+        </div>
 
         <Button id="submit" type="submit">
           Submit

@@ -23,6 +23,7 @@ export interface ReminderFormValues {
   manualTime: string
   deadlineDate: string
   deadlineTime: string
+  minimumStartTime: string
 }
 
 export interface NotificationDetails {

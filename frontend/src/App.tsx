@@ -3,7 +3,6 @@ import {
   GoogleLogin,
   GoogleLoginResponse,
   GoogleLoginResponseOffline,
-  GoogleLogout,
 } from 'react-google-login'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import './App.css'
@@ -82,8 +81,7 @@ function App() {
 
   return (
     <Router>
-      <div className="container">
-        <h1>Time Agent</h1>
+      <div>
         <Notification notification={notification} />
         {!user ? (
           <GoogleLogin
@@ -98,13 +96,10 @@ function App() {
           />
         ) : (
           <div>
-            <GoogleLogout
-              clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
-              buttonText="Sign out"
-              onLogoutSuccess={handleLogout}
-              onFailure={handleLogoutFailure}
+            <Menu
+              handleLogout={handleLogout}
+              handleLogoutFailure={handleLogoutFailure}
             />
-            <Menu />
             <Routes>
               <Route path="/" element={<Calendar />} />
               <Route path="/create-event" element={<ReminderForm />} />

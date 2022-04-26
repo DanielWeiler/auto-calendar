@@ -28,22 +28,22 @@ async function getEvents(): Promise<EventDisplayFormat[]> {
   assertDefined(events.data.items)
 
   const formattedEvents: EventDisplayFormat[] = []
-  events.data.items.map((event) => {
-    let color = 'SkyBlue'
-    if (event.summary === 'Unavailable hours') {
-      color = 'LightGray'
-    } else if (event.summary === 'Working hours') {
-      color = 'PaleGoldenRod'
-    }
+  events.data.items
+    .filter((event) => event.description !== 'Unavailable hours')
+    .map((event) => {
+      let color = 'SkyBlue'
+      if (event.summary === 'Working hours') {
+        color = 'PaleGoldenRod'
+      }
 
-    const formattedEvent: EventDisplayFormat = {
-      title: event.summary,
-      start: event.start?.dateTime,
-      end: event.end?.dateTime,
-      backgroundColor: color,
-    }
-    formattedEvents.push(formattedEvent)
-  })
+      const formattedEvent: EventDisplayFormat = {
+        title: event.summary,
+        start: event.start?.dateTime,
+        end: event.end?.dateTime,
+        backgroundColor: color,
+      }
+      formattedEvents.push(formattedEvent)
+    })
 
   return formattedEvents
 }

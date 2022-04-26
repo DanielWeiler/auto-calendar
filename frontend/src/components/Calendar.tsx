@@ -2,7 +2,10 @@ import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import listPlugin from '@fullcalendar/list'
 import timeGridPlugin from '@fullcalendar/timegrid'
+import AddIcon from '@mui/icons-material/Add'
+import { Fab } from '@mui/material'
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import eventService from '../services/events'
 import StyleWrapper from './StyleWrapper'
 
@@ -50,6 +53,20 @@ const Calendar = () => {
           }}
         />
       </StyleWrapper>
+      <Link to="/create-event">
+        <Fab
+          aria-label="add"
+          style={{
+            background: '#5db9ff',
+            color: 'white',
+            position: 'absolute',
+            right: 20,
+            bottom: 20,
+          }}
+        >
+          <AddIcon />
+        </Fab>
+      </Link>
     </div>
   )
 }

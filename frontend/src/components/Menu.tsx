@@ -4,8 +4,8 @@ import MenuIcon from '@mui/icons-material/Menu'
 import WorkHistoryIcon from '@mui/icons-material/WorkHistory'
 import {
   Box,
-  Button,
   Drawer,
+  IconButton,
   List,
   ListItem,
   ListItemIcon,
@@ -41,11 +41,9 @@ const Menu = (props: {
 
   return (
     <div className="menu-button">
-      <Button onClick={toggleDrawer}>
-        <ListItemIcon>
-          <MenuIcon style={{ color: 'white' }} />
-        </ListItemIcon>
-      </Button>
+      <IconButton onClick={toggleDrawer}>
+        <MenuIcon style={{ color: 'white' }} />
+      </IconButton>
       <Drawer anchor="left" open={visibility} onClose={toggleDrawer}>
         <Box onClick={toggleDrawer}>
           <List>

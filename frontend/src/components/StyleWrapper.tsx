@@ -17,7 +17,7 @@ const StyleWrapper = styled.div`
   }
 
   .fc-scroller {
-    overflow: hidden auto;
+    overflow: hidden auto !important;
     background-color: white;
   }
 

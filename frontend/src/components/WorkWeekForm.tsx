@@ -8,6 +8,7 @@ import {
   WeeklyHoursFormValues,
 } from '../types'
 import { serverErrorMessage } from '../utils/helpers'
+import Header from './Header'
 import Notification from './Notification'
 import WorkDayForm from './WeekDayForm'
 
@@ -162,9 +163,10 @@ const WorkingHoursForm = () => {
 
   return (
     <div>
+      <Header title="Set Working Hours" />
       <Notification notification={notification} />
       {checkedState.map(({ name, display }, index) => (
-        <span key={name} className="weekDays-selector">
+        <span key={name} className="week-days-selector">
           <input
             id={name}
             type="checkbox"

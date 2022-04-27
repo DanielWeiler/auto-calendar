@@ -145,8 +145,8 @@ const Calendar = () => {
             background: '#5db9ff',
             color: 'white',
             position: 'absolute',
-            right: 20,
-            bottom: 20,
+            right: 25,
+            bottom: 25,
           }}
         >
           <AddIcon />

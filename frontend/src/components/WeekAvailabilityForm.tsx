@@ -8,6 +8,7 @@ import {
   WeeklyHoursFormValues,
 } from '../types'
 import { serverErrorMessage } from '../utils/helpers'
+import Header from './Header'
 import Notification from './Notification'
 import WeekDayForm from './WeekDayForm'
 
@@ -164,9 +165,10 @@ const WeekAvailabilityForm = () => {
 
   return (
     <div>
+      <Header title="Set Available Hours" />
       <Notification notification={notification} />
       {checkedState.map(({ name, display }, index) => (
-        <span key={name} className="weekDays-selector">
+        <span key={name} className="week-days-selector">
           <input
             id={name}
             type="checkbox"

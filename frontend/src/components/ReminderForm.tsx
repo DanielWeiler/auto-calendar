@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import eventService from '../services/events'
 import { NotificationDetails, ReminderFormValues } from '../types'
 import { serverErrorMessage, warningMessages } from '../utils/helpers'
+import Header from './Header'
 import Notification from './Notification'
 
 const ReminderForm = () => {
@@ -164,6 +165,7 @@ const ReminderForm = () => {
 
   return (
     <div>
+      <Header title="Create Reminder" />
       <Notification notification={notification} />
       <form onSubmit={handleSubmit(onSubmit)}>
         <label>Summary:</label>
@@ -214,7 +216,7 @@ const ReminderForm = () => {
           {...register('deadlineTime')}
         />
         <p style={{ color: 'red' }}>{errors.deadlineTime?.message}</p>
-        
+
         <div>
           Schedule within
           <Select

@@ -2,31 +2,26 @@
   body {
     font-size: 1.1em;
   }
-
-  .menu-button {
-    top: 0.55em;
-    left: 5.55em;
-  }
-
-  .calendar-container {
-    margin-left: 5em;
-    margin-right: 5em;
-    margin-bottom: 5em;
-  }
-
-  .css-4t3x6l-MuiPaper-root-MuiDrawer-paper {
-    position: fixed;
-    left: 5em !important;
-    bottom: 5em !important;
-    height: auto !important;
-  }
 }
 
 body {
+  margin: unset;
+}
+
+.header-container {
+  padding-top: 8px; 
+  padding-left: 2.5em;
+  padding-right: 8px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.4em;
   background-color: #5db9ff;
+  color: white;
 }
 
 .menu-button {
+  margin-top: 8px;
+  margin-left: 8px;
   position: absolute;
   z-index: 10;
 }
@@ -37,18 +32,21 @@ body {
 }
 
 .calendar-container {
+  background-color: #5db9ff;
+  padding-top: 14px;
   position: fixed;
-  top: 0.8em;
+  top: 0;
   left: 0;
   right: 0;
   bottom: 0;
+  
 }
 
-.weekDays-selector input {
+.week-days-selector input {
   display: none !important;
 }
 
-.weekDays-selector input[type='checkbox'] + label {
+.week-days-selector input[type='checkbox'] + label {
   display: inline-block;
   background: #e6e6e6;
   border-radius: 15px;
@@ -61,7 +59,7 @@ body {
   cursor: pointer;
 }
 
-.weekDays-selector input[type='checkbox']:checked + label {
+.week-days-selector input[type='checkbox']:checked + label {
   background: #0994ff;
   color: #ffffff;
   font-size: 13px;

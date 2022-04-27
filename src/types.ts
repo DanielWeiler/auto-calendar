@@ -26,6 +26,7 @@ export interface EventDisplayFormat {
   start: string | null | undefined
   end: string | null | undefined
   backgroundColor: string
+  display: string
 }
 
 export interface SetWeeklyHoursRequest extends express.Request {

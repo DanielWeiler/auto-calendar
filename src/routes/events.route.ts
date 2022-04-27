@@ -10,4 +10,6 @@ router.post('/set-available-hours', eventsController.setUnavailableHours)
 
 router.post('/create-event', eventsController.createEvent)
 
+router.post('/delete-event', eventsController.deleteEvent)
+
 export default router

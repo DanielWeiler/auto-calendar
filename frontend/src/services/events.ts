@@ -6,10 +6,7 @@ const getEvents = () => {
   return request.then((response) => response.data)
 }
 
-const setWorkingHours = async (
-  endpoint: string,
-  workingHoursData: object
-) => {
+const setWorkingHours = async (endpoint: string, workingHoursData: object) => {
   await axios.post(`${baseUrl}${endpoint}`, workingHoursData)
 }
 
@@ -25,9 +22,14 @@ const createReminder = async (endpoint: string, reminderData: object) => {
   return response.data
 }
 
-export default { 
-  getEvents, 
-  setWorkingHours, 
-  setUnavailableHours, 
-  createReminder 
+const deleteReminder = async (endpoint: string, eventId: string) => {
+  await axios.post(`${baseUrl}${endpoint}`, { eventId })
+}
+
+export default {
+  getEvents,
+  setWorkingHours,
+  setUnavailableHours,
+  createReminder,
+  deleteReminder,
 }

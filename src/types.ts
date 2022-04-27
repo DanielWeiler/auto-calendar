@@ -27,6 +27,7 @@ export interface EventDisplayFormat {
   end: string | null | undefined
   backgroundColor: string
   display: string
+  id: string
 }
 
 export interface SetWeeklyHoursRequest extends express.Request {
@@ -108,6 +109,12 @@ export interface CreateEventRequest extends express.Request {
       deadlineTime: string
       minimumStartTime: string
     }
+  }
+}
+
+export interface DeleteEventRequest extends express.Request {
+  body: {
+    eventId: string
   }
 }
 

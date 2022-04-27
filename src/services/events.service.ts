@@ -29,6 +29,7 @@ async function getEvents(): Promise<EventDisplayFormat[]> {
 
   const formattedEvents: EventDisplayFormat[] = []
   events.data.items.map((event) => {
+    assertDefined(event.id)
     let color = 'SkyBlue'
     let display = 'auto'
     if (event.description === 'Unavailable hours') {
@@ -44,6 +45,7 @@ async function getEvents(): Promise<EventDisplayFormat[]> {
       end: event.end?.dateTime,
       backgroundColor: color,
       display: display,
+      id: event.id,
     }
     formattedEvents.push(formattedEvent)
   })
@@ -822,4 +824,18 @@ async function getUserTimeZone(): Promise<string> {
   return cal.data.timeZone
 }
 
-export default { getEvents, setWorkingHours, setUnavailableHours, createEvent }
+async function deleteEvent(eventId: string): Promise<void> {
+  await calendar.events.delete({
+    auth: oAuth2Client,
+    calendarId: 'primary',
+    eventId: eventId,
+  })
+}
+
+export default {
+  getEvents,
+  setWorkingHours,
+  setUnavailableHours,
+  createEvent,
+  deleteEvent,
+}

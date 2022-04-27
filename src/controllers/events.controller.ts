@@ -1,6 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
 import eventsService from '../services/events.service'
-import { CreateEventRequest, SetWeeklyHoursRequest } from '../types'
+import {
+  CreateEventRequest,
+  DeleteEventRequest,
+  SetWeeklyHoursRequest,
+} from '../types'
 
 function getEvents(_req: Request, res: Response, next: NextFunction): void {
   try {
@@ -54,4 +58,25 @@ function createEvent(
   }
 }
 
-export default { getEvents, setWorkingHours, setUnavailableHours, createEvent }
+function deleteEvent(
+  req: DeleteEventRequest,
+  res: Response,
+  next: NextFunction
+): void {
+  try {
+    void (async () => {
+      res.send(await eventsService.deleteEvent(req.body.eventId))
+    })()
+  } catch (error) {
+    console.error('Error while deleting event')
+    next(error)
+  }
+}
+
+export default {
+  getEvents,
+  setWorkingHours,
+  setUnavailableHours,
+  createEvent,
+  deleteEvent,
+}

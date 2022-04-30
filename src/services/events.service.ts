@@ -1,8 +1,10 @@
 import { calendar_v3, google } from 'googleapis'
 import oAuth2Client from '../configs/google-client.config'
 import {
+  DescriptionInfo,
   EventData,
-  EventDisplayFormat,
+  EventFormData,
+  RescheduleData,
   UserMessage,
   WeeklyHoursData,
 } from '../types'
@@ -14,7 +16,7 @@ import {
 require('express-async-errors')
 const calendar = google.calendar('v3')
 
-async function getEvents(): Promise<EventDisplayFormat[]> {
+async function getEvents(): Promise<EventData[]> {
   // Get the date 12 months from now
   const timeMax = new Date(new Date().setMonth(new Date().getMonth() + 12))
 
@@ -27,7 +29,7 @@ async function getEvents(): Promise<EventDisplayFormat[]> {
   })
   assertDefined(events.data.items)
 
-  const formattedEvents: EventDisplayFormat[] = []
+  const eventsData: EventData[] = []
   events.data.items.map((event) => {
     assertDefined(event.id)
     let color = 'SkyBlue'
@@ -39,18 +41,19 @@ async function getEvents(): Promise<EventDisplayFormat[]> {
       color = 'PaleGoldenRod'
     }
 
-    const formattedEvent: EventDisplayFormat = {
+    const eventData: EventData = {
+      id: event.id,
       title: event.summary,
       start: event.start?.dateTime,
       end: event.end?.dateTime,
+      extendedProps: { description: event.description },
       backgroundColor: color,
       display: display,
-      id: event.id,
     }
-    formattedEvents.push(formattedEvent)
+    eventsData.push(eventData)
   })
 
-  return formattedEvents
+  return eventsData
 }
 
 function setWorkingHours(weeklyHours: WeeklyHoursData): void {
@@ -149,7 +152,7 @@ function setUnavailableHours(weeklyHours: WeeklyHoursData): void {
   })
 }
 
-async function createEvent(data: EventData): Promise<string> {
+async function createEvent(data: EventFormData): Promise<string> {
   const {
     summary,
     duration,
@@ -211,7 +214,8 @@ async function manualSchedule(
   summary: string,
   manualDate: string,
   manualTime: string,
-  durationNumber: number
+  durationNumber: number,
+  eventId = ''
 ): Promise<UserMessage> {
   const userMessage: UserMessage = {
     eventBeingScheduled: 'Manually scheduled',
@@ -222,7 +226,7 @@ async function manualSchedule(
   const endDateTime = getEndTime(startDateTime, durationNumber)
   const description = 'Manually scheduled'
 
-  await scheduleEvent(summary, startDateTime, endDateTime, description)
+  await scheduleEvent(summary, startDateTime, endDateTime, description, eventId)
   userMessage.conflictingEvents = await rescheduleConflictingEvents(
     startDateTime,
     endDateTime,
@@ -418,7 +422,7 @@ async function rescheduleConflictingEvents(
     // high priority event that created the conflict(s).
     if (event.summary === highPriorityEventSummary) {
       continue
-    } else if (event.description === 'Manually scheduled') {
+    } else if (event.description?.includes('Manually scheduled')) {
       conflictingEventsMessage =
         'Another manually scheduled reminder is scheduled during this time.'
       continue
@@ -441,18 +445,8 @@ async function rescheduleConflictingEvents(
     const eventEnd = new Date(event.end?.dateTime)
     const durationNumber = checkTimeDuration(eventStart, eventEnd)
 
-    // If an event has a deadline, the description will be the deadline.
-    let deadline = null
-    let minimumStartTime = null
-    let deadlineMessage = undefined
-    if (event.description) {
-      deadlineMessage = event.description
-      const deadlineInfo = event.description.split('|')
-      deadline = new Date(deadlineInfo[0])
-      if (deadlineInfo[1]) {
-        minimumStartTime = new Date(deadlineInfo[1])
-      }
-    }
+    const { deadlineMessage, deadline, minimumStartTime } =
+      parsePotentialDescription(event.description)
 
     // Try to reschedule the conflicting event
     const conflictingEventMessage = await autoSchedule(
@@ -814,6 +808,34 @@ async function getEventsInTimePeriod(
   return eventsList.data.items
 }
 
+/**
+ * Parses info in the description of an event, if the description exists. If an
+ * event has a deadline or a minimumStartTime, they are stored in the
+ * description.
+ * @param {string | null | undefined} description - The description of the
+ * event.
+ * @returns {DescriptionInfo} Returns empty values, or, if this info exists,
+ * returns the deadlineMessage, which is the description storing the deadline
+ * info; the deadline; and the minimumStartTime.
+ */
+function parsePotentialDescription(
+  description: string | null | undefined
+): DescriptionInfo {
+  let deadlineMessage = undefined
+  let deadline = null
+  let minimumStartTime = null
+  if (description) {
+    deadlineMessage = description
+    const deadlineInfo = description.split('|')
+    deadline = new Date(deadlineInfo[0])
+    if (deadlineInfo[1]) {
+      minimumStartTime = new Date(deadlineInfo[1])
+    }
+  }
+
+  return { deadlineMessage, deadline, minimumStartTime }
+}
+
 async function getUserTimeZone(): Promise<string> {
   const cal = await calendar.calendars.get({
     auth: oAuth2Client,
@@ -832,10 +854,174 @@ async function deleteEvent(eventId: string): Promise<void> {
   })
 }
 
+/**
+ * Reschedules an event. Depending on the reschedule settings chosen by the
+ * user, the event is scheduled at the set time or at the next open time slot
+ * after the set time. The description of the event is also updated
+ * to handle effects of rescheduling.
+ * @param {boolean} flexible - This bool determines whether the event is
+ * scheduled at the set time or at the next open time slot after the set time.
+ * @param {string} eventId - The ID of an event.
+ * @param {string} rescheduleTime - The target time that the event will be
+ * rescheduled for.
+ * @param {string} summary - The summary of an event.
+ * @param {number} duration - The duration of an event.
+ * @param {string} description - The description of the event containing info
+ * on its deadline or if it was manually scheduled.
+ * @param {string} deadline - The deadline of an event.
+ * @returns {Promise<string>} Returns a string to be set as a message to the 
+ * user with information on the result of the scheduling.
+ */
+async function rescheduleEvent(data: RescheduleData): Promise<string> {
+  const {
+    flexible,
+    eventId,
+    rescheduleTime,
+    summary,
+    duration,
+    description,
+    deadline,
+  } = data
+  const rescheduleTimeDate = new Date(rescheduleTime)
+  let deadlineDate = null
+  if (deadline) {
+    deadlineDate = new Date(deadline)
+  }
+
+  await updateDescription(
+    eventId,
+    rescheduleTimeDate,
+    flexible,
+    deadlineDate,
+    description
+  )
+
+  let userMessage: UserMessage
+
+  if (flexible) {
+    userMessage = await autoSchedule(
+      summary,
+      duration,
+      deadlineDate,
+      description,
+      rescheduleTimeDate,
+      eventId
+    )
+  } else {
+    userMessage = await manualSchedule(
+      summary,
+      rescheduleTimeDate.toDateString(),
+      rescheduleTimeDate.toTimeString(),
+      duration,
+      eventId
+    )
+  }
+
+  const messageString = convertMessageToString(userMessage)
+
+  return messageString
+}
+
+/**
+ * Updates an event's description, which affects how the event is effected when
+ * it is rescheduled or when other events are scheduled on top of it.
+ * @param {string} eventId - The ID of an event.
+ * @param {Date} rescheduleTimeDate - The time an event will be rescheduled to
+ * or thereafter.
+ * @param {boolean} flexible - Determines whether the event will be rescheduled
+ * at the selected time or after the selected time depending on availability.
+ * @param {Date | null} deadline - The deadline of an event.
+ * @param {string | undefined} description - The description of an event
+ * containing info on its deadline or if it was manually scheduled.
+ */
+async function updateDescription(
+  eventId: string,
+  rescheduleTimeDate: Date,
+  flexible: boolean,
+  deadline: Date | null,
+  description: string | undefined
+): Promise<void> {
+  if (deadline) {
+    // Check if the time selected for the reschedule is after the event's
+    // deadline. If it is, the description storing the deadline will be
+    // modified.
+    if (rescheduleTimeDate > deadline) {
+      if (flexible) {
+        // The description will be deleted so the event will be able to be
+        // rescheduled if another event is scheduled on top of it.
+        await calendar.events.patch({
+          auth: oAuth2Client,
+          calendarId: 'primary',
+          eventId: eventId,
+          requestBody: {
+            description: '',
+          },
+        })
+      } else {
+        // The deadline will be deleted but the description will be modified
+        // so the event will not be able to be rescheduled if it conflicts
+        // with another event.
+        await calendar.events.patch({
+          auth: oAuth2Client,
+          calendarId: 'primary',
+          eventId: eventId,
+          requestBody: {
+            description: 'Manually scheduled',
+          },
+        })
+      }
+    } else {
+      if (!flexible) {
+        // The description will be modified so the event will not be able to be
+        // rescheduled if it conflicts with another event.
+        await calendar.events.patch({
+          auth: oAuth2Client,
+          calendarId: 'primary',
+          eventId: eventId,
+          requestBody: {
+            description: 'Manually scheduled - ' + description,
+          },
+        })
+      }
+    }
+  } else {
+    if (description === 'Manually scheduled') {
+      if (flexible) {
+        // The description will be deleted so the event will be able to be
+        // rescheduled if another event is scheduled on top of it.
+        await calendar.events.patch({
+          auth: oAuth2Client,
+          calendarId: 'primary',
+          eventId: eventId,
+          requestBody: {
+            description: '',
+          },
+        })
+      }
+    } else {
+      // This event will not have a deadline and will not have been manually 
+      // scheduled.
+      if (!flexible) {
+        // A description will be added so the event will not be able to be
+        // rescheduled if it conflicts with another event.
+        await calendar.events.patch({
+          auth: oAuth2Client,
+          calendarId: 'primary',
+          eventId: eventId,
+          requestBody: {
+            description: 'Manually scheduled',
+          },
+        })
+      }
+    }
+  }
+}
+
 export default {
   getEvents,
   setWorkingHours,
   setUnavailableHours,
   createEvent,
   deleteEvent,
+  rescheduleEvent,
 }

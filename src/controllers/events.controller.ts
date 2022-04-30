@@ -3,6 +3,7 @@ import eventsService from '../services/events.service'
 import {
   CreateEventRequest,
   DeleteEventRequest,
+  RescheduleEventRequest,
   SetWeeklyHoursRequest,
 } from '../types'
 
@@ -73,10 +74,26 @@ function deleteEvent(
   }
 }
 
+function rescheduleEvent(
+  req: RescheduleEventRequest,
+  res: Response,
+  next: NextFunction
+): void {
+  try {
+    void (async () => {
+      res.send(await eventsService.rescheduleEvent(req.body))
+    })()
+  } catch (error) {
+    console.error('Error while rescheduling event')
+    next(error)
+  }
+}
+
 export default {
   getEvents,
   setWorkingHours,
   setUnavailableHours,
   createEvent,
   deleteEvent,
+  rescheduleEvent,
 }

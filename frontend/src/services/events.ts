@@ -26,10 +26,16 @@ const deleteReminder = async (endpoint: string, eventId: string) => {
   await axios.post(`${baseUrl}${endpoint}`, { eventId })
 }
 
+const rescheduleReminder = async (endpoint: string, rescheduleData: object) => {
+  const response = await axios.post(`${baseUrl}${endpoint}`, rescheduleData)
+  return response.data
+}
+
 export default {
   getEvents,
   setWorkingHours,
   setUnavailableHours,
   createReminder,
   deleteReminder,
+  rescheduleReminder,
 }

@@ -12,4 +12,6 @@ router.post('/create-event', eventsController.createEvent)
 
 router.post('/delete-event', eventsController.deleteEvent)
 
+router.post('/reschedule-event', eventsController.rescheduleEvent)
+
 export default router

@@ -36,4 +36,6 @@ export interface EventData {
   title: string
   start: Date | null
   end: Date | null
+  description: string
+  deadline: Date | null
 }

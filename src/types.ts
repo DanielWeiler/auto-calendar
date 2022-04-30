@@ -21,13 +21,14 @@ export interface SignInData {
   clientCurrentDateTime: Date
 }
 
-export interface EventDisplayFormat {
+export interface EventData {
+  id: string
   title: string | null | undefined
   start: string | null | undefined
   end: string | null | undefined
+  extendedProps: object
   backgroundColor: string
   display: string
-  id: string
 }
 
 export interface SetWeeklyHoursRequest extends express.Request {
@@ -112,13 +113,25 @@ export interface CreateEventRequest extends express.Request {
   }
 }
 
+export interface RescheduleEventRequest extends express.Request {
+  body: {
+    flexible: boolean
+    eventId: string
+    rescheduleTime: string
+    summary: string
+    duration: number
+    description: string
+    deadline: string
+  }
+}
+
 export interface DeleteEventRequest extends express.Request {
   body: {
     eventId: string
   }
 }
 
-export interface EventData {
+export interface EventFormData {
   summary: string
   duration: string
   manualDate: string
@@ -131,4 +144,20 @@ export interface EventData {
 export interface UserMessage {
   eventBeingScheduled: string
   conflictingEvents: string
+}
+
+export interface DescriptionInfo {
+  deadlineMessage: string | undefined
+  deadline: Date | null
+  minimumStartTime: Date | null
+}
+
+export interface RescheduleData {
+  flexible: boolean
+  eventId: string
+  rescheduleTime: string
+  summary: string
+  duration: number
+  description: string
+  deadline: string
 }

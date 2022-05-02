@@ -44,7 +44,7 @@ const Calendar = () => {
     setEventOpen(false)
   }
 
-  const handleEventClick = (arg: EventClickArg) => {    
+  const handleEventClick = (arg: EventClickArg) => {
     // Prevent unavailable hours and working hours events from being
     // modified within the calendar view
     if (
@@ -58,7 +58,7 @@ const Calendar = () => {
     let deadline = null
     if (
       arg.event.extendedProps.description &&
-      arg.event.extendedProps.description !== 'Manually scheduled'
+      arg.event.extendedProps.description.includes('Deadline')
     ) {
       const deadlineInfo: string[] =
         arg.event.extendedProps.description.split('|')

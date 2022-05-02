@@ -1,3 +1,21 @@
+export function addTimeToDate(time: string, date: Date | string): Date {
+  const dateTime = new Date(date)
+  const t = parseTime(time)
+  dateTime.setHours(t.hours, t.minutes)
+  return dateTime
+}
+
+export function parseTime(time: string): { hours: number; minutes: number } {
+  const h = time.split(':')[0]
+  const m = time.split(':')[1]
+
+  const hours = Number(h)
+  const minutes = Number(m)
+  const t = { hours, minutes }
+
+  return t
+}
+
 export function assertDefined<T>(
   value: T | null | undefined
 ): asserts value is T {

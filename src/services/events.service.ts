@@ -158,9 +158,10 @@ async function createEvent(data: EventFormData): Promise<string> {
     duration,
     manualDate,
     manualTime,
+    minimumStartDate,
+    minimumStartTime,
     deadlineDate,
     deadlineTime,
-    minimumStartTime,
   } = data
   const durationNumber = parseInt(duration)
 
@@ -174,33 +175,31 @@ async function createEvent(data: EventFormData): Promise<string> {
       durationNumber
     )
   } else {
+    let minimumStart = null
     let deadline = null
-    let deadlineMessage = ''
-    let minimumStartTimeDate = null
+    let schedulingSettings = ''
+
+    if (minimumStartDate && minimumStartTime) {
+      minimumStart = addTimeToDate(minimumStartTime, minimumStartDate)
+    }
     if (deadlineDate && deadlineTime) {
       deadline = addTimeToDate(deadlineTime, deadlineDate)
+    }
 
-      if (minimumStartTime !== '0') {
-        let minimumStartTimeNumber = parseInt(minimumStartTime)
-
-        // Convert from minutes to miliseconds
-        minimumStartTimeNumber = minimumStartTimeNumber * 60000
-
-        minimumStartTimeDate = new Date(
-          deadline.getTime() - minimumStartTimeNumber
-        )
-        deadlineMessage = `Deadline: ${deadline} | Minimum start time: ${minimumStartTimeDate}`
-      } else {
-        deadlineMessage = `Deadline: ${deadline}`
-      }
+    if (minimumStartDate && minimumStartTime && deadlineDate && deadlineTime) {
+      schedulingSettings = `Deadline: ${deadline} | Minimum start time: ${minimumStart}`
+    } else if (minimumStartDate && minimumStartTime) {
+      schedulingSettings = `Minimum start time: ${minimumStart}`
+    } else if (deadlineDate && deadlineTime) {
+      schedulingSettings = `Deadline: ${deadline}`
     }
 
     userMessage = await autoSchedule(
       summary,
       durationNumber,
       deadline,
-      deadlineMessage,
-      minimumStartTimeDate
+      schedulingSettings,
+      minimumStart
     )
   }
 
@@ -241,7 +240,7 @@ async function autoSchedule(
   summary: string,
   durationNumber: number,
   deadline: Date | null = null,
-  deadlineMessage = '',
+  schedulingSettings = '',
   minimumStartTime: Date | null = null,
   eventId = ''
 ): Promise<UserMessage> {
@@ -270,7 +269,7 @@ async function autoSchedule(
           deadline,
           minimumStartTime,
           summary,
-          deadlineMessage,
+          schedulingSettings,
           eventId
         )
       } else {
@@ -278,7 +277,7 @@ async function autoSchedule(
           summary,
           startDateTime,
           endDateTime,
-          deadlineMessage,
+          schedulingSettings,
           eventId
         )
         userMessage.eventBeingScheduled = startDateTime.toString()
@@ -304,7 +303,7 @@ async function autoSchedule(
       deadline,
       minimumStartTime,
       summary,
-      deadlineMessage,
+      schedulingSettings,
       eventId
     )
   }
@@ -445,7 +444,7 @@ async function rescheduleConflictingEvents(
     const eventEnd = new Date(event.end?.dateTime)
     const durationNumber = checkTimeDuration(eventStart, eventEnd)
 
-    const { deadlineMessage, deadline, minimumStartTime } =
+    const { schedulingSettings, deadline, minimumStartTime } =
       parsePotentialDescription(event.description)
 
     // Try to reschedule the conflicting event
@@ -453,7 +452,7 @@ async function rescheduleConflictingEvents(
       event.summary,
       durationNumber,
       deadline,
-      deadlineMessage,
+      schedulingSettings,
       minimumStartTime,
       event.id
     )
@@ -544,7 +543,7 @@ async function findAvailabilityBeforeDeadline(
   deadline: Date,
   minimumStartTime: Date | null = null,
   summary: string,
-  deadlineMessage: string,
+  schedulingSettings: string,
   eventId = ''
 ): Promise<UserMessage> {
   const userMessage: UserMessage = {
@@ -576,7 +575,7 @@ async function findAvailabilityBeforeDeadline(
         summary,
         startDateTime,
         endDateTime,
-        deadlineMessage,
+        schedulingSettings,
         eventId
       )
       userMessage.eventBeingScheduled = startDateTime.toString()
@@ -747,10 +746,17 @@ async function getHighPriorityEvents(
   for (let i = 0; i < events.length; i++) {
     const event = events[i]
 
-    // If an event has a description, it is an indicator that it is a high
-    // priority event.
+    // Check if there is anything in the description that would make the event
+    // a high priority event.
     if (event.description) {
-      highPriorityEvents.push(event)
+      if (
+        event.description.includes('Unavailable hours') ||
+        event.description.includes('Working hours') ||
+        event.description.includes('Manually scheduled') ||
+        event.description.includes('Deadline')
+      ) {
+        highPriorityEvents.push(event)
+      }
     }
   }
 
@@ -815,25 +821,33 @@ async function getEventsInTimePeriod(
  * @param {string | null | undefined} description - The description of the
  * event.
  * @returns {DescriptionInfo} Returns empty values, or, if this info exists,
- * returns the deadlineMessage, which is the description storing the deadline
- * info; the deadline; and the minimumStartTime.
+ * returns the schedulingSettings, (which is the description storing a possible
+ * deadline and a possible minimum start time), the deadline, and the
+ * minimumStartTime.
  */
 function parsePotentialDescription(
   description: string | null | undefined
 ): DescriptionInfo {
-  let deadlineMessage = undefined
+  let schedulingSettings = undefined
   let deadline = null
   let minimumStartTime = null
   if (description) {
-    deadlineMessage = description
-    const deadlineInfo = description.split('|')
-    deadline = new Date(deadlineInfo[0])
-    if (deadlineInfo[1]) {
+    schedulingSettings = description
+    if (
+      description.includes('Deadline') &&
+      description.includes('Minimum start time')
+    ) {
+      const deadlineInfo = description.split('|')
+      deadline = new Date(deadlineInfo[0])
       minimumStartTime = new Date(deadlineInfo[1])
+    } else if (description.includes('Deadline')) {
+      deadline = new Date(description)
+    } else if (description.includes('Minimum start time')) {
+      minimumStartTime = new Date(description)
     }
   }
 
-  return { deadlineMessage, deadline, minimumStartTime }
+  return { schedulingSettings, deadline, minimumStartTime }
 }
 
 async function getUserTimeZone(): Promise<string> {
@@ -869,7 +883,7 @@ async function deleteEvent(eventId: string): Promise<void> {
  * @param {string} description - The description of the event containing info
  * on its deadline or if it was manually scheduled.
  * @param {string} deadline - The deadline of an event.
- * @returns {Promise<string>} Returns a string to be set as a message to the 
+ * @returns {Promise<string>} Returns a string to be set as a message to the
  * user with information on the result of the scheduling.
  */
 async function rescheduleEvent(data: RescheduleData): Promise<string> {
@@ -947,14 +961,14 @@ async function updateDescription(
     // modified.
     if (rescheduleTimeDate > deadline) {
       if (flexible) {
-        // The description will be deleted so the event will be able to be
-        // rescheduled if another event is scheduled on top of it.
+        // The deadline will be deleted and the reschedule time will be stored
+        // in the description to be referenced as a minimum start time.
         await calendar.events.patch({
           auth: oAuth2Client,
           calendarId: 'primary',
           eventId: eventId,
           requestBody: {
-            description: '',
+            description: `Minimum start time: ${rescheduleTimeDate}`,
           },
         })
       } else {
@@ -987,21 +1001,34 @@ async function updateDescription(
   } else {
     if (description === 'Manually scheduled') {
       if (flexible) {
-        // The description will be deleted so the event will be able to be
-        // rescheduled if another event is scheduled on top of it.
+        // The description will be modified so the event will be able to be
+        // rescheduled if another event is scheduled on top of it. The
+        // reschedule time will be stored in the description to be referenced
+        // as a minimum start time.
         await calendar.events.patch({
           auth: oAuth2Client,
           calendarId: 'primary',
           eventId: eventId,
           requestBody: {
-            description: '',
+            description: `Minimum start time: ${rescheduleTimeDate}`,
           },
         })
       }
     } else {
-      // This event will not have a deadline and will not have been manually 
+      // This event will not have a deadline and will not have been manually
       // scheduled.
-      if (!flexible) {
+      if (flexible) {
+        // The reschedule time will be stored in the description to be
+        // referenced as a minimum start time.
+        await calendar.events.patch({
+          auth: oAuth2Client,
+          calendarId: 'primary',
+          eventId: eventId,
+          requestBody: {
+            description: `Minimum start time: ${rescheduleTimeDate}`,
+          },
+        })
+      } else {
         // A description will be added so the event will not be able to be
         // rescheduled if it conflicts with another event.
         await calendar.events.patch({

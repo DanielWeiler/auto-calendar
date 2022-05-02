@@ -106,9 +106,10 @@ export interface CreateEventRequest extends express.Request {
       duration: string
       manualDate: string
       manualTime: string
+      minimumStartDate: string
+      minimumStartTime: string
       deadlineDate: string
       deadlineTime: string
-      minimumStartTime: string
     }
   }
 }
@@ -136,9 +137,10 @@ export interface EventFormData {
   duration: string
   manualDate: string
   manualTime: string
+  minimumStartDate: string
+  minimumStartTime: string
   deadlineDate: string
   deadlineTime: string
-  minimumStartTime: string
 }
 
 export interface UserMessage {
@@ -147,7 +149,7 @@ export interface UserMessage {
 }
 
 export interface DescriptionInfo {
-  deadlineMessage: string | undefined
+  schedulingSettings: string | undefined
   deadline: Date | null
   minimumStartTime: Date | null
 }

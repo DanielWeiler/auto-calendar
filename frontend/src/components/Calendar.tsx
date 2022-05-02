@@ -33,7 +33,7 @@ const Calendar = () => {
         console.log(events)
         setEvents(events)
       })
-    }, 500)
+    }, 1000)
   }, [])
 
   const handleEventOpen = () => {
@@ -49,7 +49,7 @@ const Calendar = () => {
     // modified within the calendar view
     if (
       arg.event.title === 'Unavailable hours' ||
-      arg.event.title === 'Working Hours'
+      arg.event.title === 'Working hours'
     ) {
       return
     }

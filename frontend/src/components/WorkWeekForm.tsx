@@ -1,18 +1,21 @@
 import { AlertColor, Button } from '@mui/material'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import eventService from '../services/events'
-import {
-  NotificationDetails,
-  TimePeriod,
-  WeeklyHoursFormValues,
-} from '../types'
+import { TimePeriod, WeeklyHoursFormValues } from '../types'
 import { serverErrorMessage } from '../utils/helpers'
 import Header from './Header'
-import Notification from './Notification'
 import WorkDayForm from './WeekDayForm'
 
-const WorkingHoursForm = () => {
+const WorkWeekForm = (props: {
+  createNotification: (
+    body: string,
+    heading: string,
+    style: AlertColor | undefined
+  ) => void
+}) => {
+  const { createNotification } = props
   const {
     register,
     handleSubmit,
@@ -61,26 +64,11 @@ const WorkingHoursForm = () => {
     { name: 'Sunday', display: 'none' },
   ])
 
-  let newNotification: NotificationDetails = {
-    style: undefined,
-    heading: '',
-    body: '',
-  }
-  const [notification, setNotification] = useState(newNotification)
+  const navigate = useNavigate()
 
-  const createNotification = (
-    style: AlertColor | undefined,
-    heading: string,
-    body = ''
-  ) => {
-    newNotification = {
-      style: style,
-      heading: heading,
-      body: body,
-    }
-
-    setNotification(newNotification)
-  }
+  useEffect(() => {
+    createNotification('', '', undefined)
+  }, [])
 
   const handleOnChange = (position: number) => {
     const updatedCheckedState = checkedState.map(({ name, display }, index) => {
@@ -151,20 +139,16 @@ const WorkingHoursForm = () => {
 
     try {
       await eventService.setWorkingHours('/set-working-hours', { data })
-      createNotification('success', 'Working hours set')
+      createNotification('', 'Working hours set', 'success')
     } catch (error) {
-      createNotification(
-        'error',
-        '500 Internal Server Error',
-        serverErrorMessage
-      )
+      createNotification(serverErrorMessage, '', undefined)
     }
+    navigate('/')
   }
 
   return (
     <div>
       <Header title="Set Working Hours" />
-      <Notification notification={notification} />
       {checkedState.map(({ name, display }, index) => (
         <span key={name} className="week-days-selector">
           <input
@@ -202,4 +186,4 @@ const WorkingHoursForm = () => {
   )
 }
 
-export default WorkingHoursForm
+export default WorkWeekForm

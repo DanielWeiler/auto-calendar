@@ -1,17 +1,20 @@
-import { Button, MenuItem, Select, TextField } from '@mui/material'
-import React, { useState } from 'react'
+import { AlertColor, Button, MenuItem, Select, TextField } from '@mui/material'
+import React, { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import eventService from '../services/events'
-import { NotificationDetails, ReminderFormValues } from '../types'
-import {
-  addTimeToDate,
-  serverErrorMessage,
-  warningMessages,
-} from '../utils/helpers'
+import { ReminderFormValues } from '../types'
+import { addTimeToDate, serverErrorMessage } from '../utils/helpers'
 import Header from './Header'
-import Notification from './Notification'
 
-const ReminderForm = () => {
+const ReminderForm = (props: {
+  createNotification: (
+    body: string,
+    heading: string,
+    style: AlertColor | undefined
+  ) => void
+}) => {
+  const { createNotification } = props
   const {
     register,
     handleSubmit,
@@ -19,48 +22,11 @@ const ReminderForm = () => {
     setError,
     reset,
   } = useForm<ReminderFormValues>()
+  const navigate = useNavigate()
 
-  let newNotification: NotificationDetails = {
-    style: undefined,
-    heading: '',
-    body: '',
-  }
-  const [notification, setNotification] = useState(newNotification)
-
-  const createNotification = (message: string) => {
-    // Text that is unnecessary for the user is removed
-    if (message.includes('Manually scheduled')) {
-      message = message.substring(18)
-    }
-
-    newNotification = {
-      style: 'success',
-      heading: 'Reminder scheduled',
-      body: message,
-    }
-
-    let warning = false
-    warningMessages.map((warningMessage) =>
-      message === warningMessage ? (warning = true) : null
-    )
-
-    if (warning) {
-      newNotification.style = 'warning'
-      newNotification.heading = 'Reminder scheduled with conflicts'
-    } else if (
-      message.includes(
-        'There was no time slot available for this event before its deadline.'
-      )
-    ) {
-      newNotification.style = 'error'
-      newNotification.heading = 'Reminder was not scheduled'
-    } else if (message === serverErrorMessage) {
-      newNotification.style = 'error'
-      newNotification.heading = '500 Internal Server Error'
-    }
-
-    setNotification(newNotification)
-  }
+  useEffect(() => {
+    createNotification('', '', undefined)
+  }, [])
 
   const durationOptions = [
     { value: '5', text: '5 minutes' },
@@ -201,16 +167,16 @@ const ReminderForm = () => {
         { data }
       )
       reset()
-      createNotification(reminderMessage)
+      createNotification(reminderMessage, 'Reminder scheduled', 'success')
     } catch (error) {
-      createNotification(serverErrorMessage)
+      createNotification(serverErrorMessage, '', undefined)
     }
+    navigate('/')
   }
 
   return (
     <div>
       <Header title="Create Reminder" />
-      <Notification notification={notification} />
       <form onSubmit={handleSubmit(onSubmit)}>
         <label>Summary:</label>
         <TextField

@@ -1,3 +1,4 @@
+import { AlertColor } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import {
   GoogleLogin,
@@ -11,10 +12,14 @@ import Menu from './components/Menu'
 import Notification from './components/Notification'
 import ReminderForm from './components/ReminderForm'
 import WeekAvailabilityForm from './components/WeekAvailabilityForm'
-import WorkingHoursForm from './components/WorkWeekForm'
+import WorkWeekForm from './components/WorkWeekForm'
 import signInService from './services/sign-in'
 import { NotificationDetails } from './types'
-import { assertDefined, serverErrorMessage } from './utils/helpers'
+import {
+  assertDefined,
+  serverErrorMessage,
+  warningMessages,
+} from './utils/helpers'
 
 function App() {
   let newNotification: NotificationDetails = {
@@ -32,21 +37,47 @@ function App() {
     }
   }, [])
 
-  const createNotification = (heading: string, body = '') => {
+  assertDefined(process.env.REACT_APP_GOOGLE_CLIENT_ID)
+
+  const createNotification = (
+    body: string,
+    heading = '',
+    style: AlertColor | undefined = undefined
+  ) => {
+    // Text that is unnecessary for the user is removed
+    if (body.includes('Manually scheduled')) {
+      body = body.substring(18)
+    }
+
     newNotification = {
-      style: 'error',
+      style: style,
       heading: heading,
       body: body,
     }
 
+    let warning = false
+    warningMessages.map((warningMessage) =>
+      body === warningMessage ? (warning = true) : null
+    )
+
+    if (warning) {
+      newNotification.style = 'warning'
+      newNotification.heading = 'Reminder scheduled with conflicts'
+    } else if (
+      body.includes(
+        'There was no time slot available for this event before its deadline.'
+      )
+    ) {
+      newNotification.style = 'error'
+      newNotification.heading = 'Reminder was not scheduled'
+    } else if (body === serverErrorMessage) {
+      newNotification.style = 'error'
+      if (heading !== 'Failed to sign in' && heading !== 'Failed to sign out') {
+        newNotification.heading = '500 Internal Server Error'
+      }
+    }
+
     setNotification(newNotification)
-    setTimeout(() => {
-      setNotification({
-        style: undefined,
-        heading: '',
-        body: '',
-      })
-    }, 10000)
   }
 
   const handleLogin = async (
@@ -60,29 +91,33 @@ function App() {
       await signInService.signIn({ code })
       setUser(code)
     } catch (error) {
-      createNotification('500 Internal Server Error', serverErrorMessage)
+      createNotification(serverErrorMessage)
     }
   }
 
   const handleLoginFailure = () => {
-    createNotification('Failed to sign in', serverErrorMessage)
+    createNotification(serverErrorMessage, 'Failed to sign in', 'error')
   }
 
   const handleLogout = () => {
     window.localStorage.removeItem('loggedUser')
     setUser('')
+    createNotification('')
   }
 
   const handleLogoutFailure = () => {
-    createNotification('Failed to sign out', serverErrorMessage)
+    createNotification(serverErrorMessage, 'Failed to sign out', 'error')
   }
-
-  assertDefined(process.env.REACT_APP_GOOGLE_CLIENT_ID)
 
   return (
     <Router>
       <div>
-        <Notification notification={notification} />
+        <div className="notification">
+          <Notification
+            notification={notification}
+            createNotification={createNotification}
+          />
+        </div>
         {!user ? (
           <GoogleLogin
             clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
@@ -102,11 +137,25 @@ function App() {
             />
             <Routes>
               <Route path="/" element={<Calendar />} />
-              <Route path="/create-event" element={<ReminderForm />} />
-              <Route path="/set-working-hours" element={<WorkingHoursForm />} />
+              <Route
+                path="/create-event"
+                element={
+                  <ReminderForm createNotification={createNotification} />
+                }
+              />
+              <Route
+                path="/set-working-hours"
+                element={
+                  <WorkWeekForm createNotification={createNotification} />
+                }
+              />
               <Route
                 path="/set-available-hours"
-                element={<WeekAvailabilityForm />}
+                element={
+                  <WeekAvailabilityForm
+                    createNotification={createNotification}
+                  />
+                }
               />
             </Routes>
           </div>

@@ -136,7 +136,10 @@ function App() {
               handleLogoutFailure={handleLogoutFailure}
             />
             <Routes>
-              <Route path="/" element={<Calendar />} />
+              <Route
+                path="/"
+                element={<Calendar createNotification={createNotification} />}
+              />
               <Route
                 path="/create-event"
                 element={

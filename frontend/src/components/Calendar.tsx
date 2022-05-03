@@ -3,16 +3,24 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import listPlugin from '@fullcalendar/list'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import AddIcon from '@mui/icons-material/Add'
-import { Fab } from '@mui/material'
+import { AlertColor, Fab } from '@mui/material'
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import eventService from '../services/events'
 import { EventData } from '../types'
-import { assertDefined } from '../utils/helpers'
+import { assertDefined, serverErrorMessage } from '../utils/helpers'
 import EventOptions from './EventOptions'
 import StyleWrapper from './StyleWrapper'
 
-const Calendar = () => {
+const Calendar = (props: {
+  createNotification: (
+    body: string,
+    heading: string,
+    style: AlertColor | undefined
+  ) => void
+}) => {
+  const { createNotification } = props
+
   const [events, setEvents] = useState([])
   const [eventOpen, setEventOpen] = useState(false)
   const [eventData, setEventData] = useState<EventData>({
@@ -79,9 +87,13 @@ const Calendar = () => {
   }
 
   const handleDeleteEvent = async () => {
-    await eventService.deleteReminder('/delete-event', eventData.id)
-    const refreshedEvents = await eventService.getEvents()
-    setEvents(refreshedEvents)
+    try {
+      await eventService.deleteReminder('/delete-event', eventData.id)
+      const refreshedEvents = await eventService.getEvents()
+      setEvents(refreshedEvents)
+    } catch (error) {
+      createNotification(serverErrorMessage, '', undefined)
+    }
   }
 
   const handleDateTimePicker = (newTime: Date | null) => {
@@ -108,15 +120,17 @@ const Calendar = () => {
       deadline: eventData.deadline,
     }
 
-    const reminderMessage: string = await eventService.rescheduleReminder(
-      '/reschedule-event',
-      data
-    )
-
-    console.log('msg', reminderMessage)
-
-    const refreshedEvents = await eventService.getEvents()
-    setEvents(refreshedEvents)
+    try {
+      const reminderMessage: string = await eventService.rescheduleReminder(
+        '/reschedule-event',
+        data
+      )
+      const refreshedEvents = await eventService.getEvents()
+      setEvents(refreshedEvents)
+      createNotification(reminderMessage, 'Reminder scheduled', 'success')
+    } catch (error) {
+      createNotification(serverErrorMessage, '', undefined)
+    }
   }
 
   return (

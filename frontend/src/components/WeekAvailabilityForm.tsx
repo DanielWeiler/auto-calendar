@@ -54,6 +54,7 @@ const WeekAvailabilityForm = (props: {
     },
   })
 
+  const [saveDisabled, setSaveDisabled] = useState(false)
   const [checkedState, setCheckedState] = useState([
     { name: 'Monday', display: '' },
     { name: 'Tuesday', display: '' },
@@ -137,11 +138,17 @@ const WeekAvailabilityForm = (props: {
       return
     }
 
+    setSaveDisabled(true)
+
     try {
       await eventService.setUnavailableHours('/set-available-hours', {
         data,
       })
-      createNotification('', 'Available hours set', 'success')
+      createNotification(
+        'Conflicting events that are reschedulable will be rescheduled. This may take a moment.',
+        'Available hours set',
+        'success'
+      )
     } catch (error) {
       createNotification(serverErrorMessage, '', undefined)
     }
@@ -175,12 +182,7 @@ const WeekAvailabilityForm = (props: {
           />
         ))}
 
-        <Button
-          id="save"
-          type="submit"
-          /* disabled={submitDisabled} */
-          /* style={margin} */
-        >
+        <Button id="save" type="submit" disabled={saveDisabled}>
           Save
         </Button>
       </form>

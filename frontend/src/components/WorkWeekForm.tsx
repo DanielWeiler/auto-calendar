@@ -54,6 +54,7 @@ const WorkWeekForm = (props: {
     },
   })
 
+  const [saveDisabled, setSaveDisabled] = useState(false)
   const [checkedState, setCheckedState] = useState([
     { name: 'Monday', display: '' },
     { name: 'Tuesday', display: '' },
@@ -137,9 +138,15 @@ const WorkWeekForm = (props: {
       return
     }
 
+    setSaveDisabled(true)
+
     try {
       await eventService.setWorkingHours('/set-working-hours', { data })
-      createNotification('', 'Working hours set', 'success')
+      createNotification(
+        'Conflicting events that are reschedulable will be rescheduled. This may take a moment.',
+        'Working hours set',
+        'success'
+      )
     } catch (error) {
       createNotification(serverErrorMessage, '', undefined)
     }
@@ -176,8 +183,7 @@ const WorkWeekForm = (props: {
         <Button
           id="save"
           type="submit"
-          /* disabled={submitDisabled} */
-          /* style={margin} */
+          disabled={saveDisabled}
         >
           Save
         </Button>

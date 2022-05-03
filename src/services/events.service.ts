@@ -56,7 +56,10 @@ async function getEvents(): Promise<EventData[]> {
   return eventsData
 }
 
-function setWorkingHours(weeklyHours: WeeklyHoursData): void {
+async function setWorkingHours(weeklyHours: WeeklyHoursData): Promise<void> {
+  await deletePreviousWeeklyHours('Working hours')
+
+  // Schedule the new working hours
   Object.entries(weeklyHours.data).map(async (day) => {
     const eventName = 'Working hours'
     const colorId = '4'
@@ -75,8 +78,36 @@ function setWorkingHours(weeklyHours: WeeklyHoursData): void {
         endWorkingHours,
         weekDay
       )
+
+      await rescheduleWeeklyHoursConflicts(startWorkingHours, endWorkingHours)
     }
   })
+}
+
+async function deletePreviousWeeklyHours(eventName: string): Promise<void> {
+  const list = await getEventsInTimePeriod(
+    new Date(),
+    new Date(new Date().setDate(new Date().getDay() + 8)) // A week following
+  )
+
+  for (let i = 0; i < list.length; i++) {
+    const event = list[i]
+    if (event.description === eventName) {
+      assertDefined(event.recurringEventId)
+      try {
+        await deleteEvent(event.recurringEventId)
+      } catch (error) {
+        // Catch any instances of the same recurring event that have already
+        // been deleted.
+        if (
+          error instanceof Error &&
+          error.message === 'Resource has been deleted'
+        ) {
+          continue
+        }
+      }
+    }
+  }
 }
 
 async function scheduleWeeklyEvent(
@@ -106,7 +137,29 @@ async function scheduleWeeklyEvent(
   })
 }
 
-function setUnavailableHours(weeklyHours: WeeklyHoursData): void {
+async function rescheduleWeeklyHoursConflicts(
+  startWeeklyHours: Date,
+  endWeeklyHours: Date
+) {
+  // For each new weekly hours event, reschedule the conflicting events
+  // which are reschedulable
+  for (let week = 0; week < 27; week++) {
+    const startTime = new Date(startWeeklyHours)
+    const endTime = new Date(endWeeklyHours)
+
+    await rescheduleConflictingEvents(
+      new Date(startTime.setDate(startTime.getDate() + 7 * week)),
+      new Date(endTime.setDate(endTime.getDate() + 7 * week))
+    )
+  }
+}
+
+async function setUnavailableHours(
+  weeklyHours: WeeklyHoursData
+): Promise<void> {
+  await deletePreviousWeeklyHours('Unavailable hours')
+
+  // Schedule the new unavailable hours
   Object.entries(weeklyHours.data).map(async (day) => {
     const eventName = 'Unavailable hours'
     const colorId = '8'
@@ -140,6 +193,16 @@ function setUnavailableHours(weeklyHours: WeeklyHoursData): void {
         endUnavailableHours,
         weekDay
       )
+
+      await rescheduleWeeklyHoursConflicts(
+        startUnavailableHours,
+        startAvailableHours
+      )
+
+      await rescheduleWeeklyHoursConflicts(
+        endAvailableHours,
+        endUnavailableHours
+      )
     } else {
       await scheduleWeeklyEvent(
         eventName,
@@ -147,6 +210,11 @@ function setUnavailableHours(weeklyHours: WeeklyHoursData): void {
         startUnavailableHours,
         endUnavailableHours,
         weekDay
+      )
+
+      await rescheduleWeeklyHoursConflicts(
+        startUnavailableHours,
+        endUnavailableHours
       )
     }
   })
@@ -394,7 +462,7 @@ async function scheduleEvent(
 async function rescheduleConflictingEvents(
   highPriorityEventStart: Date,
   highPriorityEventEnd: Date,
-  highPriorityEventSummary: string
+  highPriorityEventSummary = ''
 ): Promise<string> {
   let conflictingEventsMessage = ''
   let deadlineIssue = false

@@ -24,7 +24,9 @@ function setWorkingHours(
   next: NextFunction
 ): void {
   try {
-    res.send(eventsService.setWorkingHours(req.body))
+    void (async () => {
+      res.send(await eventsService.setWorkingHours(req.body))
+    })()
   } catch (error) {
     console.error('Error while setting working hours')
     next(error)
@@ -37,7 +39,9 @@ function setUnavailableHours(
   next: NextFunction
 ): void {
   try {
-    res.send(eventsService.setUnavailableHours(req.body))
+    void (async () => {
+      res.send(await eventsService.setUnavailableHours(req.body))
+    })()
   } catch (error) {
     console.error('Error while setting available hours')
     next(error)

@@ -23,7 +23,7 @@ const ReminderForm = (props: {
     reset,
   } = useForm<ReminderFormValues>()
 
-  const [submitDisabled, setSubmitDisabled] = useState(false)
+  const [scheduleDisabled, setScheduleDisabled] = useState(false)
 
   const navigate = useNavigate()
 
@@ -152,8 +152,6 @@ const ReminderForm = (props: {
           return
         }
       }
-
-      setSubmitDisabled(true)
     }
 
     if (deadlineDate && deadlineTime) {
@@ -166,6 +164,8 @@ const ReminderForm = (props: {
         return
       }
     }
+
+    setScheduleDisabled(true)
 
     try {
       const reminderMessage: string = await eventService.createReminder(
@@ -251,8 +251,8 @@ const ReminderForm = (props: {
         />
         <p style={{ color: 'red' }}>{errors.deadlineTime?.message}</p>
 
-        <Button id="submit" type="submit" disabled={submitDisabled}>
-          Submit
+        <Button id="submit" type="submit" disabled={scheduleDisabled}>
+          Schedule
         </Button>
       </form>
     </div>

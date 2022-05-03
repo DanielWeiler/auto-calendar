@@ -150,6 +150,7 @@ const Calendar = () => {
           displayEventTime={false}
           events={events}
           eventClick={handleEventClick}
+          navLinks={true}
         />
       </StyleWrapper>
       <Link to="/create-event">

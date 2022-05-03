@@ -83,6 +83,10 @@ const StyleWrapper = styled.div`
   .fc-list-table tr {
     background-color: white;
   }
+  
+  .fc-daygrid-day-bottom {
+    font-size: .75em;
+  }
 `
 
 export default StyleWrapper

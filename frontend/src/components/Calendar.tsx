@@ -124,6 +124,7 @@ const Calendar = () => {
       <StyleWrapper className="calendar-container">
         <FullCalendar
           height={'100%'}
+          plugins={[dayGridPlugin, timeGridPlugin, listPlugin]}
           views={{
             timeGrid: {
               titleFormat: { month: 'short', day: 'numeric' },
@@ -133,6 +134,11 @@ const Calendar = () => {
             },
           }}
           initialView="timeGridWeek"
+          headerToolbar={{
+            left: 'title dayGridMonth,timeGridWeek,timeGridDay,listWeek',
+            center: '',
+            right: 'today prev,next',
+          }}
           buttonText={{
             today: '📅',
             month: 'M',
@@ -140,14 +146,9 @@ const Calendar = () => {
             day: 'D',
             list: 'List',
           }}
+          dayMaxEvents={true}
           displayEventTime={false}
           events={events}
-          plugins={[dayGridPlugin, timeGridPlugin, listPlugin]}
-          headerToolbar={{
-            left: 'title dayGridMonth,timeGridWeek,timeGridDay,listWeek',
-            center: '',
-            right: 'today prev,next',
-          }}
           eventClick={handleEventClick}
         />
       </StyleWrapper>

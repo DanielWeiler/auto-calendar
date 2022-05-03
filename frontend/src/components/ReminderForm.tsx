@@ -1,5 +1,5 @@
 import { AlertColor, Button, MenuItem, Select, TextField } from '@mui/material'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import eventService from '../services/events'
@@ -22,6 +22,9 @@ const ReminderForm = (props: {
     setError,
     reset,
   } = useForm<ReminderFormValues>()
+
+  const [submitDisabled, setSubmitDisabled] = useState(false)
+
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -71,6 +74,7 @@ const ReminderForm = (props: {
       minimumStartDate,
       minimumStartTime,
     } = data
+
     if (manualDate) {
       if (!manualTime) {
         setError('manualTime', {
@@ -148,6 +152,8 @@ const ReminderForm = (props: {
           return
         }
       }
+
+      setSubmitDisabled(true)
     }
 
     if (deadlineDate && deadlineTime) {
@@ -217,12 +223,16 @@ const ReminderForm = (props: {
         <TextField
           id="minimumStartDate"
           type="date"
+          defaultValue={new Date().toISOString().slice(0, 10)}
           {...register('minimumStartDate')}
         />
         <p style={{ color: 'red' }}>{errors.minimumStartDate?.message}</p>
         <TextField
           id="minimumStartTime"
           type="time"
+          defaultValue={`${new Date().getHours()}:${
+            new Date().getMinutes() + 1
+          }`}
           {...register('minimumStartTime')}
         />
         <p style={{ color: 'red' }}>{errors.minimumStartTime?.message}</p>
@@ -241,7 +251,7 @@ const ReminderForm = (props: {
         />
         <p style={{ color: 'red' }}>{errors.deadlineTime?.message}</p>
 
-        <Button id="submit" type="submit">
+        <Button id="submit" type="submit" disabled={submitDisabled}>
           Submit
         </Button>
       </form>

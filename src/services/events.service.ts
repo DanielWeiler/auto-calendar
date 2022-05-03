@@ -287,7 +287,7 @@ async function autoSchedule(
         summary,
         startDateTime,
         endDateTime,
-        undefined,
+        schedulingSettings,
         eventId
       )
       userMessage.eventBeingScheduled = startDateTime.toString()

@@ -384,7 +384,7 @@ function convertMessageToString(userMessage: UserMessage): string {
   let messageString = ''
   if (
     userMessage.eventBeingScheduled !==
-      'There was no time slot available for this event before its deadline.' &&
+      'There was no time slot available for this event before its deadline. Free some space in your calendar and try again.' &&
     userMessage.eventBeingScheduled !== 'Manually scheduled'
   ) {
     const dateString = new Date(
@@ -529,7 +529,7 @@ async function rescheduleConflictingEvents(
     // message
     if (
       conflictingEventMessage.eventBeingScheduled ===
-      'There was no time slot available for this event before its deadline.'
+      'There was no time slot available for this event before its deadline. Free some space in your calendar and try again.'
     ) {
       deadlineIssue = true
     } else {
@@ -541,7 +541,7 @@ async function rescheduleConflictingEvents(
   // their deadline, the corresponding message is set.
   if (deadlineIssue) {
     conflictingEventsMessage =
-      'One or more conflicting events could not be rescheduled before their deadline.'
+      'One or more conflicting events could not be rescheduled before their deadline. These events were not changed.'
   }
 
   return conflictingEventsMessage
@@ -628,7 +628,7 @@ async function findAvailabilityBeforeDeadline(
   )
 
   const warningMessage =
-    'There was no time slot available for this event before its deadline.'
+    'There was no time slot available for this event before its deadline. Free some space in your calendar and try again.'
 
   // If an available time could be found before the deadline, the event is
   // scheduled.

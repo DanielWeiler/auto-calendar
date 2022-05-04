@@ -29,7 +29,7 @@ export const serverErrorMessage =
   'this problem. Thanks.'
 
 export const warningMessages = [
-  'One or more conflicting events could not be rescheduled before their deadline.',
+  'One or more conflicting events could not be rescheduled before their deadline. These events were not changed.',
   'Another manually scheduled reminder is scheduled during this time.',
   'This reminder was scheduled during working hours.',
   'This reminder was scheduled outside of available hours.',

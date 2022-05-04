@@ -230,9 +230,9 @@ const ReminderForm = (props: {
         <TextField
           id="minimumStartTime"
           type="time"
-          defaultValue={`${new Date().getHours()}:${
-            new Date().getMinutes() + 1
-          }`}
+          defaultValue={`${('0' + new Date().getHours()).slice(-2)}:${(
+            '0' + (new Date().getMinutes() + 1)
+          ).slice(-2)}`}
           {...register('minimumStartTime')}
         />
         <p style={{ color: 'red' }}>{errors.minimumStartTime?.message}</p>

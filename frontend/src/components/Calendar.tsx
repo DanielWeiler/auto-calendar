@@ -1,9 +1,12 @@
-import FullCalendar, { EventClickArg } from '@fullcalendar/react'
+import FullCalendar, {
+  EventClickArg,
+  preventDefault,
+} from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import listPlugin from '@fullcalendar/list'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import AddIcon from '@mui/icons-material/Add'
-import { AlertColor, Fab } from '@mui/material'
+import { AlertColor, Fab, Paper, Typography } from '@mui/material'
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import eventService from '../services/events'
@@ -22,6 +25,9 @@ const Calendar = (props: {
   const { createNotification } = props
 
   const [events, setEvents] = useState([])
+  const [weeklyHoursSet, setWeeklyHoursSet] = useState(false)
+  const [addDisabled, setAddDisabled] = useState(true)
+  const [popupOpen, setPopupOpen] = useState(false)
   const [eventOpen, setEventOpen] = useState(false)
   const [eventData, setEventData] = useState<EventData>({
     id: '',
@@ -38,11 +44,27 @@ const Calendar = (props: {
     // Must wait for authorization to complete after sign in
     setTimeout(() => {
       eventService.getEvents().then((events) => {
-        console.log(events)
         setEvents(events)
+        // Check if unavailable hours have been set
+        for (let i = 0; i < events.length; i++) {
+          const event = events[i]
+          if (event.title === 'Unavailable hours') {
+            setWeeklyHoursSet(true)
+            break
+          }
+        }
+        setAddDisabled(false)
       })
     }, 1000)
   }, [])
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handlePopup = (e: any) => {
+    if (!weeklyHoursSet && !addDisabled) {
+      preventDefault(e)
+      setPopupOpen(true)
+    }
+  }
 
   const handleEventOpen = () => {
     setEventOpen(true)
@@ -135,6 +157,14 @@ const Calendar = (props: {
 
   return (
     <div>
+      {popupOpen ? (
+        <Paper className="popup" elevation={6}>
+          <Typography variant="body2">
+            To allow Auto Calendar to schedule reminders when you are available,
+            first set available hours and working hours in the side menu.
+          </Typography>
+        </Paper>
+      ) : null}
       <StyleWrapper className="calendar-container">
         <FullCalendar
           height={'100%'}
@@ -177,6 +207,8 @@ const Calendar = (props: {
             right: 25,
             bottom: 25,
           }}
+          disabled={addDisabled}
+          onClick={handlePopup}
         >
           <AddIcon />
         </Fab>

@@ -1,4 +1,12 @@
-import { AlertColor, Button, MenuItem, Select, TextField } from '@mui/material'
+import {
+  AlertColor,
+  Button,
+  MenuItem,
+  Select,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+} from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
@@ -23,8 +31,10 @@ const ReminderForm = (props: {
     reset,
   } = useForm<ReminderFormValues>()
 
+  const [scheduleValue, setScheduleValue] = useState('auto')
+  const [autoDisabled, setAutoDisabled] = useState(false)
+  const [manualDisabled, setManualDisabled] = useState(true)
   const [scheduleDisabled, setScheduleDisabled] = useState(false)
-
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -65,15 +75,54 @@ const ReminderForm = (props: {
     { value: '480', text: '8 hours' },
   ]
 
-  const onSubmit = async (data: ReminderFormValues) => {
-    const {
+  const handleScheduleChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newValue: string
+  ) => {
+    setScheduleValue(newValue)
+    if (newValue === 'auto') {
+      setAutoDisabled(false)
+      setManualDisabled(true)
+    } else if (newValue === 'manual') {
+      setManualDisabled(false)
+      setAutoDisabled(true)
+    }
+  }
+
+  const onSubmit = async (formData: ReminderFormValues) => {
+    const summary = formData.summary
+    const duration = formData.duration
+    let {
       manualDate,
       manualTime,
       deadlineDate,
       deadlineTime,
       minimumStartDate,
       minimumStartTime,
-    } = data
+    } = formData
+
+    // Clear unused fields
+    if (manualDisabled) {
+      manualDate = ''
+      manualTime = ''
+    } else if (autoDisabled) {
+      deadlineDate = ''
+      deadlineTime = ''
+      minimumStartDate = ''
+      minimumStartTime = ''
+    }
+
+    // Create new data object with cleared fields
+    const data: ReminderFormValues = {
+      summary,
+      duration,
+      manualDate,
+      manualTime,
+      deadlineDate,
+      deadlineTime,
+      minimumStartDate,
+      minimumStartTime,
+    }
 
     if (manualDate) {
       if (!manualTime) {
@@ -183,6 +232,15 @@ const ReminderForm = (props: {
   return (
     <div>
       <Header title="Create Reminder" />
+      <ToggleButtonGroup
+        color="primary"
+        value={scheduleValue}
+        exclusive
+        onChange={handleScheduleChange}
+      >
+        <ToggleButton value="auto">Auto</ToggleButton>
+        <ToggleButton value="manual">Manual</ToggleButton>
+      </ToggleButtonGroup>
       <form onSubmit={handleSubmit(onSubmit)}>
         <label>Summary:</label>
         <TextField
@@ -205,51 +263,56 @@ const ReminderForm = (props: {
           ))}
         </Select>
 
-        <label>Manual Time:</label>
-        <TextField
-          id="manualStartDate"
-          type="date"
-          {...register('manualDate')}
-        />
-        <p style={{ color: 'red' }}>{errors.manualDate?.message}</p>
-        <TextField
-          id="manualStartTime"
-          type="time"
-          {...register('manualTime')}
-        />
-        <p style={{ color: 'red' }}>{errors.manualTime?.message}</p>
+        <fieldset disabled={manualDisabled}>
+          <legend>Manual Time</legend>
+          <TextField
+            id="manualStartDate"
+            type="date"
+            {...register('manualDate')}
+          />
+          <p style={{ color: 'red' }}>{errors.manualDate?.message}</p>
+          <TextField
+            id="manualStartTime"
+            type="time"
+            {...register('manualTime')}
+          />
+          <p style={{ color: 'red' }}>{errors.manualTime?.message}</p>
+        </fieldset>
 
-        <label>Earliest start time:</label>
-        <TextField
-          id="minimumStartDate"
-          type="date"
-          defaultValue={new Date().toISOString().slice(0, 10)}
-          {...register('minimumStartDate')}
-        />
-        <p style={{ color: 'red' }}>{errors.minimumStartDate?.message}</p>
-        <TextField
-          id="minimumStartTime"
-          type="time"
-          defaultValue={`${('0' + new Date().getHours()).slice(-2)}:${(
-            '0' + (new Date().getMinutes() + 1)
-          ).slice(-2)}`}
-          {...register('minimumStartTime')}
-        />
-        <p style={{ color: 'red' }}>{errors.minimumStartTime?.message}</p>
+        <fieldset disabled={autoDisabled}>
+          <label>Earliest start time:</label>
+          <TextField
+            id="minimumStartDate"
+            type="date"
+            defaultValue={new Date().toISOString().slice(0, 10)}
+            {...register('minimumStartDate')}
+          />
+          <p style={{ color: 'red' }}>{errors.minimumStartDate?.message}</p>
+          <TextField
+            id="minimumStartTime"
+            type="time"
+            defaultValue={`${('0' + new Date().getHours()).slice(-2)}:${(
+              '0' +
+              (new Date().getMinutes() + 1)
+            ).slice(-2)}`}
+            {...register('minimumStartTime')}
+          />
+          <p style={{ color: 'red' }}>{errors.minimumStartTime?.message}</p>
 
-        <label>Deadline:</label>
-        <TextField
-          id="deadlineDate"
-          type="date"
-          {...register('deadlineDate')}
-        />
-        <p style={{ color: 'red' }}>{errors.deadlineDate?.message}</p>
-        <TextField
-          id="deadlineTime"
-          type="time"
-          {...register('deadlineTime')}
-        />
-        <p style={{ color: 'red' }}>{errors.deadlineTime?.message}</p>
+          <label>Deadline:</label>
+          <TextField
+            id="deadlineDate"
+            type="date"
+            {...register('deadlineDate')}
+          />
+          <p style={{ color: 'red' }}>{errors.deadlineDate?.message}</p>
+          <TextField
+            id="deadlineTime"
+            type="time"
+            {...register('deadlineTime')}
+          />
+          <p style={{ color: 'red' }}>{errors.deadlineTime?.message}</p>
+        </fieldset>
 
         <Button id="submit" type="submit" disabled={scheduleDisabled}>
           Schedule

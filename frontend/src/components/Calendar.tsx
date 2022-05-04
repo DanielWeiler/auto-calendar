@@ -179,7 +179,7 @@ const Calendar = (props: {
             right: 'today prev,next',
           }}
           buttonText={{
-            today: '📅',
+            today: 'Today',
             month: 'M',
             week: 'W',
             day: 'D',

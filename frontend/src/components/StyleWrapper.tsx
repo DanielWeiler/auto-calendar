@@ -51,7 +51,8 @@ const StyleWrapper = styled.div`
   .fc-button.fc-dayGridMonth-button,
   .fc-button.fc-timeGridWeek-button,
   .fc-button.fc-timeGridDay-button,
-  .fc-button.fc-listWeek-button {
+  .fc-button.fc-listWeek-button,
+  .fc-button.fc-today-button {
     font-size: 0.9em;
     background: #64a6e3;
     border-color: #8dc0ef;
@@ -59,9 +60,8 @@ const StyleWrapper = styled.div`
   }
 
   .fc-button.fc-today-button {
-    margin-top: 2.8em;
+    margin-top: 3.4em;
     background: transparent;
-    border-color: transparent;
   }
 
   .fc-button:disabled {

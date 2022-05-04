@@ -6,7 +6,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import listPlugin from '@fullcalendar/list'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import AddIcon from '@mui/icons-material/Add'
-import { AlertColor, Fab, Paper, Typography } from '@mui/material'
+import { AlertColor, Fab } from '@mui/material'
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import eventService from '../services/events'
@@ -27,7 +27,6 @@ const Calendar = (props: {
   const [events, setEvents] = useState([])
   const [weeklyHoursSet, setWeeklyHoursSet] = useState(false)
   const [addDisabled, setAddDisabled] = useState(true)
-  const [popupOpen, setPopupOpen] = useState(false)
   const [eventOpen, setEventOpen] = useState(false)
   const [eventData, setEventData] = useState<EventData>({
     id: '',
@@ -59,10 +58,14 @@ const Calendar = (props: {
   }, [])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handlePopup = (e: any) => {
-    if (!weeklyHoursSet && !addDisabled) {
+  const handleNotification = (e: any) => {
+    if (weeklyHoursSet && !addDisabled) {
       preventDefault(e)
-      setPopupOpen(true)
+      createNotification(
+        'To allow Auto Calendar to schedule reminders when you are available, first set available hours and working hours in the side menu.',
+        'Before creating reminders, add your preferences',
+        'info'
+      )
     }
   }
 
@@ -157,14 +160,6 @@ const Calendar = (props: {
 
   return (
     <div>
-      {popupOpen ? (
-        <Paper className="popup" elevation={6}>
-          <Typography variant="body2">
-            To allow Auto Calendar to schedule reminders when you are available,
-            first set available hours and working hours in the side menu.
-          </Typography>
-        </Paper>
-      ) : null}
       <StyleWrapper className="calendar-container">
         <FullCalendar
           height={'100%'}
@@ -208,7 +203,7 @@ const Calendar = (props: {
             bottom: 25,
           }}
           disabled={addDisabled}
-          onClick={handlePopup}
+          onClick={handleNotification}
         >
           <AddIcon />
         </Fab>

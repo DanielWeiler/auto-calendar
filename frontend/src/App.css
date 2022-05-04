@@ -40,16 +40,6 @@ body {
   color: #000000;
 }
 
-.popup {
-  position: absolute;
-  z-index: 10;
-  top: 80%;
-  left: 50%;
-  transform: translate(-50%, -70%);
-  min-width: 19em;
-  padding: 0.75em;
-}
-
 .calendar-container {
   background-color: #5db9ff;
   padding-top: 14px;

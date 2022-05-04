@@ -59,7 +59,7 @@ const Calendar = (props: {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleNotification = (e: any) => {
-    if (weeklyHoursSet && !addDisabled) {
+    if (!weeklyHoursSet && !addDisabled) {
       preventDefault(e)
       createNotification(
         'To allow Auto Calendar to schedule reminders when you are available, first set available hours and working hours in the side menu.',

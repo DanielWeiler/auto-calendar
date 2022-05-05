@@ -45,9 +45,9 @@ async function getEvents(): Promise<EventData[]> {
       color = 'LightGray'
       display = 'background'
     } else if (event.description === 'Working hours') {
-      color = 'PaleGoldenRod'
+      color = 'rgb(245 235 215)'
     } else if (event.description?.includes('Manually scheduled')) {
-      color = 'Orange'
+      color = 'rgb(243 210 50 / 93%)'
     } else if (event.description?.includes('Deadline')) {
       color = 'RoyalBlue'
     }

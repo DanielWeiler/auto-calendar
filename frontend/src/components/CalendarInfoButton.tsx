@@ -38,7 +38,7 @@ const CalendarInfoButton = () => {
                 borderRadius: '8px',
                 marginRight: '8px',
                 marginBottom: '12px',
-                backgroundColor: 'Orange',
+                backgroundColor: 'rgb(243 210 50 / 93%)',
               }}
             />
             <DialogContentText>Manual event</DialogContentText>
@@ -54,7 +54,7 @@ const CalendarInfoButton = () => {
                 backgroundColor: 'LightSkyBlue',
               }}
             />
-            <DialogContentText>Auto event - no deadline</DialogContentText>
+            <DialogContentText>Auto event with no deadline</DialogContentText>
           </div>
           <div style={{display: 'flex'}}>
             <Box
@@ -66,7 +66,7 @@ const CalendarInfoButton = () => {
                 backgroundColor: 'RoyalBlue',
               }}
             />
-            <DialogContentText>Auto event - deadline</DialogContentText>
+            <DialogContentText>Auto event with a deadline</DialogContentText>
           </div>
         </DialogContent>
         <DialogActions>

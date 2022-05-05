@@ -16,13 +16,20 @@ import {
 require('express-async-errors')
 const calendar = google.calendar('v3')
 
+let autoCalendarId = ''
+let userTimeZone = ''
+
 async function getEvents(): Promise<EventData[]> {
+  // Initialize the calendar ID and time zone of the user
+  autoCalendarId = await getAutoCalendarId()
+  userTimeZone = await getUserTimeZone()
+
   // Get the date 12 months from now
   const timeMax = new Date(new Date().setMonth(new Date().getMonth() + 12))
 
   const events = await calendar.events.list({
     auth: oAuth2Client,
-    calendarId: await getAutoCalendarId(),
+    calendarId: autoCalendarId,
     singleEvents: true,
     timeMax: timeMax.toISOString(),
     maxResults: 2500,
@@ -123,17 +130,17 @@ async function scheduleWeeklyEvent(
 ): Promise<void> {
   await calendar.events.insert({
     auth: oAuth2Client,
-    calendarId: await getAutoCalendarId(),
+    calendarId: autoCalendarId,
     requestBody: {
       summary: summary,
       colorId: colorId,
       start: {
         dateTime: startDateTime.toISOString(),
-        timeZone: await getUserTimeZone(),
+        timeZone: userTimeZone,
       },
       end: {
         dateTime: endDateTime.toISOString(),
-        timeZone: await getUserTimeZone(),
+        timeZone: userTimeZone,
       },
       description: summary,
       recurrence: [`RRULE:FREQ=WEEKLY;BYDAY=${weekDay.slice(0, 2)}`],
@@ -426,33 +433,33 @@ async function scheduleEvent(
   if (eventId) {
     await calendar.events.patch({
       auth: oAuth2Client,
-      calendarId: await getAutoCalendarId(),
+      calendarId: autoCalendarId,
       eventId: eventId,
       requestBody: {
         start: {
           dateTime: startDateTime.toISOString(),
-          timeZone: await getUserTimeZone(),
+          timeZone: userTimeZone,
         },
         end: {
           dateTime: endDateTime.toISOString(),
-          timeZone: await getUserTimeZone(),
+          timeZone: userTimeZone,
         },
       },
     })
   } else {
     await calendar.events.insert({
       auth: oAuth2Client,
-      calendarId: await getAutoCalendarId(),
+      calendarId: autoCalendarId,
       requestBody: {
         summary: summary,
         colorId: '7',
         start: {
           dateTime: startDateTime.toISOString(),
-          timeZone: await getUserTimeZone(),
+          timeZone: userTimeZone,
         },
         end: {
           dateTime: endDateTime.toISOString(),
-          timeZone: await getUserTimeZone(),
+          timeZone: userTimeZone,
         },
         description: description,
       },
@@ -845,18 +852,17 @@ async function getAllBusyTimes(
     requestBody: {
       timeMin: queryStartTime.toISOString(),
       timeMax: queryEndTime.toISOString(),
-      timeZone: await getUserTimeZone(),
+      timeZone: userTimeZone,
       items: [
         {
-          id: await getAutoCalendarId(),
+          id: autoCalendarId,
         },
       ],
     },
   })
   assertDefined(availabilityQuery.data.calendars)
 
-  const AutoCalendarId = await getAutoCalendarId()
-  const busyTimes = availabilityQuery.data.calendars[AutoCalendarId].busy
+  const busyTimes = availabilityQuery.data.calendars[autoCalendarId].busy
   assertDefined(busyTimes)
 
   return busyTimes
@@ -877,11 +883,11 @@ async function getEventsInTimePeriod(
 ): Promise<calendar_v3.Schema$Event[]> {
   const eventsList = await calendar.events.list({
     auth: oAuth2Client,
-    calendarId: await getAutoCalendarId(),
+    calendarId: autoCalendarId,
     singleEvents: true,
     timeMin: queryStartTime.toISOString(),
     timeMax: queryEndTime.toISOString(),
-    timeZone: await getUserTimeZone(),
+    timeZone: userTimeZone,
   })
   assertDefined(eventsList.data.items)
 
@@ -927,7 +933,7 @@ function parsePotentialDescription(
 async function deleteEvent(eventId: string): Promise<void> {
   await calendar.events.delete({
     auth: oAuth2Client,
-    calendarId: await getAutoCalendarId(),
+    calendarId: autoCalendarId,
     eventId: eventId,
   })
 }
@@ -1029,7 +1035,7 @@ async function updateDescription(
         // in the description to be referenced as a minimum start time.
         await calendar.events.patch({
           auth: oAuth2Client,
-          calendarId: await getAutoCalendarId(),
+          calendarId: autoCalendarId,
           eventId: eventId,
           requestBody: {
             description: `Minimum start time: ${rescheduleTimeDate}`,
@@ -1041,7 +1047,7 @@ async function updateDescription(
         // with another event.
         await calendar.events.patch({
           auth: oAuth2Client,
-          calendarId: await getAutoCalendarId(),
+          calendarId: autoCalendarId,
           eventId: eventId,
           requestBody: {
             description: 'Manually scheduled',
@@ -1054,7 +1060,7 @@ async function updateDescription(
         // rescheduled if it conflicts with another event.
         await calendar.events.patch({
           auth: oAuth2Client,
-          calendarId: await getAutoCalendarId(),
+          calendarId: autoCalendarId,
           eventId: eventId,
           requestBody: {
             description: 'Manually scheduled - ' + description,
@@ -1071,7 +1077,7 @@ async function updateDescription(
         // as a minimum start time.
         await calendar.events.patch({
           auth: oAuth2Client,
-          calendarId: await getAutoCalendarId(),
+          calendarId: autoCalendarId,
           eventId: eventId,
           requestBody: {
             description: `Minimum start time: ${rescheduleTimeDate}`,
@@ -1086,7 +1092,7 @@ async function updateDescription(
         // referenced as a minimum start time.
         await calendar.events.patch({
           auth: oAuth2Client,
-          calendarId: await getAutoCalendarId(),
+          calendarId: autoCalendarId,
           eventId: eventId,
           requestBody: {
             description: `Minimum start time: ${rescheduleTimeDate}`,
@@ -1097,7 +1103,7 @@ async function updateDescription(
         // rescheduled if it conflicts with another event.
         await calendar.events.patch({
           auth: oAuth2Client,
-          calendarId: await getAutoCalendarId(),
+          calendarId: autoCalendarId,
           eventId: eventId,
           requestBody: {
             description: 'Manually scheduled',
@@ -1111,7 +1117,7 @@ async function updateDescription(
 async function getUserTimeZone(): Promise<string> {
   const cal = await calendar.calendars.get({
     auth: oAuth2Client,
-    calendarId: await getAutoCalendarId(),
+    calendarId: autoCalendarId,
   })
   assertDefined(cal.data.timeZone)
 

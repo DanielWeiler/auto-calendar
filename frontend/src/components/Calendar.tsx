@@ -43,18 +43,22 @@ const Calendar = (props: {
   useEffect(() => {
     // Must wait for authorization to complete after sign in
     setTimeout(() => {
-      eventService.getEvents().then((events) => {
-        setEvents(events)
-        // Check if unavailable hours have been set
-        for (let i = 0; i < events.length; i++) {
-          const event = events[i]
-          if (event.title === 'Unavailable hours') {
-            setWeeklyHoursSet(true)
-            break
+      try {
+        eventService.getEvents().then((events) => {
+          setEvents(events)
+          // Check if unavailable hours have been set
+          for (let i = 0; i < events.length; i++) {
+            const event = events[i]
+            if (event.title === 'Unavailable hours') {
+              setWeeklyHoursSet(true)
+              break
+            }
           }
-        }
-        setAddDisabled(false)
-      })
+          setAddDisabled(false)
+        })
+      } catch (error) {
+        createNotification(serverErrorMessage, '', undefined)
+      }
     }, 1000)
   }, [])
 

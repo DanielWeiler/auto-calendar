@@ -1,9 +1,11 @@
+import { google } from 'googleapis'
 import jwtDecode, { JwtPayload } from 'jwt-decode'
+import oAuth2Client from '../configs/google-client.config'
 import RefreshTokenModel from '../models/refresh_token'
 import { SignInData } from '../types'
-import oAuth2Client from '../configs/google-client.config'
 import { assertDefined } from '../utils/helpers'
 require('express-async-errors')
+const calendar = google.calendar('v3')
 
 function signIn(data: SignInData): void {
   void (async () => {
@@ -36,7 +38,33 @@ function signIn(data: SignInData): void {
     oAuth2Client.setCredentials({
       refresh_token: refreshToken,
     })
+
+    await createAutoCalendar()
   })()
+}
+
+async function createAutoCalendar() {
+  const calendars = await calendar.calendarList.list({
+    auth: oAuth2Client,
+  })
+  assertDefined(calendars.data.items)
+
+  let calendarCreated = false
+  for (let i = 0; i < calendars.data.items.length; i++) {
+    const calendar = calendars.data.items[i]
+    if (calendar.summary === 'Auto Calendar') {
+      calendarCreated = true
+    }
+  }
+
+  if (!calendarCreated) {
+    await calendar.calendars.insert({
+      auth: oAuth2Client,
+      requestBody: {
+        summary: 'Auto Calendar',
+      },
+    })
+  }
 }
 
 export default { signIn }

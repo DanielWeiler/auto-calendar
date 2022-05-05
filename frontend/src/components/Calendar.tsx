@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom'
 import eventService from '../services/events'
 import { EventData } from '../types'
 import { assertDefined, serverErrorMessage } from '../utils/helpers'
+import CalendarInfoButton from './CalendarInfoButton'
 import EventOptions from './EventOptions'
 import StyleWrapper from './StyleWrapper'
 
@@ -160,6 +161,7 @@ const Calendar = (props: {
 
   return (
     <div>
+      <CalendarInfoButton />
       <StyleWrapper className="calendar-container">
         <FullCalendar
           height={'100%'}

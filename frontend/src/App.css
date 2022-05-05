@@ -40,6 +40,19 @@ body {
   color: #000000;
 }
 
+.calendar-info-button {
+  position: relative;
+  z-index: 10;
+  float: right;
+  margin-top: 8px;
+  margin-right: 8px;
+}
+
+.calendar-info-content {
+  display: flex;
+  flex-direction: column;
+}
+
 .calendar-container {
   background-color: #5db9ff;
   padding-top: 14px;

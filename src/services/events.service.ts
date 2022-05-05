@@ -32,13 +32,17 @@ async function getEvents(): Promise<EventData[]> {
   const eventsData: EventData[] = []
   events.data.items.map((event) => {
     assertDefined(event.id)
-    let color = 'SkyBlue'
+    let color = 'LightSkyBlue'
     let display = 'auto'
     if (event.description === 'Unavailable hours') {
       color = 'LightGray'
       display = 'background'
     } else if (event.description === 'Working hours') {
       color = 'PaleGoldenRod'
+    } else if (event.description?.includes('Manually scheduled')) {
+      color = 'Orange'
+    } else if (event.description?.includes('Deadline')) {
+      color = 'RoyalBlue'
     }
 
     const eventData: EventData = {

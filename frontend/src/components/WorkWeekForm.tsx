@@ -1,4 +1,4 @@
-import { AlertColor, Button } from '@mui/material'
+import { AlertColor, Button, Stack } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
@@ -156,38 +156,44 @@ const WorkWeekForm = (props: {
   return (
     <div>
       <Header title="Set Working Hours" />
-      {checkedState.map(({ name, display }, index) => (
-        <span key={name} className="week-days-selector">
-          <input
-            id={name}
-            type="checkbox"
-            className="weekday"
-            checked={display ? false : true}
-            onChange={() => handleOnChange(index)}
-          />
-          <label htmlFor={name}>{name.slice(0, 1)}</label>
-        </span>
-      ))}
-
-      <form onSubmit={handleSubmit(onSubmit)}>
-        {checkedState.map(({ name, display }) => (
-          <WorkDayForm
-            key={name}
-            day={name}
-            display={display}
-            register={register}
-            error={errors[name as keyof WeeklyHoursFormValues]}
-          />
-        ))}
-
-        <Button
-          id="save"
-          type="submit"
-          disabled={saveDisabled}
-        >
-          Save
-        </Button>
-      </form>
+      <div className="weekly-hours-container">
+        <div style={{ marginBottom: '24px' }}>
+          {checkedState.map(({ name, display }, index) => (
+            <span key={name} className="week-days-selector">
+              <input
+                id={name}
+                type="checkbox"
+                className="weekday"
+                checked={display ? false : true}
+                onChange={() => handleOnChange(index)}
+              />
+              <label htmlFor={name}>{name.slice(0, 1)}</label>
+            </span>
+          ))}
+        </div>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Stack spacing={1}>
+            {checkedState.map(({ name, display }) => (
+              <WorkDayForm
+                key={name}
+                day={name}
+                display={display}
+                register={register}
+                error={errors[name as keyof WeeklyHoursFormValues]}
+              />
+            ))}
+          </Stack>
+          <Button
+            id="save"
+            type="submit"
+            variant="outlined"
+            style={{ float: 'right', marginTop: '16px' }}
+            disabled={saveDisabled}
+          >
+            Save
+          </Button>
+        </form>
+      </div>
     </div>
   )
 }

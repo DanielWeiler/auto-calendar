@@ -1,4 +1,4 @@
-import { TextField } from '@mui/material'
+import { Input } from '@mui/material'
 import React from 'react'
 
 const WeekDayForm = (props: {
@@ -13,9 +13,26 @@ const WeekDayForm = (props: {
 
   return (
     <div style={{ display: display }}>
-      <label id="dayName">{day}</label>
-      <TextField id="startTime" type="time" {...register(`${day}.startTime`)} />
-      <TextField id="endTime" type="time" {...register(`${day}.endTime`)} />
+      <label id="dayName" className="week-day-label">
+        {day}
+      </label>
+      <span>
+        <Input
+          id="startTime"
+          type="time"
+          size="small"
+          className="week-day-time"
+          {...register(`${day}.startTime`)}
+        />
+        <span style={{ padding: '8px' }}>{' — '}</span>
+        <Input
+          id="endTime"
+          type="time"
+          size="small"
+          className="week-day-time"
+          {...register(`${day}.endTime`)}
+        />
+      </span>
       <p style={{ color: 'red' }}>
         {error?.startTime?.message || error?.endTime?.message}
       </p>

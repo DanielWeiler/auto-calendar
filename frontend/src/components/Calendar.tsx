@@ -49,7 +49,7 @@ const Calendar = (props: {
           // Check if unavailable hours have been set
           for (let i = 0; i < events.length; i++) {
             const event = events[i]
-            if (event.title === 'Unavailable hours') {
+            if (event.title === 'UH') {
               setWeeklyHoursSet(true)
               break
             }
@@ -86,7 +86,7 @@ const Calendar = (props: {
     // Prevent unavailable hours and working hours events from being
     // modified within the calendar view
     if (
-      arg.event.title === 'Unavailable hours' ||
+      arg.event.title === 'UH' ||
       arg.event.title === 'Working hours'
     ) {
       return

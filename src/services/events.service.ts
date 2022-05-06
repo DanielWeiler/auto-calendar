@@ -42,8 +42,9 @@ async function getEvents(): Promise<EventData[]> {
     let color = 'LightSkyBlue'
     let display = 'auto'
     if (event.description === 'Unavailable hours') {
-      color = 'LightGray'
+      color = 'Black'
       display = 'background'
+      event.summary = 'UH'
     } else if (event.description === 'Working hours') {
       color = 'rgb(245 235 215)'
     } else if (event.description?.includes('Manually scheduled')) {

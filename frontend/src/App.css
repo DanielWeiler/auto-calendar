@@ -8,6 +8,24 @@ body {
   margin: unset;
 }
 
+.sign-in-page {
+  background-color: #5db9ff;
+  height: 100vh;
+  padding: 0em 2em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.sign-in-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 25em;
+  padding: 1em 2em;
+}
+
 .notification {
   position: fixed;
   z-index: 10;

@@ -1,4 +1,4 @@
-import { AlertColor } from '@mui/material'
+import { AlertColor, Paper } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import {
   GoogleLogin,
@@ -112,23 +112,53 @@ function App() {
   return (
     <Router>
       <div>
-        <div className="notification">
-          <Notification
-            notification={notification}
-            createNotification={createNotification}
-          />
-        </div>
         {!user ? (
-          <GoogleLogin
-            clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
-            buttonText="Sign in with Google"
-            onSuccess={handleLogin}
-            onFailure={handleLoginFailure}
-            cookiePolicy={'single_host_origin'}
-            responseType="code"
-            accessType="offline"
-            scope="openid email profile https://www.googleapis.com/auth/calendar"
-          />
+          <div className="sign-in-page">
+            <Paper className="sign-in-form" elevation={8}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  minWidth: '13em',
+                }}
+              >
+                <h1 style={{ fontFamily: 'Century Gothic', fontWeight: '400' }}>
+                  Auto
+                </h1>
+                <h1 style={{ fontWeight: '500' }}>Calendar</h1>
+              </div>
+              <img
+                src="logo-192x192.png"
+                alt="Auto Calendar Logo"
+                style={{ maxWidth: '192px', maxHeight: '192px' }}
+              />
+              <div style={{ marginTop: '32px' }}>
+                <GoogleLogin
+                  clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
+                  buttonText="Sign in with Google"
+                  onSuccess={handleLogin}
+                  onFailure={handleLoginFailure}
+                  cookiePolicy={'single_host_origin'}
+                  responseType="code"
+                  accessType="offline"
+                  scope="openid email profile https://www.googleapis.com/auth/calendar"
+                  theme="dark"
+                />
+              </div>
+              <div
+                style={{
+                  fontSize: 'small',
+                  color: 'lightslategray',
+                  margin: '12px 8px',
+                  textAlign: 'justify',
+                }}
+              >
+                Auto calendar creates its own calendar in your google account.
+                Your other calendars in your google account will not be
+                affected.
+              </div>
+            </Paper>
+          </div>
         ) : (
           <div>
             <Menu
@@ -163,6 +193,12 @@ function App() {
             </Routes>
           </div>
         )}
+        <div className="notification">
+          <Notification
+            notification={notification}
+            createNotification={createNotification}
+          />
+        </div>
       </div>
     </Router>
   )

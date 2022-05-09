@@ -46,7 +46,7 @@ async function getEvents(): Promise<EventData[]> {
       display = 'background'
       event.summary = 'UH'
     } else if (event.description === 'Working hours') {
-      color = 'rgb(245 235 215)'
+      color = 'rgb(239 223 192)'
     } else if (event.description?.includes('Manually scheduled')) {
       color = 'rgb(243 210 50 / 93%)'
     } else if (event.description?.includes('Deadline')) {
@@ -99,7 +99,7 @@ async function setWorkingHours(weeklyHours: WeeklyHoursData): Promise<void> {
 async function deletePreviousWeeklyHours(eventName: string): Promise<void> {
   const list = await getEventsInTimePeriod(
     new Date(),
-    new Date(new Date().setDate(new Date().getDay() + 8)) // A week following
+    new Date(new Date().setDate(new Date().getDate() + 8)) // A week following
   )
 
   for (let i = 0; i < list.length; i++) {
@@ -463,6 +463,10 @@ async function scheduleEvent(
           timeZone: userTimeZone,
         },
         description: description,
+        reminders: {
+          useDefault: false,
+          overrides: [{ method: 'popup', minutes: 30 }],
+        },
       },
     })
   }

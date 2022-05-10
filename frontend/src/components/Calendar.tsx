@@ -67,8 +67,8 @@ const Calendar = (props: {
     if (!weeklyHoursSet && !addDisabled) {
       preventDefault(e)
       createNotification(
-        'To allow Auto Calendar to schedule reminders when you are available, first set available hours and working hours in the side menu.',
-        'Before creating reminders, add your preferences',
+        'To allow Auto Calendar to schedule events when you are available, first set available hours and working hours in the side menu.',
+        'Before creating events, add your preferences',
         'info'
       )
     }
@@ -118,7 +118,7 @@ const Calendar = (props: {
 
   const handleDeleteEvent = async () => {
     try {
-      await eventService.deleteReminder('/delete-event', eventData.id)
+      await eventService.deleteEvent('/delete-event', eventData.id)
       const refreshedEvents = await eventService.getEvents()
       setEvents(refreshedEvents)
     } catch (error) {
@@ -151,13 +151,13 @@ const Calendar = (props: {
     }
 
     try {
-      const reminderMessage: string = await eventService.rescheduleReminder(
+      const eventMessage: string = await eventService.rescheduleEvent(
         '/reschedule-event',
         data
       )
       const refreshedEvents = await eventService.getEvents()
       setEvents(refreshedEvents)
-      createNotification(reminderMessage, 'Reminder scheduled', 'success')
+      createNotification(eventMessage, 'Event scheduled', 'success')
     } catch (error) {
       createNotification(serverErrorMessage, '', undefined)
     }

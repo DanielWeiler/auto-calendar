@@ -10,7 +10,7 @@ import './App.css'
 import Calendar from './components/Calendar'
 import Menu from './components/Menu'
 import Notification from './components/Notification'
-import ReminderForm from './components/ReminderForm'
+import EventForm from './components/EventForm'
 import WeekAvailabilityForm from './components/WeekAvailabilityForm'
 import WorkWeekForm from './components/WorkWeekForm'
 import signInService from './services/sign-in'
@@ -62,14 +62,14 @@ function App() {
 
     if (warning) {
       newNotification.style = 'warning'
-      newNotification.heading = 'Reminder scheduled with conflicts'
+      newNotification.heading = 'Event scheduled with conflicts'
     } else if (
       body.includes(
         'There was no time slot available for this event before its deadline.'
       )
     ) {
       newNotification.style = 'error'
-      newNotification.heading = 'Reminder was not scheduled'
+      newNotification.heading = 'Event was not scheduled'
     } else if (body === serverErrorMessage) {
       newNotification.style = 'error'
       if (heading !== 'Failed to sign in' && heading !== 'Failed to sign out') {
@@ -173,7 +173,7 @@ function App() {
               <Route
                 path="/create-event"
                 element={
-                  <ReminderForm createNotification={createNotification} />
+                  <EventForm createNotification={createNotification} />
                 }
               />
               <Route

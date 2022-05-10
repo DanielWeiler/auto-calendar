@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import React, { useState } from 'react'
 
-const ReminderFormInfoButton = () => {
+const EventFormInfoButton = () => {
   const [open, setOpen] = useState(false)
 
   const handleOpen = () => {
@@ -21,7 +21,7 @@ const ReminderFormInfoButton = () => {
   }
 
   return (
-    <div className="reminder-form-info-button">
+    <div className="event-form-info-button">
       <IconButton onClick={handleOpen}>
         <InfoOutlinedIcon />
       </IconButton>
@@ -62,4 +62,4 @@ const ReminderFormInfoButton = () => {
   )
 }
 
-export default ReminderFormInfoButton
+export default EventFormInfoButton

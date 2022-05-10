@@ -13,12 +13,12 @@ import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import eventService from '../services/events'
-import { ReminderFormValues } from '../types'
+import { EventFormValues } from '../types'
 import { addTimeToDate, serverErrorMessage } from '../utils/helpers'
 import Header from './Header'
-import ReminderFormInfoButton from './ReminderFormInfoButton'
+import EventFormInfoButton from './EventFormInfoButton'
 
-const ReminderForm = (props: {
+const EventForm = (props: {
   createNotification: (
     body: string,
     heading: string,
@@ -32,7 +32,7 @@ const ReminderForm = (props: {
     formState: { errors },
     setError,
     reset,
-  } = useForm<ReminderFormValues>()
+  } = useForm<EventFormValues>()
 
   const [scheduleValue, setScheduleValue] = useState('auto')
   const [autoDisabled, setAutoDisabled] = useState(false)
@@ -92,7 +92,7 @@ const ReminderForm = (props: {
     }
   }
 
-  const onSubmit = async (formData: ReminderFormValues) => {
+  const onSubmit = async (formData: EventFormValues) => {
     const summary = formData.summary
     const duration = formData.duration
     let {
@@ -116,7 +116,7 @@ const ReminderForm = (props: {
     }
 
     // Create new data object with cleared fields
-    const data: ReminderFormValues = {
+    const data: EventFormValues = {
       summary,
       duration,
       manualDate,
@@ -229,12 +229,12 @@ const ReminderForm = (props: {
     setScheduleDisabled(true)
 
     try {
-      const reminderMessage: string = await eventService.createReminder(
+      const eventMessage: string = await eventService.createEvent(
         '/create-event',
         { data }
       )
       reset()
-      createNotification(reminderMessage, 'Reminder scheduled', 'success')
+      createNotification(eventMessage, 'Event scheduled', 'success')
     } catch (error) {
       createNotification(serverErrorMessage, '', undefined)
     }
@@ -243,11 +243,11 @@ const ReminderForm = (props: {
 
   return (
     <div>
-      <Header title="Create Reminder" />
-      <ReminderFormInfoButton />
+      <Header title="Create Event" />
+      <EventFormInfoButton />
       <div className="app-page-container">
         <form
-          className="reminder-form-container"
+          className="event-form-container"
           onSubmit={handleSubmit(onSubmit)}
         >
           <div style={{ minWidth: '100%', paddingLeft: '16px' }}>
@@ -259,7 +259,7 @@ const ReminderForm = (props: {
               autoFocus={true}
               {...register('summary', { required: 'Please enter a summary' })}
             />
-            <div className="reminder-form-error">{errors.summary?.message}</div>
+            <div className="event-form-error">{errors.summary?.message}</div>
           </div>
 
           <div
@@ -313,10 +313,10 @@ const ReminderForm = (props: {
               variant="standard"
               {...register('manualTime')}
             />
-            <div className="reminder-form-error">
+            <div className="event-form-error">
               {errors.manualDate?.message}
             </div>
-            <div className="reminder-form-error">
+            <div className="event-form-error">
               {errors.manualTime?.message}
             </div>
           </fieldset>
@@ -384,16 +384,16 @@ const ReminderForm = (props: {
               variant="standard"
               {...register('deadlineTime')}
             />
-            <div className="reminder-form-error">
+            <div className="event-form-error">
               {errors.minimumStartDate?.message}
             </div>
-            <div className="reminder-form-error">
+            <div className="event-form-error">
               {errors.minimumStartTime?.message}
             </div>
-            <div className="reminder-form-error">
+            <div className="event-form-error">
               {errors.deadlineDate?.message}
             </div>
-            <div className="reminder-form-error">
+            <div className="event-form-error">
               {errors.deadlineTime?.message}
             </div>
           </fieldset>
@@ -412,4 +412,4 @@ const ReminderForm = (props: {
   )
 }
 
-export default ReminderForm
+export default EventForm

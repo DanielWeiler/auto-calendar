@@ -507,15 +507,15 @@ async function rescheduleConflictingEvents(
       continue
     } else if (event.description?.includes('Manually scheduled')) {
       conflictingEventsMessage =
-        'Another manually scheduled reminder is scheduled during this time.'
+        'Another manually scheduled event is scheduled during this time.'
       continue
     } else if (event.description === 'Working hours') {
       conflictingEventsMessage =
-        'This reminder was scheduled during working hours.'
+        'This event was scheduled during working hours.'
       continue
     } else if (event.description === 'Unavailable hours') {
       conflictingEventsMessage =
-        'This reminder was scheduled outside of available hours.'
+        'This event was scheduled outside of available hours.'
       continue
     }
 

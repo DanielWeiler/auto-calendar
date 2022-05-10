@@ -97,7 +97,7 @@ body {
   height: 100vh;
 }
 
-.reminder-form-info-button {
+.event-form-info-button {
   position: absolute;
   z-index: 10;
   float: right;
@@ -106,7 +106,7 @@ body {
   margin-right: 8px;
 }
 
-.reminder-form-container {
+.event-form-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -128,7 +128,7 @@ body {
   background: rgb(233, 233, 233);
 }
 
-.reminder-form-error {
+.event-form-error {
   font-size: 0.9em;
   margin: 0px 8px;
   color: red;

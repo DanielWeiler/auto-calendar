@@ -15,7 +15,7 @@ export interface TimePeriod {
   endTime: string
 }
 
-export interface ReminderFormValues {
+export interface EventFormValues {
   summary: string
   duration: string
   manualDate: string

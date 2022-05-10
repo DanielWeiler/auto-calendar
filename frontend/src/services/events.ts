@@ -17,16 +17,16 @@ const setUnavailableHours = async (
   await axios.post(`${baseUrl}${endpoint}`, unavailableHoursData)
 }
 
-const createReminder = async (endpoint: string, reminderData: object) => {
-  const response = await axios.post(`${baseUrl}${endpoint}`, reminderData)
+const createEvent = async (endpoint: string, eventData: object) => {
+  const response = await axios.post(`${baseUrl}${endpoint}`, eventData)
   return response.data
 }
 
-const deleteReminder = async (endpoint: string, eventId: string) => {
+const deleteEvent = async (endpoint: string, eventId: string) => {
   await axios.post(`${baseUrl}${endpoint}`, { eventId })
 }
 
-const rescheduleReminder = async (endpoint: string, rescheduleData: object) => {
+const rescheduleEvent = async (endpoint: string, rescheduleData: object) => {
   const response = await axios.post(`${baseUrl}${endpoint}`, rescheduleData)
   return response.data
 }
@@ -35,7 +35,7 @@ export default {
   getEvents,
   setWorkingHours,
   setUnavailableHours,
-  createReminder,
-  deleteReminder,
-  rescheduleReminder,
+  createEvent,
+  deleteEvent,
+  rescheduleEvent,
 }

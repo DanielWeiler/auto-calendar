@@ -78,6 +78,14 @@ const EventForm = (props: {
     { value: '480', text: '8 hours' },
   ]
 
+  const getDefaultMinutes = () => {
+    if (new Date().getMinutes() === 58 || new Date().getMinutes() === 59) {
+      return 0
+    } else {
+      return new Date().getMinutes() + 2
+    }
+  }
+
   const handleScheduleChange = (
     event: React.MouseEvent<HTMLElement>,
     newValue: string
@@ -313,12 +321,8 @@ const EventForm = (props: {
               variant="standard"
               {...register('manualTime')}
             />
-            <div className="event-form-error">
-              {errors.manualDate?.message}
-            </div>
-            <div className="event-form-error">
-              {errors.manualTime?.message}
-            </div>
+            <div className="event-form-error">{errors.manualDate?.message}</div>
+            <div className="event-form-error">{errors.manualTime?.message}</div>
           </fieldset>
 
           <fieldset
@@ -349,8 +353,7 @@ const EventForm = (props: {
               type="time"
               variant="standard"
               defaultValue={`${('0' + new Date().getHours()).slice(-2)}:${(
-                '0' +
-                (new Date().getMinutes() + 1)
+                '0' + getDefaultMinutes()
               ).slice(-2)}`}
               {...register('minimumStartTime')}
             />

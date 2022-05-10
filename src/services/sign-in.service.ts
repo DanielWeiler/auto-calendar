@@ -7,6 +7,14 @@ import { assertDefined } from '../utils/helpers'
 require('express-async-errors')
 const calendar = google.calendar('v3')
 
+/**
+ * Signs in the user with Google sign in. A database is checked for a user's 
+ * refresh token. If there is no refresh token, the newly given refresh token 
+ * is saved to the database. On following sign in's, the refresh token is 
+ * retrieved from the database. On the first sign in, the Google calendar used 
+ * by the app is created on the user's account.
+ * @param {SignInData} data - The data recieved from the frontend to sign in.
+ */
 function signIn(data: SignInData): void {
   void (async () => {
     const { code } = data
@@ -43,12 +51,16 @@ function signIn(data: SignInData): void {
   })()
 }
 
-async function createAutoCalendar() {
+/**
+ * Creates the Google calendar used by the app.
+ */
+async function createAutoCalendar(): Promise<void> {
   const calendars = await calendar.calendarList.list({
     auth: oAuth2Client,
   })
   assertDefined(calendars.data.items)
 
+  // Checks if the calendar has already been created
   let calendarCreated = false
   for (let i = 0; i < calendars.data.items.length; i++) {
     const calendar = calendars.data.items[i]

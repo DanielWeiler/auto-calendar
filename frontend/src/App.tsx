@@ -39,6 +39,13 @@ function App() {
 
   assertDefined(process.env.REACT_APP_GOOGLE_CLIENT_ID)
 
+  /**
+   * Creates a notification for the user. Determines what the notification should
+   * be basen on the given parameters.
+   * @param {string} body - The body of the notification
+   * @param {string} heading - The heading of the notification
+   * @param {AlertColor | undefined} style - The style of the notification
+   */
   const createNotification = (
     body: string,
     heading = '',

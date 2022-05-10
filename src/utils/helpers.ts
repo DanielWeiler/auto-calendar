@@ -1,3 +1,10 @@
+/**
+ * Adds the given time to the given date.
+ * @param {string} time - A time in the format "hh:mm"
+ * @param {Date | string} date - A Date object or a string representing a Date
+ * object
+ * @returns {Date} Returns the new Date object.
+ */
 export function addTimeToDate(time: string, date: Date | string): Date {
   const dateTime = new Date(date)
   const t = parseTime(time)
@@ -5,6 +12,12 @@ export function addTimeToDate(time: string, date: Date | string): Date {
   return dateTime
 }
 
+/**
+ * Parses the given time string into hours and minutes.
+ * @param {string} time - A time in the format "hh:mm"
+ * @returns {{ hours: number; minutes: number }} Returns an object containing
+ * the hours and minutes of the given time.
+ */
 export function parseTime(time: string): { hours: number; minutes: number } {
   const h = time.split(':')[0]
   const m = time.split(':')[1]
@@ -16,6 +29,11 @@ export function parseTime(time: string): { hours: number; minutes: number } {
   return t
 }
 
+/**
+ * Asserts that the given value is not null or undefined. If the value is
+ * indeed null or undefined then it throws an error.
+ * @param {T | null | undefined} value - 
+ */
 export function assertDefined<T>(
   value: T | null | undefined
 ): asserts value is T {
@@ -24,6 +42,15 @@ export function assertDefined<T>(
   }
 }
 
+/**
+ * Gets the next day of the week in the current week or the next week, 
+ * whichever is first.
+ * @param {string} dayName - The name of the day of the week being searched for
+ * @param {boolean} excludeToday - Whether the current day is included in the 
+ * search
+ * @param {Date} refDate - The date from which the search begins
+ * @returns {Date} The date of the next day of the week that is found
+ */
 export function getNextDayOfTheWeek(
   dayName: string,
   excludeToday = false,
@@ -40,4 +67,3 @@ export function getNextDayOfTheWeek(
   )
   return refDate
 }
-

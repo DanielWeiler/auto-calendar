@@ -19,6 +19,12 @@ const calendar = google.calendar('v3')
 let autoCalendarId = ''
 let userTimeZone = ''
 
+/**
+ * Gets the events from Google Calendar to be displayed in the app. The
+ * calendar ID used by the app and the time zone of the user are also
+ * initialized in this function.
+ * @returns {EventData[]} Returns a list of event objects.
+ */
 async function getEvents(): Promise<EventData[]> {
   // Initialize the calendar ID and time zone of the user
   autoCalendarId = await getAutoCalendarId()
@@ -27,6 +33,7 @@ async function getEvents(): Promise<EventData[]> {
   // Get the date 12 months from now
   const timeMax = new Date(new Date().setMonth(new Date().getMonth() + 12))
 
+  // Gets the events from Google Calendar
   const events = await calendar.events.list({
     auth: oAuth2Client,
     calendarId: autoCalendarId,
@@ -36,6 +43,7 @@ async function getEvents(): Promise<EventData[]> {
   })
   assertDefined(events.data.items)
 
+  // Add colors and display options to the events
   const eventsData: EventData[] = []
   events.data.items.map((event) => {
     assertDefined(event.id)
@@ -68,6 +76,13 @@ async function getEvents(): Promise<EventData[]> {
   return eventsData
 }
 
+/**
+ * Sets the working hours for the calendar. Any previous working hours will be
+ * deleted. Any rescheduable events that occur during the new working hours are
+ * rescheduled to a suitable time.
+ * @param {WeeklyHoursData} weeklyHours - The data of the working hours set by
+ * the user.
+ */
 async function setWorkingHours(weeklyHours: WeeklyHoursData): Promise<void> {
   await deletePreviousWeeklyHours('Working hours')
 
@@ -78,7 +93,7 @@ async function setWorkingHours(weeklyHours: WeeklyHoursData): Promise<void> {
     const weekDay = day[0]
     const date = getNextDayOfTheWeek(weekDay)
 
-    // Check if the day has working hours
+    // Check if the day was given working hours
     if (day[1].startTime && day[1].endTime) {
       const startWorkingHours = addTimeToDate(day[1].startTime, date)
       const endWorkingHours = addTimeToDate(day[1].endTime, date)
@@ -96,6 +111,11 @@ async function setWorkingHours(weeklyHours: WeeklyHoursData): Promise<void> {
   })
 }
 
+/**
+ * Deletes the previous weekly hours.
+ * @param {string} eventName - The name of the weekly hours event (Either
+ * 'Working hours' or 'Unavailable hours').
+ */
 async function deletePreviousWeeklyHours(eventName: string): Promise<void> {
   const list = await getEventsInTimePeriod(
     new Date(),
@@ -122,6 +142,15 @@ async function deletePreviousWeeklyHours(eventName: string): Promise<void> {
   }
 }
 
+/**
+ * Schedules a weekly event to the Google calendar the app uses. This would
+ * either be working hours or unavailable hours.
+ * @param {string} summary - The summary of the event.
+ * @param {string} colorId - The color ID of the event.
+ * @param {Date} startDateTime - The start time of the event.
+ * @param {Date} endDateTime - The end time of the event.
+ * @param {string} weekDay - The day of the week of the event.
+ */
 async function scheduleWeeklyEvent(
   summary: string,
   colorId: string,
@@ -149,12 +178,18 @@ async function scheduleWeeklyEvent(
   })
 }
 
+/**
+ * Reschedules reschedulable events conflicting with weekly hours events. Only
+ * the next 6 months (27 weeks) are searched for conflicts to limit the amount
+ * of Google Calendar api calls.
+ * @param {Date} startWeeklyHours - The start time of the weekly event.
+ * @param {Date} endWeeklyHours - The end time of the weekly event.
+ */
 async function rescheduleWeeklyHoursConflicts(
   startWeeklyHours: Date,
   endWeeklyHours: Date
-) {
-  // For each new weekly hours event, reschedule the conflicting events
-  // which are reschedulable
+): Promise<void> {
+  // The events are rescheduled one week at a time.
   for (let week = 0; week < 27; week++) {
     const startTime = new Date(startWeeklyHours)
     const endTime = new Date(endWeeklyHours)
@@ -166,6 +201,13 @@ async function rescheduleWeeklyHoursConflicts(
   }
 }
 
+/**
+ * Sets the unavailable hours for the calendar. Any previous unavailable hours
+ * will be deleted. Any rescheduable events that occur during the new
+ * unavailable hours are rescheduled to a suitable time.
+ * @param {WeeklyHoursData} weeklyHours - The data of the unavailable hours set by
+ * the user.
+ */
 async function setUnavailableHours(
   weeklyHours: WeeklyHoursData
 ): Promise<void> {
@@ -184,8 +226,8 @@ async function setUnavailableHours(
     const endUnavailableHoursNumber = date.setHours(23, 59, 0, 0)
     const endUnavailableHours = new Date(endUnavailableHoursNumber)
 
-    // Check if the day has available hours and if not then the whole day is
-    // set as unavailable
+    // Check if the day was given available hours and if not then the whole
+    // day is set as unavailable
     if (day[1].startTime && day[1].endTime) {
       const startAvailableHours = addTimeToDate(day[1].startTime, date)
       const endAvailableHours = addTimeToDate(day[1].endTime, date)
@@ -232,6 +274,16 @@ async function setUnavailableHours(
   })
 }
 
+/**
+ * Uses the data from the event form to decide if a manual or an auto event
+ * should be scheduled. Creates a <schedulingSettings> string, which stores
+ * preferences about the event's scheduling, such as a minimum start time
+ * and/or a deadline.
+ * @param {EventFormData} data - The data recieved from the frontend to
+ * create the event.
+ * @returns {string} Returns a string, which provides the user with a
+ * message on the result of scheduling the event.
+ */
 async function createEvent(data: EventFormData): Promise<string> {
   const {
     summary,
@@ -288,7 +340,19 @@ async function createEvent(data: EventFormData): Promise<string> {
   return messageString
 }
 
-// Schedules an event at the user given time
+/**
+ * Schedules an event at the time given by the user. Data about the scheduling
+ * is stored in the event description. Rescheduable events occuring during this
+ * event will be rescheduled to a sutiable time.
+ * @param {string} summary - The summary of an event.
+ * @param {string} manualDate - The date of an event.
+ * @param {string} manualTime - The time of an event.
+ * @param {number} durationNumber - The duration of an event.
+ * @param {string} eventId - The ID of an event.
+ * @returns {UserMessage} Returns an object containing details about
+ * the message that will be provided to the user about the results of
+ * scheduling the event.
+ */
 async function manualSchedule(
   summary: string,
   manualDate: string,
@@ -315,7 +379,20 @@ async function manualSchedule(
   return userMessage
 }
 
-// Schedules an event according to calendar availability
+/**
+ * Schedules an event according to calendar availability. The start time of the
+ * event is found according to the <deadline> and <minimumStartTime> variables.
+ * @param {string} summary - The summary of an event.
+ * @param {number} durationNumber - The duration of an event.
+ * @param {Date | null} deadline - The possible deadline of an event.
+ * @param {string} schedulingSettings - Data of the preferences about the
+ * event's scheduling, such as a minimum start time and/or a deadline.
+ * @param {Date | null} minimumStartTime - The possible minimum start time of an event.
+ * @param {string} eventId - The ID of an event.
+ * @returns {UserMessage} Returns an object containing details about
+ * the message that will be provided to the user about the results of
+ * scheduling the event.
+ */
 async function autoSchedule(
   summary: string,
   durationNumber: number,
@@ -391,7 +468,14 @@ async function autoSchedule(
   return userMessage
 }
 
-// Converts the message for the user from an object to a string
+/**
+ * Converts the message for the user from an object to a string
+ * @param {UserMessage} userMessage - An object containing details about the
+ * message that will be provided to the user about the results of scheduling
+ * the event.
+ * @returns {string} Returns a message that will be provided to the
+ * user about the results of scheduling the event.
+ */
 function convertMessageToString(userMessage: UserMessage): string {
   let messageString = ''
   if (
@@ -420,10 +504,26 @@ function convertMessageToString(userMessage: UserMessage): string {
   return messageString
 }
 
+/**
+ * Finds the end time of an event by adding the duration of minutes of the
+ * event to the start time of the event.
+ * @param {Date} date - The date of an event.
+ * @param {number} minutes - The duration of an event in minutes.
+ * @returns {Date} Returns a date, which is the end time of an event.
+ */
 function getEndTime(date: Date, minutes: number): Date {
   return new Date(date.getTime() + minutes * 60000)
 }
 
+/**
+ * Schedules an event to the Google calendar the app uses. If an event ID is
+ * given, the event is patched. Otherwise, a new event is scheduled.
+ * @param {string} summary - The summary of the event.
+ * @param {Date} startDateTime - The start time of the event.
+ * @param {Date} endDateTime - The end time of the event.
+ * @param {string} description - The description of the event.
+ * @param {string} eventId - The ID of an event.
+ */
 async function scheduleEvent(
   summary: string,
   startDateTime: Date,
@@ -472,9 +572,20 @@ async function scheduleEvent(
   }
 }
 
-// This function is called when a manually scheduled event or a high priority
-// event is scheduled to check if there are any conflicting events that need
-// rescheduling.
+/**
+ * This function is called when a manually scheduled event or a high priority
+ * event is scheduled to check if there are any conflicting events that need
+ * rescheduling. Any reschedulable events that create conflicts will be
+ * rescheduled to a suitable time.
+ * @param {Date} highPriorityEventStart - The start of the event that other
+ * events may be conflicting with.
+ * @param {Date} highPriorityEventEnd - The end of the event that other
+ * events may be conflicting with.
+ * @param {string} highPriorityEventSummary - The summary of the event that
+ * other events may be conflicting with.
+ * @returns {string} Returns a string, which will be used to created a
+ * message for the user about the result of scheduling an event.
+ */
 async function rescheduleConflictingEvents(
   highPriorityEventStart: Date,
   highPriorityEventEnd: Date,
@@ -563,8 +674,16 @@ async function rescheduleConflictingEvents(
   return conflictingEventsMessage
 }
 
-// Finds the next available time slot on the user's calendar for an event to be
-// scheduled
+/**
+ * Finds the next available time slot on the user's calendar for an event to be
+ * scheduled.
+ * @param {number} eventDuration - The duration of an event.
+ * @param {Date | null} deadline - The deadline of an event.
+ * @param {Date | null} minimumStartTime - The minimum start time of an event.
+ * @param {boolean} highPriority - Determines if the event is high priority.
+ * @returns {Date | undefined} If an available time is found, returns
+ * this time.
+ */
 async function findAvailability(
   eventDuration: number,
   deadline: Date | null = null,
@@ -620,8 +739,24 @@ async function findAvailability(
   return
 }
 
-// If no empty time slots long enough for an event could be found before its
-// deadline, this function is called.
+/**
+ * Finds the next available time slot on the user's calendar for an event with
+ * a deadline to be scheduled. If no empty time slots long enough for an event
+ * could be found before its deadline, this function is called. This function
+ * disreguards auto events without deadlines when searching for availability.
+ * If the event is scheduled, the conflicting events will be rescheduled to a
+ * suitable time.
+ * @param {number} durationNumber - The duration of an event.
+ * @param {Date} deadline - The deadline of an event.
+ * @param {Date | null} minimumStartTime - The minimum start time of an event.
+ * @param {string} summary - The summary of an event.
+ * @param {string} schedulingSettings - Data of the preferences about the
+ * event's scheduling, such as a minimum start time and/or a deadline.
+ * @param {string} eventId - The ID of an event.
+ * @returns {UserMessage} Returns an object containing details about
+ * the message that will be provided to the user about the results of
+ * scheduling the event.
+ */
 async function findAvailabilityBeforeDeadline(
   durationNumber: number,
   deadline: Date,
@@ -651,7 +786,8 @@ async function findAvailabilityBeforeDeadline(
   if (startDateTime) {
     const endDateTime = getEndTime(startDateTime, durationNumber)
     // If the available time found on the day of the deadline is past the
-    // time of the deadline, the event is not scheduled and the user is notified.
+    // time of the deadline, the event cannot be not scheduled and the user is
+    // notified.
     if (endDateTime > deadline) {
       userMessage.eventBeingScheduled = warningMessage
     } else {
@@ -681,7 +817,17 @@ async function findAvailabilityBeforeDeadline(
   return userMessage
 }
 
-// Finds the next available time slot for the day
+/**
+ * Finds the next available time slot for the given day for the event that
+ * availability is being searched for.
+ * @param {boolean} highPriority - Determines if the event is high priority.
+ * @param {Date} queryStartTime - The start time of the search for availability.
+ * @param {Date} queryEndTime - The end time of the search for availability.
+ * @param {number} eventDuration - The duration of the event that availability
+ * is being searched for.
+ * @returns {Date | undefined} If an available time is found, returns
+ * this time.
+ */
 async function getDayAvailability(
   highPriority: boolean,
   queryStartTime: Date,
@@ -705,10 +851,18 @@ async function getDayAvailability(
   }
 }
 
-// This function finds a time slot long enough within the queried time for a
-// high priority event during the times of low priority events. High priority
-// event times are considered busy and low priority event times are considered
-// available.
+/**
+ * This function finds a time slot long enough within the queried time for a
+ * high priority event during the times of low priority events. High priority
+ * event times are considered busy and low priority event times are considered
+ * available.
+ * @param {Date} queryStartTime - The start time of the search for availability.
+ * @param {Date} queryEndTime - The end time of the search for availability.
+ * @param {number} eventDuration - The duration of the event that availability
+ * is being searched for.
+ * @returns {Date | undefined} If an available time is found, returns
+ * this time.
+ */
 async function findHighPriorityAvailability(
   queryStartTime: Date,
   queryEndTime: Date,
@@ -763,8 +917,16 @@ async function findHighPriorityAvailability(
   return
 }
 
-// Finds the next empty time slot within the queried time that is long enough
-// for the event being scheduled
+/**
+ * Finds the next empty time slot within the queried time that is long enough
+ * for the event being scheduled
+ * @param {Date} queryStartTime - The start time of the search for availability.
+ * @param {Date} queryEndTime - The end time of the search for availability.
+ * @param {number} eventDuration - The duration of the event that availability
+ * is being searched for.
+ * @returns {Date | undefined} If an available time is found, returns
+ * this time.
+ */
 async function findLowPriorityAvailability(
   queryStartTime: Date,
   queryEndTime: Date,
@@ -819,7 +981,13 @@ async function findLowPriorityAvailability(
   return
 }
 
-// Gets a list of the high priority events during the given query time
+/**
+ * Gets a list of the high priority events during the given query time.
+ * @param {Date} queryStartTime - The start time of the search for availability.
+ * @param {Date} queryEndTime - The end time of the search for availability.
+ * @returns {calendar_v3.Schema$Event[]} Returns a list of high
+ * priority event objects.
+ */
 async function getHighPriorityEvents(
   queryStartTime: Date,
   queryEndTime: Date
@@ -847,7 +1015,13 @@ async function getHighPriorityEvents(
   return highPriorityEvents
 }
 
-// Gets a list of all the busy times during the given query time
+/**
+ * Gets a list of all the busy times during the given query time.
+ * @param {Date} queryStartTime - The start time of the search for availability.
+ * @param {Date} queryEndTime - The end time of the search for availability.
+ * @returns {calendar_v3.Schema$TimePeriod[]} Returns a list of busy
+ * time objects.
+ */
 async function getAllBusyTimes(
   queryStartTime: Date,
   queryEndTime: Date
@@ -873,7 +1047,12 @@ async function getAllBusyTimes(
   return busyTimes
 }
 
-// Checks the duration of time between the two given times
+/**
+ * Checks the duration of time between the two given times.
+ * @param {Date} timeSlotStart - The start time of the time slot.
+ * @param {Date} timeSlotEnd - The end time of the time slot.
+ * @returns {number} Returns the duration of time of the time slot.
+ */
 function checkTimeDuration(timeSlotStart: Date, timeSlotEnd: Date): number {
   assertDefined(timeSlotStart)
   assertDefined(timeSlotEnd)
@@ -882,6 +1061,12 @@ function checkTimeDuration(timeSlotStart: Date, timeSlotEnd: Date): number {
   return availableTime
 }
 
+/**
+ * Gets the events in the given time period.
+ * @param {Date} queryStartTime - The start time of the time period.
+ * @param {Date} queryEndTime - The end time of the time period.
+ * @returns {calendar_v3.Schema$Event[]} Returns a list of event objects.
+ */
 async function getEventsInTimePeriod(
   queryStartTime: Date,
   queryEndTime: Date
@@ -935,6 +1120,10 @@ function parsePotentialDescription(
   return { schedulingSettings, deadline, minimumStartTime }
 }
 
+/**
+ * Deletes an event from the Google calendar the app uses.
+ * @param {string} eventId - The ID of an event.
+ */
 async function deleteEvent(eventId: string): Promise<void> {
   await calendar.events.delete({
     auth: oAuth2Client,
@@ -948,17 +1137,9 @@ async function deleteEvent(eventId: string): Promise<void> {
  * user, the event is scheduled at the set time or at the next open time slot
  * after the set time. The description of the event is also updated
  * to handle effects of rescheduling.
- * @param {boolean} flexible - This bool determines whether the event is
- * scheduled at the set time or at the next open time slot after the set time.
- * @param {string} eventId - The ID of an event.
- * @param {string} rescheduleTime - The target time that the event will be
- * rescheduled for.
- * @param {string} summary - The summary of an event.
- * @param {number} duration - The duration of an event.
- * @param {string} description - The description of the event containing info
- * on its deadline or if it was manually scheduled.
- * @param {string} deadline - The deadline of an event.
- * @returns {Promise<string>} Returns a string to be set as a message to the
+ * @param {RescheduleData} data - The data recieved from the frontend to
+ * reschedule the event.
+ * @returns {string} Returns a string to be set as a message to the
  * user with information on the result of the scheduling.
  */
 async function rescheduleEvent(data: RescheduleData): Promise<string> {
@@ -1119,6 +1300,10 @@ async function updateDescription(
   }
 }
 
+/**
+ * Gets the time zone of the user's calendar.
+ * @returns {string} Returns a string that is the time zone's name.
+ */
 async function getUserTimeZone(): Promise<string> {
   const cal = await calendar.calendars.get({
     auth: oAuth2Client,
@@ -1129,6 +1314,10 @@ async function getUserTimeZone(): Promise<string> {
   return cal.data.timeZone
 }
 
+/**
+ * Gets the ID of the Google calendar the app uses.
+ * @returns {string} Returns a string that is the calendar ID.
+ */
 async function getAutoCalendarId(): Promise<string> {
   const calendars = await calendar.calendarList.list({
     auth: oAuth2Client,

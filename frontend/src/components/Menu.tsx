@@ -141,7 +141,13 @@ const Menu = (props: {
               }}
             >
               Read more about the idea behind Auto Calendar{' '}
-              <a href="https://hbr.org/2012/01/to-do-lists-dont-work">here</a>
+              <a
+                href="https://hbr.org/2012/01/to-do-lists-dont-work"
+                target="_blank"
+                rel="noreferrer"
+              >
+                here
+              </a>
             </ListItem>
           </List>
         </Box>

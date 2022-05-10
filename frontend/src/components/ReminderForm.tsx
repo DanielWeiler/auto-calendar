@@ -1,6 +1,8 @@
 import {
   AlertColor,
   Button,
+  FormControl,
+  InputLabel,
   MenuItem,
   Select,
   TextField,
@@ -14,6 +16,7 @@ import eventService from '../services/events'
 import { ReminderFormValues } from '../types'
 import { addTimeToDate, serverErrorMessage } from '../utils/helpers'
 import Header from './Header'
+import ReminderFormInfoButton from './ReminderFormInfoButton'
 
 const ReminderForm = (props: {
   createNotification: (
@@ -186,7 +189,7 @@ const ReminderForm = (props: {
       if (new Date() > minimumStart) {
         setError('minimumStartDate', {
           type: 'required',
-          message: 'The earliest start time must be in the future',
+          message: 'The time the event can be scheduled must be in the future',
         })
         return
       }
@@ -196,7 +199,8 @@ const ReminderForm = (props: {
         if (deadline < minimumStart) {
           setError('deadlineDate', {
             type: 'required',
-            message: 'The deadline cannot be before the earliest start time',
+            message:
+              'The deadline must be after the time the event can be scheduled',
           })
           return
         }
@@ -232,92 +236,170 @@ const ReminderForm = (props: {
   return (
     <div>
       <Header title="Create Reminder" />
-      <ToggleButtonGroup
-        color="primary"
-        value={scheduleValue}
-        exclusive
-        onChange={handleScheduleChange}
-      >
-        <ToggleButton value="auto">Auto</ToggleButton>
-        <ToggleButton value="manual">Manual</ToggleButton>
-      </ToggleButtonGroup>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <label>Summary:</label>
-        <TextField
-          id="summary"
-          placeholder="Make time in my calendar for..."
-          {...register('summary', { required: 'Please enter a summary' })}
-        />
-        <p style={{ color: 'red' }}>{errors.summary?.message}</p>
-
-        <label>Duration:</label>
-        <Select
-          id="duration"
-          defaultValue={30}
-          {...register('duration', { required: true })}
+      <ReminderFormInfoButton />
+      <div className="app-page-container">
+        <form
+          className="reminder-form-container"
+          onSubmit={handleSubmit(onSubmit)}
         >
-          {durationOptions.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.text}
-            </MenuItem>
-          ))}
-        </Select>
+          <div style={{ minWidth: '100%', paddingLeft: '16px' }}>
+            <TextField
+              style={{ minWidth: '90%', marginBottom: '8px' }}
+              id="summary"
+              placeholder="Make time in my calendar for..."
+              variant="standard"
+              autoFocus={true}
+              {...register('summary', { required: 'Please enter a summary' })}
+            />
+            <div className="reminder-form-error">{errors.summary?.message}</div>
+          </div>
 
-        <fieldset disabled={manualDisabled}>
-          <legend>Manual Time</legend>
-          <TextField
-            id="manualStartDate"
-            type="date"
-            {...register('manualDate')}
-          />
-          <p style={{ color: 'red' }}>{errors.manualDate?.message}</p>
-          <TextField
-            id="manualStartTime"
-            type="time"
-            {...register('manualTime')}
-          />
-          <p style={{ color: 'red' }}>{errors.manualTime?.message}</p>
-        </fieldset>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              width: '95%',
+            }}
+          >
+            <FormControl>
+              <InputLabel id="duration-label">Duration</InputLabel>
+              <Select
+                id="duration"
+                label="Duration"
+                size="small"
+                defaultValue={30}
+                {...register('duration', { required: true })}
+              >
+                {durationOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.text}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-        <fieldset disabled={autoDisabled}>
-          <label>Earliest start time:</label>
-          <TextField
-            id="minimumStartDate"
-            type="date"
-            defaultValue={new Date().toISOString().slice(0, 10)}
-            {...register('minimumStartDate')}
-          />
-          <p style={{ color: 'red' }}>{errors.minimumStartDate?.message}</p>
-          <TextField
-            id="minimumStartTime"
-            type="time"
-            defaultValue={`${('0' + new Date().getHours()).slice(-2)}:${(
-              '0' +
-              (new Date().getMinutes() + 1)
-            ).slice(-2)}`}
-            {...register('minimumStartTime')}
-          />
-          <p style={{ color: 'red' }}>{errors.minimumStartTime?.message}</p>
+            <ToggleButtonGroup
+              color="primary"
+              size="small"
+              value={scheduleValue}
+              exclusive
+              onChange={handleScheduleChange}
+            >
+              <ToggleButton value="manual">Manual</ToggleButton>
+              <ToggleButton value="auto">Auto</ToggleButton>
+            </ToggleButtonGroup>
+          </div>
 
-          <label>Deadline:</label>
-          <TextField
-            id="deadlineDate"
-            type="date"
-            {...register('deadlineDate')}
-          />
-          <p style={{ color: 'red' }}>{errors.deadlineDate?.message}</p>
-          <TextField
-            id="deadlineTime"
-            type="time"
-            {...register('deadlineTime')}
-          />
-          <p style={{ color: 'red' }}>{errors.deadlineTime?.message}</p>
-        </fieldset>
+          <fieldset className="event-field" disabled={manualDisabled}>
+            <legend>Manual Event</legend>
+            <TextField
+              style={{ marginBottom: '8px' }}
+              id="manualStartDate"
+              type="date"
+              variant="standard"
+              {...register('manualDate')}
+            />
+            <TextField
+              id="manualStartTime"
+              type="time"
+              variant="standard"
+              {...register('manualTime')}
+            />
+            <div className="reminder-form-error">
+              {errors.manualDate?.message}
+            </div>
+            <div className="reminder-form-error">
+              {errors.manualTime?.message}
+            </div>
+          </fieldset>
 
-        <Button id="submit" type="submit" disabled={scheduleDisabled}>
-          Schedule
-        </Button>
-      </form>
+          <fieldset
+            className="event-field"
+            style={{ minHeight: '185px' }}
+            disabled={autoDisabled}
+          >
+            <legend>Auto Event</legend>
+            <div
+              style={{
+                fontSize: '0.9em',
+                marginTop: '8px',
+                marginRight: 'auto',
+                width: '100%',
+              }}
+            >
+              Schedule at the next open time after:
+            </div>
+            <TextField
+              id="minimumStartDate"
+              type="date"
+              variant="standard"
+              defaultValue={new Date().toISOString().slice(0, 10)}
+              {...register('minimumStartDate')}
+            />
+            <TextField
+              id="minimumStartTime"
+              type="time"
+              variant="standard"
+              defaultValue={`${('0' + new Date().getHours()).slice(-2)}:${(
+                '0' +
+                (new Date().getMinutes() + 1)
+              ).slice(-2)}`}
+              {...register('minimumStartTime')}
+            />
+            <div
+              style={{
+                display: 'flex',
+                width: '100%',
+                fontSize: '0.9em',
+                marginTop: '16px',
+                marginRight: 'auto',
+              }}
+            >
+              Deadline:
+              <div
+                style={{ fontSize: '0.75em', marginLeft: '3px', color: 'gray' }}
+              >
+                {' '}
+                (optional)
+              </div>
+            </div>
+            <TextField
+              style={{ marginBottom: '8px' }}
+              id="deadlineDate"
+              type="date"
+              variant="standard"
+              {...register('deadlineDate')}
+            />
+            <TextField
+              id="deadlineTime"
+              type="time"
+              variant="standard"
+              {...register('deadlineTime')}
+            />
+            <div className="reminder-form-error">
+              {errors.minimumStartDate?.message}
+            </div>
+            <div className="reminder-form-error">
+              {errors.minimumStartTime?.message}
+            </div>
+            <div className="reminder-form-error">
+              {errors.deadlineDate?.message}
+            </div>
+            <div className="reminder-form-error">
+              {errors.deadlineTime?.message}
+            </div>
+          </fieldset>
+
+          <Button
+            style={{ marginLeft: 'auto' }}
+            id="submit"
+            type="submit"
+            disabled={scheduleDisabled}
+          >
+            Schedule
+          </Button>
+        </form>
+      </div>
     </div>
   )
 }

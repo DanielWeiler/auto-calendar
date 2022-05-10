@@ -29,8 +29,8 @@ const CalendarInfoButton = () => {
       </IconButton>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Calendar Events Key</DialogTitle>
-        <DialogContent className="calendar-info-content">
-          <div style={{display: 'flex'}}>
+        <DialogContent>
+          <div style={{ display: 'flex' }}>
             <Box
               sx={{
                 width: 20,
@@ -43,7 +43,7 @@ const CalendarInfoButton = () => {
             />
             <DialogContentText>Manual event</DialogContentText>
           </div>
-          <div style={{display: 'flex'}}>
+          <div style={{ display: 'flex' }}>
             <Box
               sx={{
                 width: 20,
@@ -56,7 +56,7 @@ const CalendarInfoButton = () => {
             />
             <DialogContentText>Auto event with no deadline</DialogContentText>
           </div>
-          <div style={{display: 'flex'}}>
+          <div style={{ display: 'flex' }}>
             <Box
               sx={{
                 width: 20,

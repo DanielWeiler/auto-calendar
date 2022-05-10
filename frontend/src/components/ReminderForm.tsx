@@ -127,6 +127,14 @@ const ReminderForm = (props: {
       minimumStartTime,
     }
 
+    if (!manualDisabled && manualDate === '' && manualTime === '') {
+      setError('manualDate', {
+        type: 'required',
+        message: 'A date and time are needed',
+      })
+      return
+    }
+
     if (manualDate) {
       if (!manualTime) {
         setError('manualTime', {

@@ -132,7 +132,16 @@ function App() {
                 alt="Auto Calendar Logo"
                 style={{ maxWidth: '192px', maxHeight: '192px' }}
               />
-              <div style={{ marginTop: '32px' }}>
+              <h3
+                style={{
+                  margin: '1.1em 0em 1.5em',
+                  textAlign: 'center',
+                  fontWeight: '500',
+                }}
+              >
+                Plan less and get more done
+              </h3>
+              <div>
                 <GoogleLogin
                   clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
                   buttonText="Sign in with Google"
@@ -172,9 +181,7 @@ function App() {
               />
               <Route
                 path="/create-event"
-                element={
-                  <EventForm createNotification={createNotification} />
-                }
+                element={<EventForm createNotification={createNotification} />}
               />
               <Route
                 path="/set-working-hours"

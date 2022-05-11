@@ -1,22 +1,12 @@
 import { NextFunction, Request, Response } from 'express'
 import eventsService from '../services/events.service'
+import weeklyHoursService from '../services/weekly-hours.service'
 import {
   CreateEventRequest,
   DeleteEventRequest,
   RescheduleEventRequest,
   SetWeeklyHoursRequest,
 } from '../types'
-
-function getEvents(_req: Request, res: Response, next: NextFunction): void {
-  try {
-    void (async () => {
-      res.send(await eventsService.getEvents())
-    })()
-  } catch (error) {
-    console.error('Error while getting events')
-    next(error)
-  }
-}
 
 function setWorkingHours(
   req: SetWeeklyHoursRequest,
@@ -25,7 +15,7 @@ function setWorkingHours(
 ): void {
   try {
     void (async () => {
-      res.send(await eventsService.setWorkingHours(req.body))
+      res.send(await weeklyHoursService.setWorkingHours(req.body))
     })()
   } catch (error) {
     console.error('Error while setting working hours')
@@ -40,10 +30,21 @@ function setUnavailableHours(
 ): void {
   try {
     void (async () => {
-      res.send(await eventsService.setUnavailableHours(req.body))
+      res.send(await weeklyHoursService.setUnavailableHours(req.body))
     })()
   } catch (error) {
     console.error('Error while setting available hours')
+    next(error)
+  }
+}
+
+function getEvents(_req: Request, res: Response, next: NextFunction): void {
+  try {
+    void (async () => {
+      res.send(await eventsService.getEvents())
+    })()
+  } catch (error) {
+    console.error('Error while getting events')
     next(error)
   }
 }

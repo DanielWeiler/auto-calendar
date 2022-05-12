@@ -56,12 +56,28 @@ async function signIn(data: SignInData): Promise<void> {
     refresh_token: refreshToken,
   })
 
+  // Get the user's time zone from their primary calendar
+  userTimeZone = await getUserTimeZone()
+
   // Initialize the calendar used by the app
   await createAutoCalendar()
 
-  // Initialize the calendar ID and time zone of the user
+  // Initialize the calendar ID variable
   autoCalendarId = await getAutoCalendarId()
-  userTimeZone = await getUserTimeZone()
+}
+
+/**
+ * Gets the time zone of the user's calendar.
+ * @returns {string} Returns a string that is the time zone's name.
+ */
+ async function getUserTimeZone(): Promise<string> {
+  const cal = await calendar.calendars.get({
+    auth: oAuth2Client,
+    calendarId: 'primary',
+  })
+  assertDefined(cal.data.timeZone)
+
+  return cal.data.timeZone
 }
 
 /**
@@ -87,6 +103,7 @@ async function createAutoCalendar(): Promise<void> {
       auth: oAuth2Client,
       requestBody: {
         summary: 'Auto Calendar',
+        timeZone: userTimeZone
       },
     })
   }
@@ -113,20 +130,6 @@ async function getAutoCalendarId(): Promise<string> {
   assertDefined(autoCalendarId)
 
   return autoCalendarId
-}
-
-/**
- * Gets the time zone of the user's calendar.
- * @returns {string} Returns a string that is the time zone's name.
- */
-async function getUserTimeZone(): Promise<string> {
-  const cal = await calendar.calendars.get({
-    auth: oAuth2Client,
-    calendarId: autoCalendarId,
-  })
-  assertDefined(cal.data.timeZone)
-
-  return cal.data.timeZone
 }
 
 export default { signIn }

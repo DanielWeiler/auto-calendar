@@ -43,8 +43,9 @@ const Calendar = (props: {
   useEffect(() => {
     // Must wait for authorization to complete after sign in
     setTimeout(() => {
-      try {
-        eventService.getEvents().then((events) => {
+      void (async () => {
+        try {
+          const events = await eventService.getEvents()
           setEvents(events)
           // Check if unavailable hours have been set
           for (let i = 0; i < events.length; i++) {
@@ -55,10 +56,10 @@ const Calendar = (props: {
             }
           }
           setAddDisabled(false)
-        })
-      } catch (error) {
-        createNotification(serverErrorMessage, '', undefined)
-      }
+        } catch (error) {
+          createNotification(serverErrorMessage, '', undefined)
+        }
+      })()
     }, 1000)
   }, [])
 
@@ -85,10 +86,7 @@ const Calendar = (props: {
   const handleEventClick = (arg: EventClickArg) => {
     // Prevent unavailable hours and working hours events from being
     // modified within the calendar view
-    if (
-      arg.event.title === 'UH' ||
-      arg.event.title === 'Working hours'
-    ) {
+    if (arg.event.title === 'UH' || arg.event.title === 'Working hours') {
       return
     }
 

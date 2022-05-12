@@ -1,5 +1,6 @@
 import FullCalendar, {
   EventClickArg,
+  EventInput,
   preventDefault,
 } from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
@@ -25,7 +26,7 @@ const Calendar = (props: {
 }) => {
   const { createNotification } = props
 
-  const [events, setEvents] = useState([])
+  const [events, setEvents] = useState<EventInput[]>([])
   const [weeklyHoursSet, setWeeklyHoursSet] = useState(false)
   const [addDisabled, setAddDisabled] = useState(true)
   const [eventOpen, setEventOpen] = useState(false)
@@ -45,11 +46,11 @@ const Calendar = (props: {
     setTimeout(() => {
       void (async () => {
         try {
-          const events = await eventService.getEvents()
-          setEvents(events)
+          const calendarEvents: EventInput[] = await eventService.getEvents()
+          setEvents(calendarEvents)
           // Check if unavailable hours have been set
-          for (let i = 0; i < events.length; i++) {
-            const event = events[i]
+          for (let i = 0; i < calendarEvents.length; i++) {
+            const event = calendarEvents[i]
             if (event.title === 'UH') {
               setWeeklyHoursSet(true)
               break

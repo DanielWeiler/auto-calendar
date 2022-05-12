@@ -124,7 +124,7 @@ const WorkWeekForm = (props: {
           }
         )
       } else if (
-        data[day as keyof WeeklyHoursFormValues].startTime >
+        data[day as keyof WeeklyHoursFormValues].startTime >=
         data[day as keyof WeeklyHoursFormValues].endTime
       ) {
         setError(`${day as keyof WeeklyHoursFormValues}.endTime`, {
@@ -140,6 +140,7 @@ const WorkWeekForm = (props: {
     }
 
     setSaveDisabled(true)
+    setSpinnerDisplay('')
 
     try {
       await eventService.setWorkingHours('/set-working-hours', { data })
@@ -200,7 +201,6 @@ const WorkWeekForm = (props: {
             variant="outlined"
             style={{ float: 'right', marginTop: '16px' }}
             disabled={saveDisabled}
-            onClick={() => setSpinnerDisplay('')}
           >
             Save
           </Button>

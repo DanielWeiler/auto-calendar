@@ -34,6 +34,7 @@ export async function getEventsInTimePeriod(
     auth: oAuth2Client,
     calendarId: autoCalendarId,
     singleEvents: true,
+    orderBy: 'startTime',
     timeMin: queryStartTime.toISOString(),
     timeMax: queryEndTime.toISOString(),
     timeZone: userTimeZone,

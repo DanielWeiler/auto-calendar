@@ -6,7 +6,7 @@
 
 import { google } from 'googleapis'
 import oAuth2Client from '../configs/google-client.config'
-import { EventData, EventFormData, RescheduleData, UserMessage } from '../types'
+import { EventDisplayData, EventFormData, RescheduleData, UserMessage } from '../types'
 import { addTimeToDate, assertDefined } from '../utils/helpers'
 import {
   convertMessageToString,
@@ -21,9 +21,9 @@ const calendar = google.calendar('v3')
  * Gets the events from Google Calendar to be displayed in the app. The
  * calendar ID used by the app and the time zone of the user are also
  * initialized in this function.
- * @returns {EventData[]} Returns a list of event objects.
+ * @returns {EventDisplayData[]} Returns a list of event objects.
  */
-async function getEvents(): Promise<EventData[]> {
+async function getEvents(): Promise<EventDisplayData[]> {
   // Get the date 12 months from now
   const timeMax = new Date(new Date().setMonth(new Date().getMonth() + 12))
 
@@ -38,7 +38,7 @@ async function getEvents(): Promise<EventData[]> {
   assertDefined(events.data.items)
 
   // Add colors and display options to the events
-  const eventsData: EventData[] = []
+  const eventsData: EventDisplayData[] = []
   events.data.items.map((event) => {
     assertDefined(event.id)
     let color = 'LightSkyBlue'
@@ -55,7 +55,7 @@ async function getEvents(): Promise<EventData[]> {
       color = 'RoyalBlue'
     }
 
-    const eventData: EventData = {
+    const eventData: EventDisplayData = {
       id: event.id,
       title: event.summary,
       start: event.start?.dateTime,

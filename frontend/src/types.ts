@@ -1,5 +1,10 @@
 import { AlertColor } from '@mui/material'
 
+export interface TimePeriod {
+  startTime: string
+  endTime: string
+}
+
 export interface WeeklyHoursFormValues {
   Monday: TimePeriod
   Tuesday: TimePeriod
@@ -8,11 +13,6 @@ export interface WeeklyHoursFormValues {
   Friday: TimePeriod
   Saturday: TimePeriod
   Sunday: TimePeriod
-}
-
-export interface TimePeriod {
-  startTime: string
-  endTime: string
 }
 
 export interface EventFormValues {

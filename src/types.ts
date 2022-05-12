@@ -21,7 +21,7 @@ export interface SignInData {
   clientCurrentDateTime: Date
 }
 
-export interface EventData {
+export interface EventDisplayData {
   id: string
   title: string | null | undefined
   start: string | null | undefined
@@ -31,71 +31,34 @@ export interface EventData {
   display: string
 }
 
+export interface TimePeriod {
+  startTime: string
+  endTime: string
+}
+
 export interface SetWeeklyHoursRequest extends express.Request {
   body: {
     data: {
-      Monday: {
-        startTime: string
-        endTime: string
-      }
-      Tuesday: {
-        startTime: string
-        endTime: string
-      }
-      Wednesday: {
-        startTime: string
-        endTime: string
-      }
-      Thursday: {
-        startTime: string
-        endTime: string
-      }
-      Friday: {
-        startTime: string
-        endTime: string
-      }
-      Saturday: {
-        startTime: string
-        endTime: string
-      }
-      Sunday: {
-        startTime: string
-        endTime: string
-      }
+      Monday: TimePeriod
+      Tuesday: TimePeriod
+      Wednesday: TimePeriod
+      Thursday: TimePeriod
+      Friday: TimePeriod
+      Saturday: TimePeriod
+      Sunday: TimePeriod
     }
   }
 }
 
 export interface WeeklyHoursData {
   data: {
-    Monday: {
-      startTime: string
-      endTime: string
-    }
-    Tuesday: {
-      startTime: string
-      endTime: string
-    }
-    Wednesday: {
-      startTime: string
-      endTime: string
-    }
-    Thursday: {
-      startTime: string
-      endTime: string
-    }
-    Friday: {
-      startTime: string
-      endTime: string
-    }
-    Saturday: {
-      startTime: string
-      endTime: string
-    }
-    Sunday: {
-      startTime: string
-      endTime: string
-    }
+    Monday: TimePeriod
+    Tuesday: TimePeriod
+    Wednesday: TimePeriod
+    Thursday: TimePeriod
+    Friday: TimePeriod
+    Saturday: TimePeriod
+    Sunday: TimePeriod
   }
 }
 

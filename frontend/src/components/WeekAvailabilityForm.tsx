@@ -1,4 +1,4 @@
-import { AlertColor, Button, Stack } from '@mui/material'
+import { AlertColor, Box, Button, CircularProgress, Stack } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
@@ -64,6 +64,7 @@ const WeekAvailabilityForm = (props: {
     { name: 'Saturday', display: '' },
     { name: 'Sunday', display: '' },
   ])
+  const [spinnerDisplay, setSpinnerDisplay] = useState('none')
 
   const navigate = useNavigate()
 
@@ -145,23 +146,29 @@ const WeekAvailabilityForm = (props: {
         data,
       })
       createNotification(
-        'Conflicting events that are reschedulable will be rescheduled. This may take a moment.',
+        'Conflicting events that are reschedulable will be rescheduled. This takes a quick moment.',
         'Available hours set',
         'success'
       )
+
+      // Wait a moment for these events to be set before the app navigates to
+      // the calendar and loads the events
+      setTimeout(() => {
+        navigate('/')
+      }, 5000)
     } catch (error) {
       createNotification(serverErrorMessage, '', undefined)
     }
-    navigate('/')
   }
 
   return (
     <div>
       <Header title="Set Available Hours" />
       <div className="app-page-container">
-        <p style={{textAlign: 'center'}}>
+        <p style={{ textAlign: 'center' }}>
           Set the hours that Auto Calendar is allowed to schedule auto events.
-          You can still schedule manual events at any time.
+          Deselecting a day will set the day as unavailable. You can still
+          schedule manual events at any time.
         </p>
         <div style={{ margin: '8px 0px 24px' }}>
           {checkedState.map(({ name, display }, index) => (
@@ -195,9 +202,19 @@ const WeekAvailabilityForm = (props: {
             variant="outlined"
             style={{ float: 'right', marginTop: '16px' }}
             disabled={saveDisabled}
+            onClick={() => setSpinnerDisplay('')}
           >
             Save
           </Button>
+          <Box
+            sx={{
+              display: spinnerDisplay,
+              float: 'right',
+              margin: '22px 14px',
+            }}
+          >
+            <CircularProgress size={25} />
+          </Box>
         </form>
       </div>
     </div>

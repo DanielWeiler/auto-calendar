@@ -127,11 +127,16 @@ const WorkWeekForm = (props: {
         data[day as keyof WeeklyHoursFormValues].startTime >=
         data[day as keyof WeeklyHoursFormValues].endTime
       ) {
-        setError(`${day as keyof WeeklyHoursFormValues}.endTime`, {
-          type: 'required',
-          message: 'The start time must be before the end time',
-        })
-        error = true
+        if (
+          data[day as keyof WeeklyHoursFormValues].startTime &&
+          data[day as keyof WeeklyHoursFormValues].endTime
+        ) {
+          setError(`${day as keyof WeeklyHoursFormValues}.endTime`, {
+            type: 'required',
+            message: 'The start time must be before the end time',
+          })
+          error = true
+        }
       }
     })
 

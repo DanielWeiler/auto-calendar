@@ -94,7 +94,6 @@ const Menu = (props: {
               style={{
                 marginLeft: '4px',
                 fontSize: '0.85em',
-                color: 'rgba(0, 0, 0, 0.6)',
               }}
             >
               <li>Find the best time for each task</li>

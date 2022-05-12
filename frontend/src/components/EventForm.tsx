@@ -78,14 +78,6 @@ const EventForm = (props: {
     { value: '480', text: '8 hours' },
   ]
 
-  const getDefaultMinutes = () => {
-    if (new Date().getMinutes() === 58 || new Date().getMinutes() === 59) {
-      return 0
-    } else {
-      return new Date().getMinutes() + 2
-    }
-  }
-
   const handleScheduleChange = (
     event: React.MouseEvent<HTMLElement>,
     newValue: string
@@ -202,7 +194,10 @@ const EventForm = (props: {
 
     if (minimumStartDate && minimumStartTime) {
       const minimumStart = addTimeToDate(minimumStartTime, minimumStartDate)
-      if (new Date() > minimumStart) {
+      // Compares the minimumStart to 2 minutes in the past to ensure that the
+      // default minimumStart time (which is the current time) will not be in
+      // the past and create a form error
+      if (new Date(new Date().getTime() - 120000) > minimumStart) {
         setError('minimumStartDate', {
           type: 'required',
           message: 'The time the event can be scheduled must be in the future',
@@ -353,7 +348,7 @@ const EventForm = (props: {
               type="time"
               variant="standard"
               defaultValue={`${('0' + new Date().getHours()).slice(-2)}:${(
-                '0' + getDefaultMinutes()
+                '0' + new Date().getMinutes()
               ).slice(-2)}`}
               {...register('minimumStartTime')}
             />

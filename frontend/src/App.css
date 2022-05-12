@@ -126,6 +126,8 @@ body {
 
 .event-field:disabled {
   background: rgb(233, 233, 233);
+  border-color: rgb(233 233 233 / 20%);
+  color: darkgray;
 }
 
 .event-form-error {

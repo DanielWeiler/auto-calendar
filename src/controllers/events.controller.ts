@@ -13,14 +13,14 @@ function setWorkingHours(
   res: Response,
   next: NextFunction
 ): void {
-  try {
-    void (async () => {
+  void (async () => {
+    try {
       res.send(await weeklyHoursService.setWorkingHours(req.body))
-    })()
-  } catch (error) {
-    console.error('Error while setting working hours')
-    next(error)
-  }
+    } catch (error) {
+      console.error('Error while setting working hours')
+      next(error)
+    }
+  })()
 }
 
 function setUnavailableHours(
@@ -28,25 +28,25 @@ function setUnavailableHours(
   res: Response,
   next: NextFunction
 ): void {
-  try {
-    void (async () => {
+  void (async () => {
+    try {
       res.send(await weeklyHoursService.setUnavailableHours(req.body))
-    })()
-  } catch (error) {
-    console.error('Error while setting available hours')
-    next(error)
-  }
+    } catch (error) {
+      console.error('Error while setting available hours')
+      next(error)
+    }
+  })()
 }
 
 function getEvents(_req: Request, res: Response, next: NextFunction): void {
-  try {
-    void (async () => {
+  void (async () => {
+    try {
       res.send(await eventsService.getEvents())
-    })()
-  } catch (error) {
-    console.error('Error while getting events')
-    next(error)
-  }
+    } catch (error) {
+      console.error('Error while getting events')
+      next(error)
+    }
+  })()
 }
 
 function createEvent(
@@ -54,14 +54,14 @@ function createEvent(
   res: Response,
   next: NextFunction
 ): void {
-  try {
-    void (async () => {
+  void (async () => {
+    try {
       res.send(await eventsService.createEvent(req.body.data))
-    })()
-  } catch (error) {
-    console.error('Error while creating event')
-    next(error)
-  }
+    } catch (error) {
+      console.error('Error while creating event')
+      next(error)
+    }
+  })()
 }
 
 function deleteEvent(
@@ -69,14 +69,14 @@ function deleteEvent(
   res: Response,
   next: NextFunction
 ): void {
-  try {
-    void (async () => {
+  void (async () => {
+    try {
       res.send(await eventsService.deleteEvent(req.body.eventId))
-    })()
-  } catch (error) {
-    console.error('Error while deleting event')
-    next(error)
-  }
+    } catch (error) {
+      console.error('Error while deleting event')
+      next(error)
+    }
+  })()
 }
 
 function rescheduleEvent(
@@ -84,14 +84,14 @@ function rescheduleEvent(
   res: Response,
   next: NextFunction
 ): void {
-  try {
-    void (async () => {
+  void (async () => {
+    try {
       res.send(await eventsService.rescheduleEvent(req.body))
-    })()
-  } catch (error) {
-    console.error('Error while rescheduling event')
-    next(error)
-  }
+    } catch (error) {
+      console.error('Error while rescheduling event')
+      next(error)
+    }
+  })()
 }
 
 export default {

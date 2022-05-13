@@ -12,13 +12,7 @@ export interface RefreshToken {
 export interface SignInRequest extends express.Request {
   body: {
     code: string
-    clientCurrentDateTime: Date
   }
-}
-
-export interface SignInData {
-  code: string
-  clientCurrentDateTime: Date
 }
 
 export interface EventDisplayData {

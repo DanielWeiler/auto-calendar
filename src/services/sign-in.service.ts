@@ -9,7 +9,6 @@ import { google } from 'googleapis'
 import jwtDecode, { JwtPayload } from 'jwt-decode'
 import oAuth2Client from '../configs/google-client.config'
 import RefreshTokenModel from '../models/refresh_token'
-import { SignInData } from '../types'
 import { assertDefined } from '../utils/helpers'
 require('express-async-errors')
 const calendar = google.calendar('v3')
@@ -23,10 +22,9 @@ export let userTimeZone = ''
  * is saved to the database. On following sign in's, the refresh token is
  * retrieved from the database. On the first sign in, the Google calendar used
  * by the app is created on the user's account.
- * @param {SignInData} data - The data recieved from the frontend to sign in.
+ * @param {string} code - The data recieved from the frontend to sign in.
  */
-async function signIn(data: SignInData): Promise<void> {
-  const { code } = data
+async function signIn(code: string): Promise<void> {
   const { tokens } = await oAuth2Client.getToken(code)
 
   // According to the Google OAuth 2.0 documentation, the "sub" field of the

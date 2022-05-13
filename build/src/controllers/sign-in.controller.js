@@ -14,14 +14,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const sign_in_service_1 = __importDefault(require("../services/sign-in.service"));
 function signIn(req, res, next) {
-    try {
-        void (() => __awaiter(this, void 0, void 0, function* () {
-            res.send(yield sign_in_service_1.default.signIn(req.body));
-        }))();
-    }
-    catch (error) {
-        console.error('Error while signing in');
-        next(error);
-    }
+    void (() => __awaiter(this, void 0, void 0, function* () {
+        try {
+            res.send(yield sign_in_service_1.default.signIn(req.body.code));
+        }
+        catch (error) {
+            console.error('Error while signing in');
+            next(error);
+        }
+    }))();
 }
 exports.default = { signIn };

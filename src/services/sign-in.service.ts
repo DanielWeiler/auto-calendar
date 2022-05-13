@@ -25,7 +25,9 @@ export let userTimeZone = ''
  * @param {string} code - The data recieved from the frontend to sign in.
  */
 async function signIn(code: string): Promise<void> {
+  console.log('Authenticating')
   const { tokens } = await oAuth2Client.getToken(code)
+  console.log('Authentication complete')
 
   // According to the Google OAuth 2.0 documentation, the "sub" field of the
   // ID token is the unique-identifier key for Google users.

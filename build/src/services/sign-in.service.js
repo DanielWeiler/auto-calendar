@@ -34,12 +34,13 @@ exports.userTimeZone = '';
  * is saved to the database. On following sign in's, the refresh token is
  * retrieved from the database. On the first sign in, the Google calendar used
  * by the app is created on the user's account.
- * @param {SignInData} data - The data recieved from the frontend to sign in.
+ * @param {string} code - The data recieved from the frontend to sign in.
  */
-function signIn(data) {
+function signIn(code) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { code } = data;
+        console.log('Authenticating');
         const { tokens } = yield google_client_config_1.default.getToken(code);
+        console.log('Authentication complete');
         // According to the Google OAuth 2.0 documentation, the "sub" field of the
         // ID token is the unique-identifier key for Google users.
         (0, helpers_1.assertDefined)(tokens.id_token);

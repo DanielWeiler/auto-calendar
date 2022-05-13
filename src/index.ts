@@ -37,6 +37,7 @@ mongoose
     console.log('error connecting to MongoDB:', error.message)
   })
 
+app.use(express.static('build/frontend'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use('/api/sign-in', signInRouter)

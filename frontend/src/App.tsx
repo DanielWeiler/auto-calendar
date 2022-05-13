@@ -94,8 +94,8 @@ function App() {
 
     try {
       assertDefined(code)
-      window.localStorage.setItem('loggedUser', code)
       await signInService.signIn({ code })
+      window.localStorage.setItem('loggedUser', code)
       setUser(code)
     } catch (error) {
       createNotification(serverErrorMessage)

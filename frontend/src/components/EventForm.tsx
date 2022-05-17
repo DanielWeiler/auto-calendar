@@ -304,13 +304,14 @@ const EventForm = (props: {
           <fieldset className="event-field" disabled={manualDisabled}>
             <legend>Manual Event</legend>
             <TextField
-              style={{ marginBottom: '8px' }}
+              style={{ marginBottom: '8px', minWidth: '4em' }}
               id="manualStartDate"
               type="date"
               variant="standard"
               {...register('manualDate')}
             />
             <TextField
+              style={{ minWidth: '4em' }}
               id="manualStartTime"
               type="time"
               variant="standard"
@@ -370,13 +371,14 @@ const EventForm = (props: {
               </div>
             </div>
             <TextField
-              style={{ marginBottom: '8px' }}
+              style={{ marginBottom: '8px', minWidth: '4em' }}
               id="deadlineDate"
               type="date"
               variant="standard"
               {...register('deadlineDate')}
             />
             <TextField
+              style={{ minWidth: '4em' }}
               id="deadlineTime"
               type="time"
               variant="standard"

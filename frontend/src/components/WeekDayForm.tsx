@@ -18,6 +18,7 @@ const WeekDayForm = (props: {
       </label>
       <span>
         <Input
+          style={{ minWidth: '4em' }}
           id="startTime"
           type="time"
           size="small"
@@ -26,6 +27,7 @@ const WeekDayForm = (props: {
         />
         <span style={{ padding: '8px' }}>{' — '}</span>
         <Input
+          style={{ minWidth: '4em' }}
           id="endTime"
           type="time"
           size="small"

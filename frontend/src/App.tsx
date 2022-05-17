@@ -122,14 +122,14 @@ function App() {
         {!user ? (
           <div className="sign-in-page">
             <Paper className="sign-in-form" elevation={8}>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  minWidth: '13em',
-                }}
-              >
-                <h1 style={{ fontFamily: 'Century Gothic', fontWeight: '400' }}>
+              <div style={{ display: 'flex' }}>
+                <h1
+                  style={{
+                    fontFamily: 'Century Gothic',
+                    fontWeight: '400',
+                    marginRight: '6px',
+                  }}
+                >
                   Auto
                 </h1>
                 <h1 style={{ fontWeight: '500' }}>Calendar</h1>
@@ -137,7 +137,7 @@ function App() {
               <img
                 src="logo-192x192.png"
                 alt="Auto Calendar Logo"
-                style={{ maxWidth: '192px', maxHeight: '192px' }}
+                style={{ maxWidth: '150px', maxHeight: '150px' }}
               />
               <h3
                 style={{
@@ -170,8 +170,8 @@ function App() {
                 }}
               >
                 Auto calendar creates its own calendar in your google account.
-                Your other calendars in your google account will not be
-                affected.
+                Your other google calendars will not be affected. No information
+                about the user, their calendar, or their events is stored.
               </div>
             </Paper>
           </div>

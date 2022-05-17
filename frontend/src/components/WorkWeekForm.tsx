@@ -204,7 +204,7 @@ const WorkWeekForm = (props: {
             id="save"
             type="submit"
             variant="outlined"
-            style={{ float: 'right', marginTop: '16px' }}
+            style={{ float: 'right', marginTop: '8px' }}
             disabled={saveDisabled}
           >
             Save

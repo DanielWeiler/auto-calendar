@@ -47,6 +47,10 @@ const EventFormInfoButton = () => {
               deadline.
             </li>
           </div>
+          <div style={{ fontSize: '0.8em', marginTop: '24px' }}>
+            <i>NB: </i> Events can also be viewed in Google Calendar but it is
+            not recommended to edit events from there.
+          </div>
         </DialogContent>
         <DialogActions>
           <Button

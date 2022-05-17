@@ -38,9 +38,7 @@ exports.userTimeZone = '';
  */
 function signIn(code) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log('Authenticating');
         const { tokens } = yield google_client_config_1.default.getToken(code);
-        console.log('Authentication complete');
         // According to the Google OAuth 2.0 documentation, the "sub" field of the
         // ID token is the unique-identifier key for Google users.
         (0, helpers_1.assertDefined)(tokens.id_token);

@@ -125,9 +125,9 @@ body {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-around;
+  align-self: stretch;
   min-height: 85px;
   max-width: 300px;
-  min-width: fit-content;
 }
 
 .event-field:disabled {

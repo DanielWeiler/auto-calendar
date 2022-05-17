@@ -106,7 +106,7 @@ const EventOptions = (props: {
               />
             }
             label={
-              <Typography style={{ fontSize: '0.9em', minWidth: '210px' }}>
+              <Typography style={{ fontSize: '0.85em', minWidth: '205px' }}>
                 If this time is busy, reschedule at the next open time after
                 this time.
               </Typography>

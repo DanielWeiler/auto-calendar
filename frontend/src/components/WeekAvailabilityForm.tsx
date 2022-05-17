@@ -171,11 +171,11 @@ const WeekAvailabilityForm = (props: {
     <div>
       <Header title="Set Available Hours" />
       <div className="app-page-container">
-        <p style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
           Set the hours that Auto Calendar is allowed to schedule auto events.
           Deselecting a day will set the day as unavailable. You can still
           schedule manual events at any time.
-        </p>
+        </div>
         <div style={{ margin: '8px 0px 24px' }}>
           {checkedState.map(({ name, display }, index) => (
             <span key={name} className="week-days-selector">

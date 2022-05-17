@@ -127,6 +127,7 @@ body {
   justify-content: space-around;
   min-height: 85px;
   max-width: 300px;
+  min-width: fit-content;
 }
 
 .event-field:disabled {

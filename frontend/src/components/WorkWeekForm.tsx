@@ -169,11 +169,11 @@ const WorkWeekForm = (props: {
     <div>
       <Header title="Set Working Hours" />
       <div className="app-page-container">
-        <p style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
           If you want, set hours that you do not want auto events to be
           scheduled so you can focus. You can still schedule manual events at
           any time.
-        </p>
+        </div>
         <div style={{ margin: '8px 0px 24px' }}>
           {checkedState.map(({ name, display }, index) => (
             <span key={name} className="week-days-selector">

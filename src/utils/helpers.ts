@@ -1,3 +1,6 @@
+import moment from 'moment-timezone'
+import { userTimeZone } from '../services/sign-in.service'
+
 /**
  * Adds the given time to the given date.
  * @param {string} time - A time in the format "hh:mm"
@@ -6,10 +9,18 @@
  * @returns {Date} Returns the new Date object.
  */
 export function addTimeToDate(time: string, date: Date | string): Date {
-  const dateTime = new Date(date)
+  // Sets the time to the date
+  const dateTimeUTC = new Date(date)
   const t = parseTime(time)
-  dateTime.setHours(t.hours, t.minutes)
-  return dateTime
+  dateTimeUTC.setHours(t.hours, t.minutes)
+
+  // Sets the user's time zone to the date
+  const dateTimeWithTimeZone = moment(dateTimeUTC.toISOString())
+    .parseZone()
+    .tz(userTimeZone, true)
+    .toDate()
+
+  return dateTimeWithTimeZone
 }
 
 /**
@@ -32,7 +43,7 @@ export function parseTime(time: string): { hours: number; minutes: number } {
 /**
  * Asserts that the given value is not null or undefined. If the value is
  * indeed null or undefined then it throws an error.
- * @param {T | null | undefined} value - 
+ * @param {T | null | undefined} value -
  */
 export function assertDefined<T>(
   value: T | null | undefined
@@ -43,10 +54,10 @@ export function assertDefined<T>(
 }
 
 /**
- * Gets the next day of the week in the current week or the next week, 
+ * Gets the next day of the week in the current week or the next week,
  * whichever is first.
  * @param {string} dayName - The name of the day of the week being searched for
- * @param {boolean} excludeToday - Whether the current day is included in the 
+ * @param {boolean} excludeToday - Whether the current day is included in the
  * search
  * @param {Date} refDate - The date from which the search begins
  * @returns {Date} The date of the next day of the week that is found

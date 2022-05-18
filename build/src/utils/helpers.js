@@ -1,6 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getNextDayOfTheWeek = exports.assertDefined = exports.parseTime = exports.addTimeToDate = void 0;
+const moment_timezone_1 = __importDefault(require("moment-timezone"));
+const sign_in_service_1 = require("../services/sign-in.service");
 /**
  * Adds the given time to the given date.
  * @param {string} time - A time in the format "hh:mm"
@@ -9,10 +14,16 @@ exports.getNextDayOfTheWeek = exports.assertDefined = exports.parseTime = export
  * @returns {Date} Returns the new Date object.
  */
 function addTimeToDate(time, date) {
-    const dateTime = new Date(date);
+    // Sets the time to the date
+    const dateTimeUTC = new Date(date);
     const t = parseTime(time);
-    dateTime.setHours(t.hours, t.minutes);
-    return dateTime;
+    dateTimeUTC.setHours(t.hours, t.minutes);
+    // Sets the user's time zone to the date
+    const dateTimeWithTimeZone = (0, moment_timezone_1.default)(dateTimeUTC.toISOString())
+        .parseZone()
+        .tz(sign_in_service_1.userTimeZone, true)
+        .toDate();
+    return dateTimeWithTimeZone;
 }
 exports.addTimeToDate = addTimeToDate;
 /**

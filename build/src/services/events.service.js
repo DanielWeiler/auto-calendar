@@ -136,9 +136,11 @@ function createEvent(data) {
 function rescheduleEvent(data) {
     return __awaiter(this, void 0, void 0, function* () {
         const { flexible, eventId, rescheduleTime, summary, duration, description, deadline, } = data;
+        console.log('rescheduleTime', rescheduleTime);
         const rescheduleTimeDate = new Date(rescheduleTime);
         let deadlineDate = null;
         if (deadline) {
+            console.log('deadline', deadline);
             deadlineDate = new Date(deadline);
         }
         yield (0, schedule_helpers_service_1.updateDescription)(eventId, rescheduleTimeDate, flexible, deadlineDate, description);

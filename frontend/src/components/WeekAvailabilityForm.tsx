@@ -215,7 +215,7 @@ const WeekAvailabilityForm = (props: {
             sx={{
               display: spinnerDisplay,
               float: 'right',
-              margin: '22px 14px',
+              margin: '14px',
             }}
           >
             <CircularProgress size={25} />

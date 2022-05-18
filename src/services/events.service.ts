@@ -156,9 +156,11 @@ async function rescheduleEvent(data: RescheduleData): Promise<string> {
     description,
     deadline,
   } = data
+  console.log('rescheduleTime', rescheduleTime)
   const rescheduleTimeDate = new Date(rescheduleTime)
   let deadlineDate = null
   if (deadline) {
+    console.log('deadline', deadline)
     deadlineDate = new Date(deadline)
   }
 

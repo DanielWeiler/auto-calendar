@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getNextDayOfTheWeek = exports.assertDefined = exports.parseTime = exports.addTimeToDate = void 0;
+exports.setLocalTimeZone = exports.getNextDayOfTheWeek = exports.assertDefined = exports.parseTime = exports.addTimeToDate = void 0;
 const moment_timezone_1 = __importDefault(require("moment-timezone"));
 const sign_in_service_1 = require("../services/sign-in.service");
 /**
@@ -19,10 +19,7 @@ function addTimeToDate(time, date) {
     const t = parseTime(time);
     dateTimeUTC.setHours(t.hours, t.minutes);
     // Sets the user's time zone to the date
-    const dateTimeWithTimeZone = (0, moment_timezone_1.default)(dateTimeUTC.toISOString())
-        .parseZone()
-        .tz(sign_in_service_1.userTimeZone, true)
-        .toDate();
+    const dateTimeWithTimeZone = setLocalTimeZone(dateTimeUTC);
     return dateTimeWithTimeZone;
 }
 exports.addTimeToDate = addTimeToDate;
@@ -70,3 +67,17 @@ function getNextDayOfTheWeek(dayName, excludeToday = false, refDate = new Date()
     return refDate;
 }
 exports.getNextDayOfTheWeek = getNextDayOfTheWeek;
+/**
+ * Sets the user's time zone to the date without changing the value of the
+ * date.
+ * @param {Date} dateTime - A Date object
+ * @returns {Date} Returns a new Date object with the user's time zone.
+ */
+function setLocalTimeZone(dateTime) {
+    const dateTimeWithTimeZone = (0, moment_timezone_1.default)(dateTime.toISOString())
+        .parseZone()
+        .tz(sign_in_service_1.userTimeZone, true)
+        .toDate();
+    return dateTimeWithTimeZone;
+}
+exports.setLocalTimeZone = setLocalTimeZone;

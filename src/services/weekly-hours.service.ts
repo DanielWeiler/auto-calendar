@@ -13,6 +13,7 @@ import {
   addTimeToDate,
   assertDefined,
   getNextDayOfTheWeek,
+  setLocalTimeZone,
 } from '../utils/helpers'
 import { deleteEvent } from './events.service'
 import { getEventsInTimePeriod } from './schedule-helpers.service'
@@ -39,11 +40,10 @@ async function setUnavailableHours(
     const weekDay = day[0]
     const date = getNextDayOfTheWeek(weekDay)
 
-    const startUnavailableHoursNumber = date.setHours(0, 0, 0, 0)
-    const startUnavailableHours = new Date(startUnavailableHoursNumber)
+    const startUnavailableHours = setLocalTimeZone(date)
 
-    const endUnavailableHoursNumber = date.setHours(23, 59, 0, 0)
-    const endUnavailableHours = new Date(endUnavailableHoursNumber)
+    date.setHours(23, 59, 0, 0)
+    const endUnavailableHours = setLocalTimeZone(date)
 
     // Check if the day was given available hours and if not then the whole
     // day is set as unavailable

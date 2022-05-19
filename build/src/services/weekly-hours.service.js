@@ -43,10 +43,9 @@ function setUnavailableHours(weeklyHours) {
             const colorId = '8';
             const weekDay = day[0];
             const date = (0, helpers_1.getNextDayOfTheWeek)(weekDay);
-            const startUnavailableHoursNumber = date.setHours(0, 0, 0, 0);
-            const startUnavailableHours = new Date(startUnavailableHoursNumber);
-            const endUnavailableHoursNumber = date.setHours(23, 59, 0, 0);
-            const endUnavailableHours = new Date(endUnavailableHoursNumber);
+            const startUnavailableHours = (0, helpers_1.setLocalTimeZone)(date);
+            date.setHours(23, 59, 0, 0);
+            const endUnavailableHours = (0, helpers_1.setLocalTimeZone)(date);
             // Check if the day was given available hours and if not then the whole
             // day is set as unavailable
             if (day[1].startTime && day[1].endTime) {

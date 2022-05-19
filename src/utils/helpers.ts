@@ -15,10 +15,7 @@ export function addTimeToDate(time: string, date: Date | string): Date {
   dateTimeUTC.setHours(t.hours, t.minutes)
 
   // Sets the user's time zone to the date
-  const dateTimeWithTimeZone = moment(dateTimeUTC.toISOString())
-    .parseZone()
-    .tz(userTimeZone, true)
-    .toDate()
+  const dateTimeWithTimeZone = setLocalTimeZone(dateTimeUTC)
 
   return dateTimeWithTimeZone
 }
@@ -77,4 +74,19 @@ export function getNextDayOfTheWeek(
       ((dayOfWeek + 7 - refDate.getDay() - +!!excludeToday) % 7)
   )
   return refDate
+}
+
+/**
+ * Sets the user's time zone to the date without changing the value of the
+ * date.
+ * @param {Date} dateTime - A Date object
+ * @returns {Date} Returns a new Date object with the user's time zone.
+ */
+export function setLocalTimeZone(dateTime: Date): Date {
+  const dateTimeWithTimeZone = moment(dateTime.toISOString())
+    .parseZone()
+    .tz(userTimeZone, true)
+    .toDate()
+
+  return dateTimeWithTimeZone
 }

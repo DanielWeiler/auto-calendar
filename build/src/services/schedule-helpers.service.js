@@ -71,8 +71,13 @@ function convertMessageToString(userMessage) {
             weekday: 'long',
             day: 'numeric',
             month: 'long',
+            timeZone: sign_in_service_1.userTimeZone,
         });
-        const timeString = new Date(userMessage.eventBeingScheduled).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+        const timeString = new Date(userMessage.eventBeingScheduled).toLocaleTimeString(undefined, {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: sign_in_service_1.userTimeZone,
+        });
         messageString = `Scheduled on ${dateString} at ${timeString}. 
       ${userMessage.conflictingEvents}`;
     }

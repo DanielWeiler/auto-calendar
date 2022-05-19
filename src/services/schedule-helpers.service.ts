@@ -16,7 +16,7 @@ const calendar = google.calendar('v3')
  * @param {number} minutes - The duration of an event in minutes.
  * @returns {Date} Returns a date, which is the end time of an event.
  */
- export function getEndTime(date: Date, minutes: number): Date {
+export function getEndTime(date: Date, minutes: number): Date {
   return new Date(date.getTime() + minutes * 60000)
 }
 
@@ -65,10 +65,15 @@ export function convertMessageToString(userMessage: UserMessage): string {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
+      timeZone: userTimeZone,
     })
     const timeString = new Date(
       userMessage.eventBeingScheduled
-    ).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+    ).toLocaleTimeString(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: userTimeZone,
+    })
 
     messageString = `Scheduled on ${dateString} at ${timeString}. 
       ${userMessage.conflictingEvents}`

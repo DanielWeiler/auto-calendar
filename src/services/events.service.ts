@@ -6,14 +6,19 @@
 
 import { google } from 'googleapis'
 import oAuth2Client from '../configs/google-client.config'
-import { EventDisplayData, EventFormData, RescheduleData, UserMessage } from '../types'
+import {
+  EventDisplayData,
+  EventFormData,
+  RescheduleData,
+  UserMessage,
+} from '../types'
 import { addTimeToDate, assertDefined } from '../utils/helpers'
 import {
   convertMessageToString,
   updateDescription,
 } from './schedule-helpers.service'
 import { autoSchedule, manualSchedule } from './schedule.service'
-import { autoCalendarId } from './sign-in.service'
+import { autoCalendarId, userTimeZone } from './sign-in.service'
 require('express-async-errors')
 const calendar = google.calendar('v3')
 
@@ -156,11 +161,9 @@ async function rescheduleEvent(data: RescheduleData): Promise<string> {
     description,
     deadline,
   } = data
-  console.log('rescheduleTime', rescheduleTime)
   const rescheduleTimeDate = new Date(rescheduleTime)
   let deadlineDate = null
   if (deadline) {
-    console.log('deadline', deadline)
     deadlineDate = new Date(deadline)
   }
 
@@ -186,8 +189,13 @@ async function rescheduleEvent(data: RescheduleData): Promise<string> {
   } else {
     userMessage = await manualSchedule(
       summary,
-      rescheduleTimeDate.toDateString(),
-      rescheduleTimeDate.toTimeString(),
+      rescheduleTimeDate.toLocaleDateString(undefined, {
+        timeZone: userTimeZone,
+      }),
+      rescheduleTimeDate.toLocaleTimeString(undefined, {
+        timeZone: userTimeZone,
+        hour12: false,
+      }),
       duration,
       eventId
     )

@@ -136,11 +136,9 @@ function createEvent(data) {
 function rescheduleEvent(data) {
     return __awaiter(this, void 0, void 0, function* () {
         const { flexible, eventId, rescheduleTime, summary, duration, description, deadline, } = data;
-        console.log('rescheduleTime', rescheduleTime);
         const rescheduleTimeDate = new Date(rescheduleTime);
         let deadlineDate = null;
         if (deadline) {
-            console.log('deadline', deadline);
             deadlineDate = new Date(deadline);
         }
         yield (0, schedule_helpers_service_1.updateDescription)(eventId, rescheduleTimeDate, flexible, deadlineDate, description);
@@ -149,7 +147,12 @@ function rescheduleEvent(data) {
             userMessage = yield (0, schedule_service_1.autoSchedule)(summary, duration, deadlineDate, description, rescheduleTimeDate, eventId);
         }
         else {
-            userMessage = yield (0, schedule_service_1.manualSchedule)(summary, rescheduleTimeDate.toDateString(), rescheduleTimeDate.toTimeString(), duration, eventId);
+            userMessage = yield (0, schedule_service_1.manualSchedule)(summary, rescheduleTimeDate.toLocaleDateString(undefined, {
+                timeZone: sign_in_service_1.userTimeZone,
+            }), rescheduleTimeDate.toLocaleTimeString(undefined, {
+                timeZone: sign_in_service_1.userTimeZone,
+                hour12: false,
+            }), duration, eventId);
         }
         const messageString = (0, schedule_helpers_service_1.convertMessageToString)(userMessage);
         return messageString;

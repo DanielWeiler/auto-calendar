@@ -80,8 +80,17 @@ function App() {
     } else if (body === serverErrorMessage) {
       newNotification.style = 'error'
       if (heading !== 'Failed to sign in' && heading !== 'Failed to sign out') {
-        newNotification.heading = '500 Internal Server Error'
+        newNotification.heading =
+          '500 Internal Server Error — Try signing in again'
       }
+    }
+
+    if (
+      newNotification.heading ===
+      '500 Internal Server Error — Try signing in again'
+    ) {
+      window.localStorage.removeItem('loggedUser')
+      setUser('')
     }
 
     setNotification(newNotification)

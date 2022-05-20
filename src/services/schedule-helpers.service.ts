@@ -171,7 +171,20 @@ export async function updateDescription(
         })
       }
     } else {
-      if (!flexible) {
+      if (flexible) {
+        // The description will be modified so the event will be able to be
+        // rescheduled if another event is scheduled on top of it. The
+        // reschedule time will be stored in the description to be referenced
+        // as a minimum start time.
+        await calendar.events.patch({
+          auth: oAuth2Client,
+          calendarId: autoCalendarId,
+          eventId: eventId,
+          requestBody: {
+            description: `Deadline: ${deadline} | Minimum start time: ${rescheduleTimeDate}`,
+          },
+        })
+      } else {
         // The description will be modified so the event will not be able to be
         // rescheduled if it conflicts with another event.
         await calendar.events.patch({

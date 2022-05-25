@@ -6,7 +6,12 @@
 import { google } from 'googleapis'
 import oAuth2Client from '../configs/google-client.config'
 import { UserMessage } from '../types'
-import { addTimeToDate, assertDefined } from '../utils/helpers'
+import {
+  addTimeToDate,
+  assertDefined,
+  autoCalendarId,
+  userTimeZone,
+} from '../utils/helpers'
 import {
   checkTimeDuration,
   findAvailability,
@@ -17,7 +22,6 @@ import {
   getEventsInTimePeriod,
   parsePotentialDescription,
 } from './schedule-helpers.service'
-import { autoCalendarId, userTimeZone } from './sign-in.service'
 const calendar = google.calendar('v3')
 
 /**

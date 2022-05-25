@@ -103,9 +103,9 @@ function App() {
 
     try {
       assertDefined(code)
-      await signInService.signIn({ code })
-      window.localStorage.setItem('loggedUser', code)
-      setUser(code)
+      const newUser = await signInService.signIn({ code })
+      window.localStorage.setItem('loggedUser', newUser)
+      setUser(newUser)
     } catch (error) {
       createNotification(serverErrorMessage)
     }

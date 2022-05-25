@@ -1,27 +1,13 @@
-import { NextFunction, Request, Response } from 'express'
+import { NextFunction, Response } from 'express'
 import eventsService from '../services/events.service'
 import weeklyHoursService from '../services/weekly-hours.service'
 import {
   CreateEventRequest,
   DeleteEventRequest,
+  GetEventsRequest,
   RescheduleEventRequest,
   SetWeeklyHoursRequest,
 } from '../types'
-
-function setWorkingHours(
-  req: SetWeeklyHoursRequest,
-  res: Response,
-  next: NextFunction
-): void {
-  void (async () => {
-    try {
-      res.send(await weeklyHoursService.setWorkingHours(req.body))
-    } catch (error) {
-      console.error('Error while setting working hours')
-      next(error)
-    }
-  })()
-}
 
 function setUnavailableHours(
   req: SetWeeklyHoursRequest,
@@ -30,7 +16,8 @@ function setUnavailableHours(
 ): void {
   void (async () => {
     try {
-      res.send(await weeklyHoursService.setUnavailableHours(req.body))
+      const { user, data } = req.body
+      res.send(await weeklyHoursService.setUnavailableHours(user, { data }))
     } catch (error) {
       console.error('Error while setting available hours')
       next(error)
@@ -38,10 +25,30 @@ function setUnavailableHours(
   })()
 }
 
-function getEvents(_req: Request, res: Response, next: NextFunction): void {
+function setWorkingHours(
+  req: SetWeeklyHoursRequest,
+  res: Response,
+  next: NextFunction
+): void {
   void (async () => {
     try {
-      res.send(await eventsService.getEvents())
+      const { user, data } = req.body
+      res.send(await weeklyHoursService.setWorkingHours(user, { data }))
+    } catch (error) {
+      console.error('Error while setting working hours')
+      next(error)
+    }
+  })()
+}
+
+function getEvents(
+  req: GetEventsRequest,
+  res: Response,
+  next: NextFunction
+): void {
+  void (async () => {
+    try {
+      res.send(await eventsService.getEvents(req.body.user))
     } catch (error) {
       console.error('Error while getting events')
       next(error)
@@ -56,24 +63,10 @@ function createEvent(
 ): void {
   void (async () => {
     try {
-      res.send(await eventsService.createEvent(req.body.data))
+      const { user, data } = req.body
+      res.send(await eventsService.createEvent(user, data))
     } catch (error) {
       console.error('Error while creating event')
-      next(error)
-    }
-  })()
-}
-
-function deleteEvent(
-  req: DeleteEventRequest,
-  res: Response,
-  next: NextFunction
-): void {
-  void (async () => {
-    try {
-      res.send(await eventsService.deleteEvent(req.body.eventId))
-    } catch (error) {
-      console.error('Error while deleting event')
       next(error)
     }
   })()
@@ -86,7 +79,8 @@ function rescheduleEvent(
 ): void {
   void (async () => {
     try {
-      res.send(await eventsService.rescheduleEvent(req.body))
+      const { user, data } = req.body
+      res.send(await eventsService.rescheduleEvent(user, data))
     } catch (error) {
       console.error('Error while rescheduling event')
       next(error)
@@ -94,11 +88,27 @@ function rescheduleEvent(
   })()
 }
 
+function deleteEvent(
+  req: DeleteEventRequest,
+  res: Response,
+  next: NextFunction
+): void {
+  void (async () => {
+    try {
+      const { eventId, user } = req.body
+      res.send(await eventsService.deleteEvent(eventId, user))
+    } catch (error) {
+      console.error('Error while deleting event')
+      next(error)
+    }
+  })()
+}
+
 export default {
-  getEvents,
-  setWorkingHours,
   setUnavailableHours,
+  setWorkingHours,
+  getEvents,
   createEvent,
-  deleteEvent,
   rescheduleEvent,
+  deleteEvent,
 }

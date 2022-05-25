@@ -12,13 +12,18 @@ import {
   RescheduleData,
   UserMessage,
 } from '../types'
-import { addTimeToDate, assertDefined } from '../utils/helpers'
+import {
+  addTimeToDate,
+  assertDefined,
+  autoCalendarId,
+  setUserInfo,
+  userTimeZone,
+} from '../utils/helpers'
 import {
   convertMessageToString,
   updateDescription,
 } from './schedule-helpers.service'
 import { autoSchedule, manualSchedule } from './schedule.service'
-import { autoCalendarId, userTimeZone } from './sign-in.service'
 require('express-async-errors')
 const calendar = google.calendar('v3')
 
@@ -26,9 +31,12 @@ const calendar = google.calendar('v3')
  * Gets the events from Google Calendar to be displayed in the app. The
  * calendar ID used by the app and the time zone of the user are also
  * initialized in this function.
+ * @param {string} user - The identifier of the user making the request.
  * @returns {EventDisplayData[]} Returns a list of event objects.
  */
-async function getEvents(): Promise<EventDisplayData[]> {
+async function getEvents(user: string): Promise<EventDisplayData[]> {
+  await setUserInfo(user)
+
   // Get the date 12 months from now
   const timeMax = new Date(new Date().setMonth(new Date().getMonth() + 12))
 
@@ -80,12 +88,15 @@ async function getEvents(): Promise<EventDisplayData[]> {
  * should be scheduled. Creates a <schedulingSettings> string, which stores
  * preferences about the event's scheduling, such as a minimum start time
  * and/or a deadline.
+ * @param {string} user - The identifier of the user making the request.
  * @param {EventFormData} data - The data recieved from the frontend to
  * create the event.
  * @returns {string} Returns a string, which provides the user with a
  * message on the result of scheduling the event.
  */
-async function createEvent(data: EventFormData): Promise<string> {
+async function createEvent(user: string, data: EventFormData): Promise<string> {
+  await setUserInfo(user)
+
   const {
     summary,
     duration,
@@ -146,12 +157,18 @@ async function createEvent(data: EventFormData): Promise<string> {
  * user, the event is scheduled at the set time or at the next open time slot
  * after the set time. The description of the event is also updated
  * to handle effects of rescheduling.
+ * @param {string} user - The identifier of the user making the request.
  * @param {RescheduleData} data - The data recieved from the frontend to
  * reschedule the event.
  * @returns {string} Returns a string to be set as a message to the
  * user with information on the result of the scheduling.
  */
-async function rescheduleEvent(data: RescheduleData): Promise<string> {
+async function rescheduleEvent(
+  user: string,
+  data: RescheduleData
+): Promise<string> {
+  await setUserInfo(user)
+
   const {
     flexible,
     eventId,
@@ -162,6 +179,7 @@ async function rescheduleEvent(data: RescheduleData): Promise<string> {
     deadline,
   } = data
   const rescheduleTimeDate = new Date(rescheduleTime)
+
   let deadlineDate = null
   if (deadline) {
     deadlineDate = new Date(deadline)
@@ -208,9 +226,17 @@ async function rescheduleEvent(data: RescheduleData): Promise<string> {
 
 /**
  * Deletes an event from the Google calendar the app uses.
+ * @param {string} user - The identifier of the user making the request. The
+ * parameter is optional since the function can be a direct call from the
+ * client, requiring a user, or can be used in another function in the backend,
+ * which has already set the user's credentials.
  * @param {string} eventId - The ID of an event.
  */
-export async function deleteEvent(eventId: string): Promise<void> {
+export async function deleteEvent(eventId: string, user = ''): Promise<void> {
+  if (user) {
+    await setUserInfo(user)
+  }
+
   await calendar.events.delete({
     auth: oAuth2Client,
     calendarId: autoCalendarId,

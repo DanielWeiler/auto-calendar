@@ -32,6 +32,7 @@ export interface TimePeriod {
 
 export interface SetWeeklyHoursRequest extends express.Request {
   body: {
+    user: string
     data: {
       Monday: TimePeriod
       Tuesday: TimePeriod
@@ -56,8 +57,15 @@ export interface WeeklyHoursData {
   }
 }
 
+export interface GetEventsRequest extends express.Request {
+  body: {
+    user: string
+  }
+}
+
 export interface CreateEventRequest extends express.Request {
   body: {
+    user: string
     data: {
       summary: string
       duration: string
@@ -73,18 +81,22 @@ export interface CreateEventRequest extends express.Request {
 
 export interface RescheduleEventRequest extends express.Request {
   body: {
-    flexible: boolean
-    eventId: string
-    rescheduleTime: string
-    summary: string
-    duration: number
-    description: string
-    deadline: string
+    user: string
+    data: {
+      flexible: boolean
+      eventId: string
+      rescheduleTime: string
+      summary: string
+      duration: number
+      description: string
+      deadline: string
+    }
   }
 }
 
 export interface DeleteEventRequest extends express.Request {
   body: {
+    user: string
     eventId: string
   }
 }

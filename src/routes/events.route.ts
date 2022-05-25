@@ -2,7 +2,7 @@ import express from 'express'
 import eventsController from '../controllers/events.controller'
 const router = express.Router()
 
-router.get('/', eventsController.getEvents)
+router.post('/', eventsController.getEvents)
 
 router.post('/set-working-hours', eventsController.setWorkingHours)
 

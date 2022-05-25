@@ -12,25 +12,31 @@ import { WeeklyHoursData } from '../types'
 import {
   addTimeToDate,
   assertDefined,
+  autoCalendarId,
   getNextDayOfTheWeek,
+  setUserInfo,
+  userTimeZone,
   setLocalTimeZone,
 } from '../utils/helpers'
 import { deleteEvent } from './events.service'
 import { getEventsInTimePeriod } from './schedule-helpers.service'
 import { rescheduleConflictingEvents } from './schedule.service'
-import { autoCalendarId, userTimeZone } from './sign-in.service'
 const calendar = google.calendar('v3')
 
 /**
  * Sets the unavailable hours for the calendar. Any previous unavailable hours
  * will be deleted. Any rescheduable events that occur during the new
  * unavailable hours are rescheduled to a suitable time.
+ * @param {string} user - The identifier of the user making the request.
  * @param {WeeklyHoursData} weeklyHours - The data of the unavailable hours set by
  * the user.
  */
 async function setUnavailableHours(
+  user: string,
   weeklyHours: WeeklyHoursData
 ): Promise<void> {
+  await setUserInfo(user)
+
   await deletePreviousWeeklyHours('Unavailable hours')
 
   // Schedule the new unavailable hours
@@ -97,10 +103,16 @@ async function setUnavailableHours(
  * Sets the working hours for the calendar. Any previous working hours will be
  * deleted. Any rescheduable events that occur during the new working hours are
  * rescheduled to a suitable time.
+ * @param {string} user - The identifier of the user making the request.
  * @param {WeeklyHoursData} weeklyHours - The data of the working hours set by
  * the user.
  */
-async function setWorkingHours(weeklyHours: WeeklyHoursData): Promise<void> {
+async function setWorkingHours(
+  user: string,
+  weeklyHours: WeeklyHoursData
+): Promise<void> {
+  await setUserInfo(user)
+
   await deletePreviousWeeklyHours('Working hours')
 
   // Schedule the new working hours

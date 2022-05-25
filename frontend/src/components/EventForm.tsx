@@ -14,7 +14,11 @@ import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import eventService from '../services/events'
 import { EventFormValues } from '../types'
-import { addTimeToDate, serverErrorMessage } from '../utils/helpers'
+import {
+  addTimeToDate,
+  assertDefined,
+  serverErrorMessage,
+} from '../utils/helpers'
 import Header from './Header'
 import EventFormInfoButton from './EventFormInfoButton'
 
@@ -34,6 +38,8 @@ const EventForm = (props: {
     reset,
   } = useForm<EventFormValues>()
 
+  const loggedUser = window.localStorage.getItem('loggedUser')
+  assertDefined(loggedUser)
   const [scheduleValue, setScheduleValue] = useState('auto')
   const [autoDisabled, setAutoDisabled] = useState(false)
   const [manualDisabled, setManualDisabled] = useState(true)
@@ -234,7 +240,8 @@ const EventForm = (props: {
     try {
       const eventMessage: string = await eventService.createEvent(
         '/create-event',
-        { data }
+        loggedUser,
+        data
       )
       reset()
       createNotification(eventMessage, 'Event scheduled', 'success')

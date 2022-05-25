@@ -1,7 +1,6 @@
 {
-  "name": "time-agent-app",
+  "name": "auto-calendar-backend",
   "version": "1.0.0",
-  "description": "time agent app backend",
   "main": "index.js",
   "scripts": {
     "tsc": "tsc",

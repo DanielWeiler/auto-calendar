@@ -1,5 +1,66 @@
+import { google } from 'googleapis'
 import moment from 'moment-timezone'
-import { userTimeZone } from '../services/sign-in.service'
+import oAuth2Client from '../configs/google-client.config'
+import RefreshTokenModel from '../models/refresh_token'
+const calendar = google.calendar('v3')
+
+export let autoCalendarId = ''
+export let userTimeZone = ''
+
+/**
+ * Sets the necessary info for a Google Calendar API request. The refresh token
+ * of the user is set to the app's authorization. Also, the ID of the user's
+ * Google calendar used by the app and the time zone of the user are stored
+ * into variables to be used within the backend.
+ * @param {string} user - The identifier of the user making requests.
+ */
+export async function setUserInfo(user: string): Promise<void> {
+  const query = await RefreshTokenModel.find({ user: user })
+  const refreshToken = query[0].refreshToken
+  oAuth2Client.setCredentials({
+    refresh_token: refreshToken,
+  })
+
+  autoCalendarId = await getAutoCalendarId()
+  userTimeZone = await getUserTimeZone()
+}
+
+/**
+ * Gets the time zone of the user's calendar.
+ * @returns {string} Returns a string that is the time zone's name.
+ */
+async function getUserTimeZone(): Promise<string> {
+  const cal = await calendar.calendars.get({
+    auth: oAuth2Client,
+    calendarId: 'primary',
+  })
+  assertDefined(cal.data.timeZone)
+
+  return cal.data.timeZone
+}
+
+/**
+ * Gets the ID of the Google calendar the app uses.
+ * @returns {string} Returns a string that is the calendar ID.
+ */
+async function getAutoCalendarId(): Promise<string> {
+  const calendars = await calendar.calendarList.list({
+    auth: oAuth2Client,
+  })
+  assertDefined(calendars.data.items)
+
+  let autoCalendarId = null
+  for (let i = 0; i < calendars.data.items.length; i++) {
+    const calendar = calendars.data.items[i]
+    if (calendar.summary === 'Auto Calendar') {
+      autoCalendarId = calendar.id
+      break
+    }
+  }
+  assertDefined(autoCalendarId)
+
+  return autoCalendarId
+}
 
 /**
  * Adds the given time to the given date.

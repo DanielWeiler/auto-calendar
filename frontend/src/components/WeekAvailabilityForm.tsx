@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import eventService from '../services/events'
 import { TimePeriod, WeeklyHoursFormValues } from '../types'
-import { serverErrorMessage } from '../utils/helpers'
+import { assertDefined, serverErrorMessage } from '../utils/helpers'
 import Header from './Header'
 import WeekDayForm from './WeekDayForm'
 
@@ -54,6 +54,8 @@ const WeekAvailabilityForm = (props: {
     },
   })
 
+  const loggedUser = window.localStorage.getItem('loggedUser')
+  assertDefined(loggedUser)
   const [saveDisabled, setSaveDisabled] = useState(false)
   const [checkedState, setCheckedState] = useState([
     { name: 'Monday', display: '' },
@@ -148,9 +150,11 @@ const WeekAvailabilityForm = (props: {
     setSpinnerDisplay('')
 
     try {
-      await eventService.setUnavailableHours('/set-available-hours', {
-        data,
-      })
+      await eventService.setUnavailableHours(
+        '/set-available-hours',
+        loggedUser,
+        data
+      )
       createNotification(
         'Conflicting events that are reschedulable will be rescheduled. This takes a quick moment.',
         'Available hours set',

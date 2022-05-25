@@ -26,6 +26,8 @@ const Calendar = (props: {
 }) => {
   const { createNotification } = props
 
+  const loggedUser = window.localStorage.getItem('loggedUser')
+  assertDefined(loggedUser)
   const [events, setEvents] = useState<EventInput[]>([])
   const [weeklyHoursSet, setWeeklyHoursSet] = useState(false)
   const [addDisabled, setAddDisabled] = useState(true)
@@ -46,7 +48,9 @@ const Calendar = (props: {
     setTimeout(() => {
       void (async () => {
         try {
-          const calendarEvents: EventInput[] = await eventService.getEvents()
+          const calendarEvents: EventInput[] = await eventService.getEvents(
+            loggedUser
+          )
           setEvents(calendarEvents)
           // Check if unavailable hours have been set
           for (let i = 0; i < calendarEvents.length; i++) {
@@ -117,8 +121,8 @@ const Calendar = (props: {
 
   const handleDeleteEvent = async () => {
     try {
-      await eventService.deleteEvent('/delete-event', eventData.id)
-      const refreshedEvents = await eventService.getEvents()
+      await eventService.deleteEvent('/delete-event', loggedUser, eventData.id)
+      const refreshedEvents = await eventService.getEvents(loggedUser)
       setEvents(refreshedEvents)
     } catch (error) {
       createNotification(serverErrorMessage, '', undefined)
@@ -152,9 +156,10 @@ const Calendar = (props: {
     try {
       const eventMessage: string = await eventService.rescheduleEvent(
         '/reschedule-event',
+        loggedUser,
         data
       )
-      const refreshedEvents = await eventService.getEvents()
+      const refreshedEvents = await eventService.getEvents(loggedUser)
       setEvents(refreshedEvents)
       createNotification(eventMessage, 'Event scheduled', 'success')
     } catch (error) {

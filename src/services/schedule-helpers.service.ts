@@ -5,8 +5,7 @@
 import { calendar_v3, google } from 'googleapis'
 import oAuth2Client from '../configs/google-client.config'
 import { DescriptionInfo, UserMessage } from '../types'
-import { assertDefined } from '../utils/helpers'
-import { autoCalendarId, userTimeZone } from './sign-in.service'
+import { assertDefined, autoCalendarId, userTimeZone } from '../utils/helpers'
 const calendar = google.calendar('v3')
 
 /**

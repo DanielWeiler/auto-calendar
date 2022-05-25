@@ -23,23 +23,24 @@ const google_client_config_1 = __importDefault(require("../configs/google-client
 const helpers_1 = require("../utils/helpers");
 const schedule_helpers_service_1 = require("./schedule-helpers.service");
 const schedule_service_1 = require("./schedule.service");
-const sign_in_service_1 = require("./sign-in.service");
 require('express-async-errors');
 const calendar = googleapis_1.google.calendar('v3');
 /**
  * Gets the events from Google Calendar to be displayed in the app. The
  * calendar ID used by the app and the time zone of the user are also
  * initialized in this function.
+ * @param {string} user - The identifier of the user making the request.
  * @returns {EventDisplayData[]} Returns a list of event objects.
  */
-function getEvents() {
+function getEvents(user) {
     return __awaiter(this, void 0, void 0, function* () {
+        yield (0, helpers_1.setUserInfo)(user);
         // Get the date 12 months from now
         const timeMax = new Date(new Date().setMonth(new Date().getMonth() + 12));
         // Gets the events from Google Calendar
         const events = yield calendar.events.list({
             auth: google_client_config_1.default,
-            calendarId: sign_in_service_1.autoCalendarId,
+            calendarId: helpers_1.autoCalendarId,
             singleEvents: true,
             timeMax: timeMax.toISOString(),
             maxResults: 2500,
@@ -85,13 +86,15 @@ function getEvents() {
  * should be scheduled. Creates a <schedulingSettings> string, which stores
  * preferences about the event's scheduling, such as a minimum start time
  * and/or a deadline.
+ * @param {string} user - The identifier of the user making the request.
  * @param {EventFormData} data - The data recieved from the frontend to
  * create the event.
  * @returns {string} Returns a string, which provides the user with a
  * message on the result of scheduling the event.
  */
-function createEvent(data) {
+function createEvent(user, data) {
     return __awaiter(this, void 0, void 0, function* () {
+        yield (0, helpers_1.setUserInfo)(user);
         const { summary, duration, manualDate, manualTime, minimumStartDate, minimumStartTime, deadlineDate, deadlineTime, } = data;
         const durationNumber = parseInt(duration);
         let userMessage;
@@ -128,13 +131,15 @@ function createEvent(data) {
  * user, the event is scheduled at the set time or at the next open time slot
  * after the set time. The description of the event is also updated
  * to handle effects of rescheduling.
+ * @param {string} user - The identifier of the user making the request.
  * @param {RescheduleData} data - The data recieved from the frontend to
  * reschedule the event.
  * @returns {string} Returns a string to be set as a message to the
  * user with information on the result of the scheduling.
  */
-function rescheduleEvent(data) {
+function rescheduleEvent(user, data) {
     return __awaiter(this, void 0, void 0, function* () {
+        yield (0, helpers_1.setUserInfo)(user);
         const { flexible, eventId, rescheduleTime, summary, duration, description, deadline, } = data;
         const rescheduleTimeDate = new Date(rescheduleTime);
         let deadlineDate = null;
@@ -148,9 +153,9 @@ function rescheduleEvent(data) {
         }
         else {
             userMessage = yield (0, schedule_service_1.manualSchedule)(summary, rescheduleTimeDate.toLocaleDateString(undefined, {
-                timeZone: sign_in_service_1.userTimeZone,
+                timeZone: helpers_1.userTimeZone,
             }), rescheduleTimeDate.toLocaleTimeString(undefined, {
-                timeZone: sign_in_service_1.userTimeZone,
+                timeZone: helpers_1.userTimeZone,
                 hour12: false,
             }), duration, eventId);
         }
@@ -160,13 +165,20 @@ function rescheduleEvent(data) {
 }
 /**
  * Deletes an event from the Google calendar the app uses.
+ * @param {string} user - The identifier of the user making the request. The
+ * parameter is optional since the function can be a direct call from the
+ * client, requiring a user, or can be used in another function in the backend,
+ * which has already set the user's credentials.
  * @param {string} eventId - The ID of an event.
  */
-function deleteEvent(eventId) {
+function deleteEvent(eventId, user = '') {
     return __awaiter(this, void 0, void 0, function* () {
+        if (user) {
+            yield (0, helpers_1.setUserInfo)(user);
+        }
         yield calendar.events.delete({
             auth: google_client_config_1.default,
-            calendarId: sign_in_service_1.autoCalendarId,
+            calendarId: helpers_1.autoCalendarId,
             eventId: eventId,
         });
     });

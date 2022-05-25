@@ -18,7 +18,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userTimeZone = exports.autoCalendarId = void 0;
 const googleapis_1 = require("googleapis");
 const jwt_decode_1 = __importDefault(require("jwt-decode"));
 const google_client_config_1 = __importDefault(require("../configs/google-client.config"));
@@ -26,15 +25,14 @@ const refresh_token_1 = __importDefault(require("../models/refresh_token"));
 const helpers_1 = require("../utils/helpers");
 require('express-async-errors');
 const calendar = googleapis_1.google.calendar('v3');
-exports.autoCalendarId = '';
-exports.userTimeZone = '';
 /**
  * Signs in the user with Google sign in. A database is checked for a user's
  * refresh token. If there is no refresh token, the newly given refresh token
- * is saved to the database. On following sign in's, the refresh token is
- * retrieved from the database. On the first sign in, the Google calendar used
+ * is saved to the database. On the first sign in, the Google calendar used
  * by the app is created on the user's account.
  * @param {string} code - The data recieved from the frontend to sign in.
+ * @returns {string} Returns the identifier of the user to be used for API
+ * requests.
  */
 function signIn(code) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -57,38 +55,18 @@ function signIn(code) {
             }).save();
             console.log('New refresh token saved');
         }
-        const query = yield refresh_token_1.default.find({ user: signedInUser });
-        const refreshToken = query[0].refreshToken;
-        google_client_config_1.default.setCredentials({
-            refresh_token: refreshToken,
-        });
-        // Get the user's time zone from their primary calendar
-        exports.userTimeZone = yield getUserTimeZone();
         // Initialize the calendar used by the app
-        yield createAutoCalendar();
-        // Initialize the calendar ID variable
-        exports.autoCalendarId = yield getAutoCalendarId();
-    });
-}
-/**
- * Gets the time zone of the user's calendar.
- * @returns {string} Returns a string that is the time zone's name.
- */
-function getUserTimeZone() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const cal = yield calendar.calendars.get({
-            auth: google_client_config_1.default,
-            calendarId: 'primary',
-        });
-        (0, helpers_1.assertDefined)(cal.data.timeZone);
-        return cal.data.timeZone;
+        yield createAutoCalendar(signedInUser);
+        return signedInUser;
     });
 }
 /**
  * Creates the Google calendar used by the app.
+ * @param {string} user - The identifier of the user making the request.
  */
-function createAutoCalendar() {
+function createAutoCalendar(user) {
     return __awaiter(this, void 0, void 0, function* () {
+        yield (0, helpers_1.setUserInfo)(user);
         const calendars = yield calendar.calendarList.list({
             auth: google_client_config_1.default,
         });
@@ -106,32 +84,10 @@ function createAutoCalendar() {
                 auth: google_client_config_1.default,
                 requestBody: {
                     summary: 'Auto Calendar',
-                    timeZone: exports.userTimeZone
+                    timeZone: helpers_1.userTimeZone,
                 },
             });
         }
-    });
-}
-/**
- * Gets the ID of the Google calendar the app uses.
- * @returns {string} Returns a string that is the calendar ID.
- */
-function getAutoCalendarId() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const calendars = yield calendar.calendarList.list({
-            auth: google_client_config_1.default,
-        });
-        (0, helpers_1.assertDefined)(calendars.data.items);
-        let autoCalendarId = null;
-        for (let i = 0; i < calendars.data.items.length; i++) {
-            const calendar = calendars.data.items[i];
-            if (calendar.summary === 'Auto Calendar') {
-                autoCalendarId = calendar.id;
-                break;
-            }
-        }
-        (0, helpers_1.assertDefined)(autoCalendarId);
-        return autoCalendarId;
     });
 }
 exports.default = { signIn };

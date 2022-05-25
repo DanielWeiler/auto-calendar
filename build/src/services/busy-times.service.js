@@ -21,7 +21,6 @@ const googleapis_1 = require("googleapis");
 const google_client_config_1 = __importDefault(require("../configs/google-client.config"));
 const helpers_1 = require("../utils/helpers");
 const schedule_helpers_service_1 = require("./schedule-helpers.service");
-const sign_in_service_1 = require("./sign-in.service");
 const calendar = googleapis_1.google.calendar('v3');
 /**
  * Gets a list of the high priority events during the given query time.
@@ -65,16 +64,16 @@ function getAllBusyTimes(queryStartTime, queryEndTime) {
             requestBody: {
                 timeMin: queryStartTime.toISOString(),
                 timeMax: queryEndTime.toISOString(),
-                timeZone: sign_in_service_1.userTimeZone,
+                timeZone: helpers_1.userTimeZone,
                 items: [
                     {
-                        id: sign_in_service_1.autoCalendarId,
+                        id: helpers_1.autoCalendarId,
                     },
                 ],
             },
         });
         (0, helpers_1.assertDefined)(availabilityQuery.data.calendars);
-        const busyTimes = availabilityQuery.data.calendars[sign_in_service_1.autoCalendarId].busy;
+        const busyTimes = availabilityQuery.data.calendars[helpers_1.autoCalendarId].busy;
         (0, helpers_1.assertDefined)(busyTimes);
         return busyTimes;
     });

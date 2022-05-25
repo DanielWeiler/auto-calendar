@@ -19,7 +19,6 @@ exports.updateDescription = exports.parsePotentialDescription = exports.convertM
 const googleapis_1 = require("googleapis");
 const google_client_config_1 = __importDefault(require("../configs/google-client.config"));
 const helpers_1 = require("../utils/helpers");
-const sign_in_service_1 = require("./sign-in.service");
 const calendar = googleapis_1.google.calendar('v3');
 /**
  * Finds the end time of an event by adding the duration of minutes of the
@@ -42,12 +41,12 @@ function getEventsInTimePeriod(queryStartTime, queryEndTime) {
     return __awaiter(this, void 0, void 0, function* () {
         const eventsList = yield calendar.events.list({
             auth: google_client_config_1.default,
-            calendarId: sign_in_service_1.autoCalendarId,
+            calendarId: helpers_1.autoCalendarId,
             singleEvents: true,
             orderBy: 'startTime',
             timeMin: queryStartTime.toISOString(),
             timeMax: queryEndTime.toISOString(),
-            timeZone: sign_in_service_1.userTimeZone,
+            timeZone: helpers_1.userTimeZone,
         });
         (0, helpers_1.assertDefined)(eventsList.data.items);
         return eventsList.data.items;
@@ -71,12 +70,12 @@ function convertMessageToString(userMessage) {
             weekday: 'long',
             day: 'numeric',
             month: 'long',
-            timeZone: sign_in_service_1.userTimeZone,
+            timeZone: helpers_1.userTimeZone,
         });
         const timeString = new Date(userMessage.eventBeingScheduled).toLocaleTimeString(undefined, {
             hour: '2-digit',
             minute: '2-digit',
-            timeZone: sign_in_service_1.userTimeZone,
+            timeZone: helpers_1.userTimeZone,
         });
         messageString = `Scheduled on ${dateString} at ${timeString}. 
       ${userMessage.conflictingEvents}`;
@@ -146,7 +145,7 @@ function updateDescription(eventId, rescheduleTimeDate, flexible, deadline, desc
                     // in the description to be referenced as a minimum start time.
                     yield calendar.events.patch({
                         auth: google_client_config_1.default,
-                        calendarId: sign_in_service_1.autoCalendarId,
+                        calendarId: helpers_1.autoCalendarId,
                         eventId: eventId,
                         requestBody: {
                             description: `Minimum start time: ${rescheduleTimeDate}`,
@@ -159,7 +158,7 @@ function updateDescription(eventId, rescheduleTimeDate, flexible, deadline, desc
                     // with another event.
                     yield calendar.events.patch({
                         auth: google_client_config_1.default,
-                        calendarId: sign_in_service_1.autoCalendarId,
+                        calendarId: helpers_1.autoCalendarId,
                         eventId: eventId,
                         requestBody: {
                             description: 'Manually scheduled',
@@ -175,7 +174,7 @@ function updateDescription(eventId, rescheduleTimeDate, flexible, deadline, desc
                     // as a minimum start time.
                     yield calendar.events.patch({
                         auth: google_client_config_1.default,
-                        calendarId: sign_in_service_1.autoCalendarId,
+                        calendarId: helpers_1.autoCalendarId,
                         eventId: eventId,
                         requestBody: {
                             description: `Deadline: ${deadline} | Minimum start time: ${rescheduleTimeDate}`,
@@ -187,7 +186,7 @@ function updateDescription(eventId, rescheduleTimeDate, flexible, deadline, desc
                     // rescheduled if it conflicts with another event.
                     yield calendar.events.patch({
                         auth: google_client_config_1.default,
-                        calendarId: sign_in_service_1.autoCalendarId,
+                        calendarId: helpers_1.autoCalendarId,
                         eventId: eventId,
                         requestBody: {
                             description: 'Manually scheduled - ' + description,
@@ -205,7 +204,7 @@ function updateDescription(eventId, rescheduleTimeDate, flexible, deadline, desc
                     // as a minimum start time.
                     yield calendar.events.patch({
                         auth: google_client_config_1.default,
-                        calendarId: sign_in_service_1.autoCalendarId,
+                        calendarId: helpers_1.autoCalendarId,
                         eventId: eventId,
                         requestBody: {
                             description: `Minimum start time: ${rescheduleTimeDate}`,
@@ -221,7 +220,7 @@ function updateDescription(eventId, rescheduleTimeDate, flexible, deadline, desc
                     // referenced as a minimum start time.
                     yield calendar.events.patch({
                         auth: google_client_config_1.default,
-                        calendarId: sign_in_service_1.autoCalendarId,
+                        calendarId: helpers_1.autoCalendarId,
                         eventId: eventId,
                         requestBody: {
                             description: `Minimum start time: ${rescheduleTimeDate}`,
@@ -233,7 +232,7 @@ function updateDescription(eventId, rescheduleTimeDate, flexible, deadline, desc
                     // rescheduled if it conflicts with another event.
                     yield calendar.events.patch({
                         auth: google_client_config_1.default,
-                        calendarId: sign_in_service_1.autoCalendarId,
+                        calendarId: helpers_1.autoCalendarId,
                         eventId: eventId,
                         requestBody: {
                             description: 'Manually scheduled',

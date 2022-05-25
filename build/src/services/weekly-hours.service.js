@@ -25,17 +25,18 @@ const helpers_1 = require("../utils/helpers");
 const events_service_1 = require("./events.service");
 const schedule_helpers_service_1 = require("./schedule-helpers.service");
 const schedule_service_1 = require("./schedule.service");
-const sign_in_service_1 = require("./sign-in.service");
 const calendar = googleapis_1.google.calendar('v3');
 /**
  * Sets the unavailable hours for the calendar. Any previous unavailable hours
  * will be deleted. Any rescheduable events that occur during the new
  * unavailable hours are rescheduled to a suitable time.
+ * @param {string} user - The identifier of the user making the request.
  * @param {WeeklyHoursData} weeklyHours - The data of the unavailable hours set by
  * the user.
  */
-function setUnavailableHours(weeklyHours) {
+function setUnavailableHours(user, weeklyHours) {
     return __awaiter(this, void 0, void 0, function* () {
+        yield (0, helpers_1.setUserInfo)(user);
         yield deletePreviousWeeklyHours('Unavailable hours');
         // Schedule the new unavailable hours
         Object.entries(weeklyHours.data).map((day) => __awaiter(this, void 0, void 0, function* () {
@@ -67,11 +68,13 @@ function setUnavailableHours(weeklyHours) {
  * Sets the working hours for the calendar. Any previous working hours will be
  * deleted. Any rescheduable events that occur during the new working hours are
  * rescheduled to a suitable time.
+ * @param {string} user - The identifier of the user making the request.
  * @param {WeeklyHoursData} weeklyHours - The data of the working hours set by
  * the user.
  */
-function setWorkingHours(weeklyHours) {
+function setWorkingHours(user, weeklyHours) {
     return __awaiter(this, void 0, void 0, function* () {
+        yield (0, helpers_1.setUserInfo)(user);
         yield deletePreviousWeeklyHours('Working hours');
         // Schedule the new working hours
         Object.entries(weeklyHours.data).map((day) => __awaiter(this, void 0, void 0, function* () {
@@ -130,17 +133,17 @@ function scheduleWeeklyEvent(summary, colorId, startDateTime, endDateTime, weekD
     return __awaiter(this, void 0, void 0, function* () {
         yield calendar.events.insert({
             auth: google_client_config_1.default,
-            calendarId: sign_in_service_1.autoCalendarId,
+            calendarId: helpers_1.autoCalendarId,
             requestBody: {
                 summary: summary,
                 colorId: colorId,
                 start: {
                     dateTime: startDateTime.toISOString(),
-                    timeZone: sign_in_service_1.userTimeZone,
+                    timeZone: helpers_1.userTimeZone,
                 },
                 end: {
                     dateTime: endDateTime.toISOString(),
-                    timeZone: sign_in_service_1.userTimeZone,
+                    timeZone: helpers_1.userTimeZone,
                 },
                 description: summary,
                 recurrence: [`RRULE:FREQ=WEEKLY;BYDAY=${weekDay.slice(0, 2)}`],

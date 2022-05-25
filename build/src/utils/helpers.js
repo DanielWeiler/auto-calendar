@@ -1,11 +1,80 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setLocalTimeZone = exports.getNextDayOfTheWeek = exports.assertDefined = exports.parseTime = exports.addTimeToDate = void 0;
+exports.setLocalTimeZone = exports.getNextDayOfTheWeek = exports.assertDefined = exports.parseTime = exports.addTimeToDate = exports.setUserInfo = exports.userTimeZone = exports.autoCalendarId = void 0;
+const googleapis_1 = require("googleapis");
 const moment_timezone_1 = __importDefault(require("moment-timezone"));
-const sign_in_service_1 = require("../services/sign-in.service");
+const google_client_config_1 = __importDefault(require("../configs/google-client.config"));
+const refresh_token_1 = __importDefault(require("../models/refresh_token"));
+const calendar = googleapis_1.google.calendar('v3');
+exports.autoCalendarId = '';
+exports.userTimeZone = '';
+/**
+ * Sets the necessary info for a Google Calendar API request. The refresh token
+ * of the user is set to the app's authorization. Also, the ID of the user's
+ * Google calendar used by the app and the time zone of the user are stored
+ * into variables to be used within the backend.
+ * @param {string} user - The identifier of the user making requests.
+ */
+function setUserInfo(user) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const query = yield refresh_token_1.default.find({ user: user });
+        const refreshToken = query[0].refreshToken;
+        google_client_config_1.default.setCredentials({
+            refresh_token: refreshToken,
+        });
+        exports.autoCalendarId = yield getAutoCalendarId();
+        exports.userTimeZone = yield getUserTimeZone();
+    });
+}
+exports.setUserInfo = setUserInfo;
+/**
+ * Gets the time zone of the user's calendar.
+ * @returns {string} Returns a string that is the time zone's name.
+ */
+function getUserTimeZone() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const cal = yield calendar.calendars.get({
+            auth: google_client_config_1.default,
+            calendarId: 'primary',
+        });
+        assertDefined(cal.data.timeZone);
+        return cal.data.timeZone;
+    });
+}
+/**
+ * Gets the ID of the Google calendar the app uses.
+ * @returns {string} Returns a string that is the calendar ID.
+ */
+function getAutoCalendarId() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const calendars = yield calendar.calendarList.list({
+            auth: google_client_config_1.default,
+        });
+        assertDefined(calendars.data.items);
+        let autoCalendarId = null;
+        for (let i = 0; i < calendars.data.items.length; i++) {
+            const calendar = calendars.data.items[i];
+            if (calendar.summary === 'Auto Calendar') {
+                autoCalendarId = calendar.id;
+                break;
+            }
+        }
+        assertDefined(autoCalendarId);
+        return autoCalendarId;
+    });
+}
 /**
  * Adds the given time to the given date.
  * @param {string} time - A time in the format "hh:mm"
@@ -76,7 +145,7 @@ exports.getNextDayOfTheWeek = getNextDayOfTheWeek;
 function setLocalTimeZone(dateTime) {
     const dateTimeWithTimeZone = (0, moment_timezone_1.default)(dateTime.toISOString())
         .parseZone()
-        .tz(sign_in_service_1.userTimeZone, true)
+        .tz(exports.userTimeZone, true)
         .toDate();
     return dateTimeWithTimeZone;
 }

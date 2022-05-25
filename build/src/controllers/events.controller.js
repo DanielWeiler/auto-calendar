@@ -14,21 +14,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const events_service_1 = __importDefault(require("../services/events.service"));
 const weekly_hours_service_1 = __importDefault(require("../services/weekly-hours.service"));
-function setWorkingHours(req, res, next) {
-    void (() => __awaiter(this, void 0, void 0, function* () {
-        try {
-            res.send(yield weekly_hours_service_1.default.setWorkingHours(req.body));
-        }
-        catch (error) {
-            console.error('Error while setting working hours');
-            next(error);
-        }
-    }))();
-}
 function setUnavailableHours(req, res, next) {
     void (() => __awaiter(this, void 0, void 0, function* () {
         try {
-            res.send(yield weekly_hours_service_1.default.setUnavailableHours(req.body));
+            const { user, data } = req.body;
+            res.send(yield weekly_hours_service_1.default.setUnavailableHours(user, { data }));
         }
         catch (error) {
             console.error('Error while setting available hours');
@@ -36,10 +26,22 @@ function setUnavailableHours(req, res, next) {
         }
     }))();
 }
-function getEvents(_req, res, next) {
+function setWorkingHours(req, res, next) {
     void (() => __awaiter(this, void 0, void 0, function* () {
         try {
-            res.send(yield events_service_1.default.getEvents());
+            const { user, data } = req.body;
+            res.send(yield weekly_hours_service_1.default.setWorkingHours(user, { data }));
+        }
+        catch (error) {
+            console.error('Error while setting working hours');
+            next(error);
+        }
+    }))();
+}
+function getEvents(req, res, next) {
+    void (() => __awaiter(this, void 0, void 0, function* () {
+        try {
+            res.send(yield events_service_1.default.getEvents(req.body.user));
         }
         catch (error) {
             console.error('Error while getting events');
@@ -50,7 +52,8 @@ function getEvents(_req, res, next) {
 function createEvent(req, res, next) {
     void (() => __awaiter(this, void 0, void 0, function* () {
         try {
-            res.send(yield events_service_1.default.createEvent(req.body.data));
+            const { user, data } = req.body;
+            res.send(yield events_service_1.default.createEvent(user, data));
         }
         catch (error) {
             console.error('Error while creating event');
@@ -58,21 +61,11 @@ function createEvent(req, res, next) {
         }
     }))();
 }
-function deleteEvent(req, res, next) {
-    void (() => __awaiter(this, void 0, void 0, function* () {
-        try {
-            res.send(yield events_service_1.default.deleteEvent(req.body.eventId));
-        }
-        catch (error) {
-            console.error('Error while deleting event');
-            next(error);
-        }
-    }))();
-}
 function rescheduleEvent(req, res, next) {
     void (() => __awaiter(this, void 0, void 0, function* () {
         try {
-            res.send(yield events_service_1.default.rescheduleEvent(req.body));
+            const { user, data } = req.body;
+            res.send(yield events_service_1.default.rescheduleEvent(user, data));
         }
         catch (error) {
             console.error('Error while rescheduling event');
@@ -80,11 +73,23 @@ function rescheduleEvent(req, res, next) {
         }
     }))();
 }
+function deleteEvent(req, res, next) {
+    void (() => __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { eventId, user } = req.body;
+            res.send(yield events_service_1.default.deleteEvent(eventId, user));
+        }
+        catch (error) {
+            console.error('Error while deleting event');
+            next(error);
+        }
+    }))();
+}
 exports.default = {
-    getEvents,
-    setWorkingHours,
     setUnavailableHours,
+    setWorkingHours,
+    getEvents,
     createEvent,
-    deleteEvent,
     rescheduleEvent,
+    deleteEvent,
 };

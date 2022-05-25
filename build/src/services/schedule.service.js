@@ -22,7 +22,6 @@ const google_client_config_1 = __importDefault(require("../configs/google-client
 const helpers_1 = require("../utils/helpers");
 const availability_service_1 = require("./availability.service");
 const schedule_helpers_service_1 = require("./schedule-helpers.service");
-const sign_in_service_1 = require("./sign-in.service");
 const calendar = googleapis_1.google.calendar('v3');
 /**
  * Schedules an event at the time given by the user. Data about the scheduling
@@ -119,16 +118,16 @@ function scheduleEvent(summary, startDateTime, endDateTime, description = '', ev
         if (eventId) {
             yield calendar.events.patch({
                 auth: google_client_config_1.default,
-                calendarId: sign_in_service_1.autoCalendarId,
+                calendarId: helpers_1.autoCalendarId,
                 eventId: eventId,
                 requestBody: {
                     start: {
                         dateTime: startDateTime.toISOString(),
-                        timeZone: sign_in_service_1.userTimeZone,
+                        timeZone: helpers_1.userTimeZone,
                     },
                     end: {
                         dateTime: endDateTime.toISOString(),
-                        timeZone: sign_in_service_1.userTimeZone,
+                        timeZone: helpers_1.userTimeZone,
                     },
                 },
             });
@@ -136,17 +135,17 @@ function scheduleEvent(summary, startDateTime, endDateTime, description = '', ev
         else {
             yield calendar.events.insert({
                 auth: google_client_config_1.default,
-                calendarId: sign_in_service_1.autoCalendarId,
+                calendarId: helpers_1.autoCalendarId,
                 requestBody: {
                     summary: summary,
                     colorId: '7',
                     start: {
                         dateTime: startDateTime.toISOString(),
-                        timeZone: sign_in_service_1.userTimeZone,
+                        timeZone: helpers_1.userTimeZone,
                     },
                     end: {
                         dateTime: endDateTime.toISOString(),
-                        timeZone: sign_in_service_1.userTimeZone,
+                        timeZone: helpers_1.userTimeZone,
                     },
                     description: description,
                     reminders: {

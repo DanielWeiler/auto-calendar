@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const events_controller_1 = __importDefault(require("../controllers/events.controller"));
 const router = express_1.default.Router();
-router.get('/', events_controller_1.default.getEvents);
+router.post('/', events_controller_1.default.getEvents);
 router.post('/set-working-hours', events_controller_1.default.setWorkingHours);
 router.post('/set-available-hours', events_controller_1.default.setUnavailableHours);
 router.post('/create-event', events_controller_1.default.createEvent);

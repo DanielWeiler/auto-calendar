@@ -61,12 +61,18 @@ function signIn(code) {
     });
 }
 /**
- * Creates the Google calendar used by the app.
+ * Creates the Google calendar used by the app. First checks if the calendar
+ * has already been created.
  * @param {string} user - The identifier of the user making the request.
  */
 function createAutoCalendar(user) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield (0, helpers_1.setUserInfo)(user);
+        // Sets the credentials of the user
+        const query = yield refresh_token_1.default.find({ user: user });
+        const refreshToken = query[0].refreshToken;
+        google_client_config_1.default.setCredentials({
+            refresh_token: refreshToken,
+        });
         const calendars = yield calendar.calendarList.list({
             auth: google_client_config_1.default,
         });
@@ -80,11 +86,15 @@ function createAutoCalendar(user) {
             }
         }
         if (!calendarCreated) {
+            const cal = yield calendar.calendars.get({
+                auth: google_client_config_1.default,
+                calendarId: 'primary',
+            });
             yield calendar.calendars.insert({
                 auth: google_client_config_1.default,
                 requestBody: {
                     summary: 'Auto Calendar',
-                    timeZone: helpers_1.userTimeZone,
+                    timeZone: cal.data.timeZone,
                 },
             });
         }

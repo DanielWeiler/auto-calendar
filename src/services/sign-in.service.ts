@@ -9,7 +9,7 @@ import { google } from 'googleapis'
 import jwtDecode, { JwtPayload } from 'jwt-decode'
 import oAuth2Client from '../configs/google-client.config'
 import RefreshTokenModel from '../models/refresh_token'
-import { assertDefined, setUserInfo, userTimeZone } from '../utils/helpers'
+import { assertDefined } from '../utils/helpers'
 require('express-async-errors')
 const calendar = google.calendar('v3')
 
@@ -53,11 +53,18 @@ async function signIn(code: string): Promise<string> {
 }
 
 /**
- * Creates the Google calendar used by the app.
+ * Creates the Google calendar used by the app. First checks if the calendar
+ * has already been created.
  * @param {string} user - The identifier of the user making the request.
  */
 async function createAutoCalendar(user: string): Promise<void> {
-  await setUserInfo(user)
+  // Sets the credentials of the user
+  const query = await RefreshTokenModel.find({ user: user })
+  const refreshToken = query[0].refreshToken
+  oAuth2Client.setCredentials({
+    refresh_token: refreshToken,
+  })
+
   const calendars = await calendar.calendarList.list({
     auth: oAuth2Client,
   })
@@ -73,11 +80,16 @@ async function createAutoCalendar(user: string): Promise<void> {
   }
 
   if (!calendarCreated) {
+    const cal = await calendar.calendars.get({
+      auth: oAuth2Client,
+      calendarId: 'primary',
+    })
+
     await calendar.calendars.insert({
       auth: oAuth2Client,
       requestBody: {
         summary: 'Auto Calendar',
-        timeZone: userTimeZone,
+        timeZone: cal.data.timeZone,
       },
     })
   }

@@ -22,6 +22,14 @@ import {
 } from './utils/helpers'
 
 function App() {
+  // If app is not running in development mode, and if app is using the HTTP
+  // protocol, redirect app to use HTTPS protocol.
+  if (location.href !== 'http://localhost:3000/') {
+    if (location.protocol !== 'https:') {
+      location.protocol = 'https:'
+    }
+  }
+  
   let newNotification: NotificationDetails = {
     style: undefined,
     heading: '',

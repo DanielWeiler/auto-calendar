@@ -1,6 +1,6 @@
 ﻿# Auto Calendar
 
-Watch my demo video here:
+Watch my demo video here (CTRL+click or CMD+click to open new tab):
 
 [![Auto Calendar Demo](https://img.youtube.com/vi/lhlOv2o9KOk/0.jpg)](https://www.youtube.com/watch?v=lhlOv2o9KOk)
 

@@ -12,7 +12,9 @@ Auto Calendar is a progressive web application and it uses the Google Calendar A
 - Create a schedule without time conflicts
 - Easily adjust the schedule based on the user's availability
 
-There are two types of events in Auto Calendar, which are manual events and auto events. Manual events work just like traditional calendar app events. Auto events automatically schedule based on the user's calendar availability. Whenever an event is scheduled, it reserves its time block only for itself so that no events conflict with each other to keep an easy to follow schedule. If a manual event is scheduled on top of an auto event, the auto event will be rescheduled to a suitable time. An auto event will never be scheduled on top of another event. Manual events can still be scheduled on top of other manual events to preserve the time the user chose for the event.
+There are two types of events in Auto Calendar, which are manual events and auto events. Manual events work just like traditional calendar app events. Auto events automatically schedule based on the user's calendar availability. 
+
+Whenever an event is scheduled, it reserves its time block only for itself so that no events conflict with each other to keep an easy to follow schedule. If a manual event is scheduled on top of an auto event, the auto event will be rescheduled to a suitable time. An auto event will never be scheduled on top of another event. Manual events can still be scheduled on top of other manual events to preserve the time the user chose for the event.
 
 The user can set the hours when they are available for auto events. Auto events will only be scheduled during these hours. The user can choose when an auto event will look for availability and can provide a deadline to be sure it will be scheduled before the deadline.
 

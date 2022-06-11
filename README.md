@@ -39,6 +39,7 @@ The working live version can be found at [auto-calendar-app.herokuapp.com](https
 - Express
 - Axios
 - Google Calendar API
+- React Hook Form
 - Material UI
 - Fullcalendar.io
 - MongoDB

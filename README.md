@@ -1,6 +1,8 @@
 ﻿# Auto Calendar
 
-Watch my demo video here (CTRL+click or CMD+click to open new tab):
+Watch my demo video here! (CTRL+click or CMD+click to open new tab)
+
+Skip to the 6:00 minute mark for a 2 minute clip of the main features (6:00-8:00).
 
 [![Auto Calendar Demo](https://img.youtube.com/vi/lhlOv2o9KOk/0.jpg)](https://www.youtube.com/watch?v=lhlOv2o9KOk)
 

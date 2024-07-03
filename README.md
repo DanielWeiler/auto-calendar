@@ -22,13 +22,13 @@ The user can set the hours when they are available for auto events. Auto events 
 
 ## Demo
 
+The working live version can be found at [auto-calendar-app.herokuapp.com](https://auto-calendar-app.herokuapp.com/) (Currently unavailable)
+
 A test account has been created to use the demo of this app. Please see the account's credentials provided in my CV.
 
 *The time zone set for this test account is the time zone of Finland (GMT+03:00 Eastern European Summer Time - Helsinki).
 
 (Because the app has been created with the Google Calendar API, it needs to go through Google's verification process to be available to any user with a Google Account. This process is not yet complete for this app but it can be accessed with the test account.)
-
-The working live version can be found at [auto-calendar-app.herokuapp.com](https://auto-calendar-app.herokuapp.com/) (Currently unavailable)
 
 *May not be optimized for iPhone.
 

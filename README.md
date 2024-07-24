@@ -22,7 +22,7 @@ The user can set the hours when they are available for auto events. Auto events 
 
 ## Demo
 
-The working live version can be found at [auto-calendar-app.herokuapp.com](https://auto-calendar-app.herokuapp.com/) (Currently unavailable)
+The working live version can be found at [auto-calendar-app.herokuapp.com](https://auto-calendar-app.herokuapp.com/)
 
 A test account has been created to use the demo of this app. Please see the account's credentials provided in my CV.
 
